@@ -36,7 +36,8 @@ export const changeBase = resolveBase();
  * it carries looks like a regression.
  */
 function renameMap() {
-  const out = git(["diff", "--name-status", "-M", changeBase]) ?? "";
+  const out =
+    git(["-c", "diff.renameLimit=20000", "diff", "--name-status", "-M", changeBase]) ?? "";
   const map = new Map();
   for (const line of out.split("\n")) {
     const parts = line.split("\t");
@@ -69,8 +70,17 @@ export function readCurrent(rel) {
   }
 }
 
-/** File content at the change base (following renames), or null when genuinely new. */
+/** File content at the change base (following renames and app splits), or null when genuinely new. */
 export function readAtBase(rel) {
   const source = RENAMES.get(rel) ?? rel;
-  return git(["show", `${changeBase}:${source}`]);
+  const direct = git(["show", `${changeBase}:${source}`]);
+  if (direct !== null) return direct;
+  for (const prefix of ["apps/tenant-web/", "apps/platform-web/"]) {
+    if (rel.startsWith(prefix)) {
+      const legacy = `apps/frontend/${rel.slice(prefix.length)}`;
+      const fromLegacy = git(["show", `${changeBase}:${legacy}`]);
+      if (fromLegacy !== null) return fromLegacy;
+    }
+  }
+  return null;
 }

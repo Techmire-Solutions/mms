@@ -9,7 +9,7 @@ Companion to the `/form-audit` workflow (`.agent/workflows/form-audit.md`). Norm
 
 | Column | Meaning |
 |---|---|
-| file | repo-relative path under `apps/frontend/src` |
+| file | repo-relative path under `apps/tenant-web/src` |
 | module | `tenant/<feature>`, `tenant/pages/<area>`, `platform/<area>`, `components/<area>` |
 | surface | `modal-form` (\<FormModal\>), `modal` (raw Modal), `drawer`, `inline` |
 | saving | `saving=` present on the FormModal tag |

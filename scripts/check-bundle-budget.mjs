@@ -24,7 +24,7 @@ import { fileURLToPath } from "node:url";
 import { gzipSync } from "node:zlib";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const assetsDir = path.join(rootDir, "apps", "frontend", "dist", "assets");
+const assetsDir = path.join(rootDir, "apps", "tenant-web", "dist", "assets");
 
 /**
  * Budgets are deliberately a little above the measured baseline so ordinary
@@ -47,7 +47,7 @@ function fail(message) {
 if (!fs.existsSync(assetsDir)) {
   fail(
     `No build output at ${path.relative(rootDir, assetsDir)}. ` +
-      "Run `pnpm --filter mms-frontend build` first.",
+      "Run `pnpm --filter mms-tenant-web build` first.",
   );
 }
 
@@ -123,7 +123,7 @@ if (violations.length > 0) {
   fail(
     `Bundle budget exceeded:\n  - ${violations.join("\n  - ")}\n\n` +
       "Either reduce the bundle (lazy-load the dependency, review manualChunks in " +
-      "apps/frontend/vite.config.ts) or raise the budget deliberately via the " +
+      "apps/tenant-web/vite.config.ts) or raise the budget deliberately via the " +
       "BUNDLE_BUDGET_* env vars in .github/workflows/ci.yml.",
   );
 }

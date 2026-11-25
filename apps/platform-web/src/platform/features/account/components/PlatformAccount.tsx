@@ -1,0 +1,114 @@
+import React from "react";
+import { useSearchParams } from "react-router-dom";
+import { m, AnimatePresence } from "framer-motion";
+import { User, Shield } from "lucide-react";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { usePlatformProfile } from "@/platform/features/account/hooks/usePlatformProfile";
+import { useReducedMotion } from "@mms/ui/app/useReducedMotion";
+import { SubTabBar, type SubTab } from "@mms/ui/app/SubTabBar";
+import { ErrorState, CardSkeleton } from "@mms/ui";
+import { ModulePageShell } from "@mms/fe-core/components/ModulePageShell";
+
+import { containerVariants, itemVariants as cardVariants } from "@/lib/motion";
+import { PlatformProfileCard } from "@/platform/features/account/components/PlatformProfileCard";
+import { PlatformProfileNameForm } from "@/platform/features/account/components/PlatformProfileNameForm";
+import { PlatformProfilePasswordForm } from "@/platform/features/account/components/PlatformProfilePasswordForm";
+
+type AccountTab = "profile" | "security";
+
+/**
+ * Platform operator account hub — Profile information and security password management.
+ */
+export default function PlatformAccount(): React.JSX.Element {
+  const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const {
+    data: profile,
+    isLoading: loadingProfile,
+    isError: profileError,
+    refetch,
+  } = usePlatformProfile();
+
+  const rawTab = searchParams.get("tab");
+  const activeTab: AccountTab = rawTab === "security" ? "security" : "profile";
+
+  const handleTabChange = (nextTab: AccountTab) => {
+    setSearchParams({ tab: nextTab }, { replace: true });
+  };
+
+  const tabs: SubTab<AccountTab>[] = [
+    { key: "profile", label: t("platform.myAccount"), icon: User },
+    { key: "security", label: t("auth.password"), icon: Shield },
+  ];
+
+  return (
+    <ModulePageShell
+      seoTitle={`${t("platform.profileTitle")} | ${t("platform.consoleTitle")}`}
+      seoDescription={t("platform.profileSubtitle")}
+      headerIcon={User}
+      headerTitle={t("platform.profileTitle")}
+      headerSubtitle={t("platform.profileSubtitle")}
+      className="text-start"
+    >
+      <div className="space-y-8">
+        {loadingProfile ? (
+          <CardSkeleton count={2} className="grid-cols-1 lg:grid-cols-3" />
+        ) : profileError || !profile ? (
+          <ErrorState
+            title={t("platform.loadFailed")}
+            description={t("platform.loadFailedHint")}
+            onRetry={() => void refetch()}
+          />
+        ) : (
+          <div className="space-y-6">
+            <SubTabBar tabs={tabs} value={activeTab} onChange={(key) => handleTabChange(key)} />
+
+            <AnimatePresence mode="wait">
+              <m.div
+                key={activeTab}
+                initial={reducedMotion ? false : { opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={reducedMotion ? undefined : { opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+              >
+                {activeTab === "profile" && (
+                  <m.div
+                    variants={containerVariants}
+                    initial={reducedMotion ? false : "hidden"}
+                    animate="visible"
+                    className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start"
+                  >
+                    <m.div variants={cardVariants}>
+                      <PlatformProfileCard profile={profile} />
+                    </m.div>
+
+                    <m.div variants={cardVariants} className="lg:col-span-2">
+                      <PlatformProfileNameForm
+                        initialName={profile.name ?? ""}
+                        initialPhone={profile.phone}
+                      />
+                    </m.div>
+                  </m.div>
+                )}
+
+                {activeTab === "security" && (
+                  <m.div
+                    variants={containerVariants}
+                    initial={reducedMotion ? false : "hidden"}
+                    animate="visible"
+                    className="max-w-3xl"
+                  >
+                    <m.div variants={cardVariants}>
+                      <PlatformProfilePasswordForm />
+                    </m.div>
+                  </m.div>
+                )}
+              </m.div>
+            </AnimatePresence>
+          </div>
+        )}
+      </div>
+    </ModulePageShell>
+  );
+}

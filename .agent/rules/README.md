@@ -176,21 +176,21 @@ Update this table in the same change that adds or removes a check.
 | Reuse-first / consumer-compatible shared changes (`mms-dry` §1) | none — **advisory** (review discipline) | advisory |
 | Test-first ordering (Red before Green) | none can prove ordering — **advisory**; `pnpm run check:tdd-pairing` warns when a changed backend domain file has no changed spec (pre-PR gate, never fails) | advisory |
 | Adversarial audit report before completion | `.github/pull_request_template.md` §Adversarial Loophole Audit + `mms-code-review` `adversarial-audit-template.md` — **advisory** (self-review, no gate) | advisory |
-| Every module-owned API route gated (`registerModuleAccess`), every route classified | `apps/backend/src/__tests__/moduleAccessCoverage.test.ts` | test |
+| Every module-owned API route gated (`registerModuleAccess`), every route classified | `apps/api/src/__tests__/moduleAccessCoverage.test.ts` | test |
 | Every tenant app-shell route classified in `TENANT_APP_ROUTE_ACCESS` | `apps/frontend/src/lib/config/routeAccess.test.ts` | test |
 | Tier structure, trunk tests, review criteria, UI/UX Pro Max design intelligence | none — **advisory** (review discipline) | advisory |
 | Contract DTO ↔ read-shape parity (a write body accepts the mapper's read shape) | reference test: `packages/contracts/src/__tests__/contactWriteSchema.test.ts` (round-trip) — generalise when a second module lands | test |
-| Server-owned audit attribution (client `createdBy`/`updatedBy`/`createdAt` ignored) | reference test: `apps/backend/src/__tests__/contactUseCases.test.ts` (attribution stamping) | test |
-| Batched CDC outbox for bulk operations (audit stays per record) | reference test: `apps/backend/src/__tests__/softDeleteOutboxCdc.test.ts` | test |
-| Widget/aggregate field allowlist, `filters[]`, 400 on unsupported field | reference test: `apps/backend/src/__tests__/contactRepositoryWidgets.test.ts` | test |
-| Aggregate month/year buckets use the workspace timezone | reference test: `apps/backend/src/__tests__/contactRepositoryMetrics.test.ts` | test |
-| Derived projection lifecycle, archive/reactivate, batch-once, concurrency and read-only write stripping | reference test: `apps/backend/src/__tests__/db-integration/contactsSystemTagsDb.integration.test.ts` | test |
-| Required-module denial semantics (reachable code only) | reference test: `apps/backend/src/__tests__/moduleAccessGuard.integration.test.ts` | test |
+| Server-owned audit attribution (client `createdBy`/`updatedBy`/`createdAt` ignored) | reference test: `apps/api/src/__tests__/contactUseCases.test.ts` (attribution stamping) | test |
+| Batched CDC outbox for bulk operations (audit stays per record) | reference test: `apps/api/src/__tests__/softDeleteOutboxCdc.test.ts` | test |
+| Widget/aggregate field allowlist, `filters[]`, 400 on unsupported field | reference test: `apps/api/src/__tests__/contactRepositoryWidgets.test.ts` | test |
+| Aggregate month/year buckets use the workspace timezone | reference test: `apps/api/src/__tests__/contactRepositoryMetrics.test.ts` | test |
+| Derived projection lifecycle, archive/reactivate, batch-once, concurrency and read-only write stripping | reference test: `apps/api/src/__tests__/db-integration/contactsSystemTagsDb.integration.test.ts` | test |
+| Required-module denial semantics (reachable code only) | reference test: `apps/api/src/__tests__/moduleAccessGuard.integration.test.ts` | test |
 | Scoped offline outbox keys + single-flight flush | reference test: `apps/frontend/src/lib/contacts/contactsSyncOutbox*.test.ts` | test |
-| Restore provenance stamped by any resurrection (upsert/update) | reference test: `apps/backend/src/__tests__/contactUseCases.test.ts` (upsert restore) | test |
-| Cross-module read minimization + viewer field visibility | reference tests: `apps/backend/src/__tests__/messagingRecipientsService.test.ts`, `apps/backend/src/__tests__/messaging.integration.test.ts` | test |
-| Attachment lifecycle (tenant path, owning-action gate, URL whitelist, unlink, sweep dry-run) | reference tests: `apps/backend/src/__tests__/uploadsHardening.test.ts`, `apps/backend/src/__tests__/attachmentStorageService.test.ts`, `apps/backend/src/__tests__/attachmentSweepService.test.ts` | test |
-| Derived-cache write-version guard (skip/delete raced snapshot) | reference tests: `apps/backend/src/__tests__/contactDuplicateScanService.test.ts`, `apps/backend/src/__tests__/db-integration/contactsConcurrencyDb.integration.test.ts` | test |
+| Restore provenance stamped by any resurrection (upsert/update) | reference test: `apps/api/src/__tests__/contactUseCases.test.ts` (upsert restore) | test |
+| Cross-module read minimization + viewer field visibility | reference tests: `apps/api/src/__tests__/messagingRecipientsService.test.ts`, `apps/api/src/__tests__/messaging.integration.test.ts` | test |
+| Attachment lifecycle (tenant path, owning-action gate, URL whitelist, unlink, sweep dry-run) | reference tests: `apps/api/src/__tests__/uploadsHardening.test.ts`, `apps/api/src/__tests__/attachmentStorageService.test.ts`, `apps/api/src/__tests__/attachmentSweepService.test.ts` | test |
+| Derived-cache write-version guard (skip/delete raced snapshot) | reference tests: `apps/api/src/__tests__/contactDuplicateScanService.test.ts`, `apps/api/src/__tests__/db-integration/contactsConcurrencyDb.integration.test.ts` | test |
 | Review findings closed with fix + test + status table | none — **advisory** (review/docs discipline) | advisory |
 
 
@@ -307,7 +307,7 @@ node scripts/verify-rules-integrity.mjs
 | `mms-structure.md`, `mms-naming.md` | `mms-structure-naming.md` |
 | `mms-auth.md`, `mms-rbac.md`, `mms-tenant.md`, `mms-security.md` | `mms-auth-security.md` |
 | `mms-config.md`, `mms-settings-navigation.md`, `mms-i18n.md` | `mms-settings-i18n.md` |
-| `mms-frontend.md`, `mms-backend.md` | `mms-api-interface.md` |
+| `mms-frontend.md`, `mms-api.md` | `mms-api-interface.md` |
 | `mms-contacts.md`, `mms-contact-link.md` | Completely Deleted |
 | `mms-testing.md`, `mms-observability.md` | `mms-testing-observability.md` |
 

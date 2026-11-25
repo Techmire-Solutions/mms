@@ -1,6 +1,6 @@
 ---
 name: mms-platform-console
-description: Implements or modifies Platform Console features — apex routes, platform permissions, workspace provisioning, and system administration. Use when working under apps/frontend/src/platform, apps/backend/src/platform, or e2e/tests/platform. Do NOT use for tenant workspace modules (use mms-module-page), shared UI primitives (use mms-shared-ui), or tenant RBAC (use mms-backend-security).
+description: Platform Console features (apex routes, permissions, workspace provisioning, admin). Use when apps/platform-web/src/platform, apps/api/src/platform, e2e platform. Do NOT use for tenant modules (use mms-module-page), UI primitives (use mms-shared-ui), or tenant RBAC (use mms-backend-security).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -13,8 +13,8 @@ metadata:
 
 ## When to use
 
-- Building or modifying pages, routes, or components in the Platform Console (`apps/frontend/src/platform`)
-- Implementing platform-level backend routes, services, or repositories (`apps/backend/src/routes/platform`)
+- Building or modifying pages, routes, or components in the Platform Console (`apps/platform-web/src/platform`)
+- Implementing platform-level backend routes, services, or repositories (`apps/api/src/routes/platform`)
 - Enforcing platform authorization, super-user capabilities, or workspace provisioning
 - Writing or maintaining Platform Console E2E specs (`e2e/tests/platform`)
 
@@ -52,22 +52,22 @@ For platform permission keys, RBAC mappings, and capability matrices, see [refer
 
 | Layer | Path / Symbol |
 |---|---|
-| Frontend Shell & Routes | `apps/frontend/src/platform/routes/ApexRoutes.tsx`, `apexRouteRegistry.ts` |
-| Feature Modules | `apps/frontend/src/platform/features/{feature}/` (`{Feature}Page.tsx`, `components/`, `hooks/`, `lib/`) |
-| Shared Shell / Auth | `apps/frontend/src/platform/features/shell/`, `platform/features/auth/` |
-| Frontend Auth Context | `apps/frontend/src/platform/features/auth/lib/PlatformAuthContext.tsx` |
-| Query Keys Factory | `apps/frontend/src/platform/features/shell/lib/platformQueryKeys.ts` |
-| Backend Routes | `apps/backend/src/routes/platform/` |
-| Backend Auth Middleware | `apps/backend/src/middleware/authenticatePlatform.ts` |
-| Architecture Guard Test | `apps/frontend/src/platform/platformUiArchitecture.test.ts` |
+| Frontend Shell & Routes | `apps/platform-web/src/platform/routes/ApexRoutes.tsx`, `apexRouteRegistry.ts` |
+| Feature Modules | `apps/platform-web/src/platform/features/{feature}/` (`{Feature}Page.tsx`, `components/`, `hooks/`, `lib/`) |
+| Shared Shell / Auth | `apps/platform-web/src/platform/features/shell/`, `platform/features/auth/` |
+| Frontend Auth Context | `apps/platform-web/src/platform/features/auth/lib/PlatformAuthContext.tsx` |
+| Query Keys Factory | `apps/platform-web/src/platform/features/shell/lib/platformQueryKeys.ts` |
+| Backend Routes | `apps/api/src/routes/platform/` |
+| Backend Auth Middleware | `apps/api/src/middleware/authenticatePlatform.ts` |
+| Architecture Guard Test | `apps/platform-web/src/platform/platformUiArchitecture.test.ts` |
 | E2E Tests | `e2e/tests/platform/` |
 
 ## 4. Verification
 
 ```bash
-pnpm --filter mms-frontend typecheck
-pnpm --filter mms-backend typecheck
-pnpm --filter mms-frontend test apps/frontend/src/platform/platformUiArchitecture.test.ts
+pnpm --filter mms-platform-web typecheck
+pnpm --filter mms-api typecheck
+pnpm --filter mms-platform-web test apps/platform-web/src/platform/platformUiArchitecture.test.ts
 pnpm run check:shared-ui
 ```
 

@@ -5,7 +5,7 @@
  * Two jobs:
  *
  *   1. INVENTORY (`--inventory`) — a deterministic manifest of every form surface in
- *      `apps/frontend/src` (FormModal consumers, raw modals, drawers, inline form files)
+ *      `apps/tenant-web/src` (FormModal consumers, raw modals, drawers, inline form files)
  *      with its lifecycle signals. Written to `docs/forms-inventory.md` and never
  *      hand-edited; a stale snapshot fails the gate.
  *
@@ -36,7 +36,11 @@ assertExemptionReasons(SAVING_EXEMPT, "SAVING_EXEMPT");
 assertExemptionReasons(DIRTY_EXEMPT, "DIRTY_EXEMPT");
 
 const ROOT = process.cwd();
-const FE_SRC = path.join(ROOT, "apps/frontend/src");
+// Live console trees only — `apps/platform-web/src/tenant/**` is an unrouted copy awaiting the
+// P11a prune (`pnpm run report:dead-sources`), so it is deliberately out of this audit.
+const FE_SRC_ROOTS = ["apps/tenant-web/src", "apps/platform-web/src/platform"].map((rel) =>
+  path.join(ROOT, rel),
+);
 const INVENTORY = path.join(ROOT, "docs/forms-inventory.md");
 const SELF = path.join(ROOT, "scripts/check-form-architecture.mjs");
 
@@ -198,11 +202,11 @@ function analyze(rel, source) {
   };
 }
 
-const allFiles = walkFiles(FE_SRC);
+const allFiles = FE_SRC_ROOTS.flatMap((root) => walkFiles(root));
 const formFiles = allFiles
   .map((file) => ({
     file,
-    rel: toRel(file).replace(/^apps\/frontend\/src\//, ""),
+    rel: toRel(file).replace(/^apps\/(?:tenant-web|platform-web)\/src\//, ""),
     source: fs.readFileSync(file, "utf8"),
   }))
   .filter(({ rel, source }) => {
@@ -385,10 +389,10 @@ if (wantsChanged) {
     await import("./lib/changed-files.mjs");
   const regressions = [];
   for (const rel of changedFiles()) {
-    if (!rel.startsWith("apps/frontend/src/") || !/\.tsx$/.test(rel)) continue;
+    if (!rel.startsWith("apps/tenant-web/src/") || !/\.tsx$/.test(rel)) continue;
     const current = readCurrent(rel);
     if (current === null) continue;
-    const short = rel.replace(/^apps\/frontend\/src\//, "");
+    const short = rel.replace(/^apps\/(?:tenant-web|platform-web)\/src\//, "");
     const now = analyze(short, current);
     const base = analyze(short, readAtBase(rel) ?? "");
     for (const key of Object.keys(measured)) {

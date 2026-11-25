@@ -1,6 +1,6 @@
 ---
 name: mms-document-templates
-description: Implements MMS printable document templates end to end — server-authoritative layouts, compare-and-set saves with 409 conflict UX, the shared editor/renderer, and template-driven print surfaces for invoices, receipts, student cards, report cards, and Hasanat vouchers. Use when editing the template editor, documentTemplates contracts, template persistence hooks, or any module preview/print that consumes a stored layout. Do NOT use for SMS/WhatsApp message templates (use mms-messaging), generic create/edit forms (use mms-form-architecture), or analytics PDF/Excel exports (use mms-reports-export).
+description: Implements printable templates end-to-end (server layouts, CAS saves, shared editor, print surfaces). Use when template editor/persistence/print. Do NOT use for SMS/WhatsApp templates (use mms-messaging) or generic form building (use mms-form-architecture).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -25,12 +25,12 @@ allowed-tools: Read Grep Glob Write Edit Bash(pnpm *) Bash(node scripts/verify-r
 | Layer | Location | Responsibility |
 |---|---|---|
 | Contract | `packages/contracts/src/contracts/documentTemplates.contract.ts` | GET `{template, updatedAt}`; PUT `{template, expectedUpdatedAt}`; 409; layout schema |
-| Server | `apps/backend/src/routes/tenant/templates/documentTemplatesContractRouter.ts` → `apps/backend/src/documents/use-cases/documentTemplatesUseCases.ts` → `apps/backend/src/db/repositories/documentTemplatesRepository.ts` | `settings.global.write` gate, conflict error, atomic CAS, audit/broadcast on success |
+| Server | `packages/modules/documents/src/backend/routes/documentTemplatesContractRouter.ts` → `packages/modules/documents/src/backend/use-cases/documentTemplatesUseCases.ts` → `packages/modules/documents/src/backend/repository/documentTemplatesRepository.ts` | `settings.global.write` gate, conflict error, atomic CAS, audit/broadcast on success |
 | Client data | `packages/fe-core/src/documentTemplates/documentTemplatesApi.ts`, `documentTemplateCache.ts`, `useDocumentTemplates.ts`, `useTemplateSaveConflict.ts` | record cache, save with cached version, typedd conflict, reload |
 | Editor | `packages/fe-core/src/components/DocumentTemplateEditor.tsx`, `packages/fe-core/src/components/TemplateEditor.tsx`, `packages/fe-core/src/components/template-editor/` | load/save/conflict, canvas, element renderer, import/export, localization |
-| Module adapters | `apps/frontend/src/tenant/features/finance/components/FinanceTemplateEditor.tsx` (siblings: examinations, hasanat, obligations, accounting, students) | localized fields/presets, sample payload, default layout, module export adapters |
+| Module adapters | `apps/tenant-web/src/tenant/features/finance/components/FinanceTemplateEditor.tsx` (siblings: examinations, hasanat, obligations, accounting, students) | localized fields/presets, sample payload, default layout, module export adapters |
 | Print | `packages/fe-core/src/components/template-editor/TemplateDocumentPreview.tsx`, `templateDocumentPrint.ts` | one page renderer; popup print HTML |
-| Guard | `apps/frontend/src/tenant/features/templateFieldI18n.test.ts` | every field/preset key exists |
+| Guard | `apps/tenant-web/src/tenant/features/templateFieldI18n.test.ts` | every field/preset key exists |
 
 ## Procedure
 
@@ -69,9 +69,9 @@ allowed-tools: Read Grep Glob Write Edit Bash(pnpm *) Bash(node scripts/verify-r
 
 ```bash
 pnpm --filter @mms/contracts build
-pnpm --filter mms-frontend typecheck && pnpm --filter mms-frontend lint
-pnpm --filter mms-frontend exec vitest run src/components/template-editor src/lib/templates src/tenant/features/templateFieldI18n.test.ts
-pnpm --filter mms-backend exec vitest run src/__tests__/documentTemplatesContractRoutes.test.ts src/__tests__/documentTemplatesUseCases.test.ts
+pnpm --filter mms-tenant-web typecheck && pnpm --filter mms-tenant-web lint
+pnpm --filter mms-tenant-web exec vitest run src/components/template-editor src/lib/templates src/tenant/features/templateFieldI18n.test.ts
+pnpm --filter mms-api exec vitest run src/__tests__/documentTemplatesContractRoutes.test.ts src/__tests__/documentTemplatesUseCases.test.ts
 pnpm check:i18n && node scripts/i18n/check-unused-keys.mjs
 bash .agent/skills/mms-code-review/scripts/pre-pr-review.sh
 ```
@@ -83,5 +83,5 @@ bash .agent/skills/mms-code-review/scripts/pre-pr-review.sh
 ## References
 
 - `references/document-template-checklist.md` — review checklist for persistence, conflict UX, print and i18n.
-- Existing print surfaces: `apps/frontend/src/tenant/features/finance/components/InvoiceReceiptModal.tsx`, `apps/frontend/src/tenant/features/examinations/components/StudentResultCard.tsx`, `apps/frontend/src/tenant/features/examinations/components/TermReportCardModal.tsx`, `apps/frontend/src/tenant/features/hasanat/components/DistributionDetail.tsx`.
+- Existing print surfaces: `apps/tenant-web/src/tenant/features/finance/components/InvoiceReceiptModal.tsx`, `apps/tenant-web/src/tenant/features/examinations/components/StudentResultCard.tsx`, `apps/tenant-web/src/tenant/features/examinations/components/TermReportCardModal.tsx`, `apps/tenant-web/src/tenant/features/hasanat/components/DistributionDetail.tsx`.
 - Known residuals: `docs/open-items.md` (template register).

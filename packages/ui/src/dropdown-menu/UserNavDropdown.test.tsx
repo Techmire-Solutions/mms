@@ -10,7 +10,7 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-describe("UserNavDropdown Component (@shared/ui)", () => {
+describe("UserNavDropdown Component (@mms/ui)", () => {
   let container: HTMLDivElement;
   let root: Root;
 

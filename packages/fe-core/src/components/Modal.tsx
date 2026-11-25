@@ -6,8 +6,8 @@ import { FormModalTabs } from "./FormModalTabs";
 import { FormModalFooter } from "./FormModalFooter";
 import { FormErrorBanner } from "./FormErrorBanner";
 import type { SubTab } from "@mms/ui/app/SubTabBar";
-import { useTranslation } from "@mms/fe-core/i18n";
-import { useReducedMotion } from "@mms/fe-core/tenant";
+import { useTranslation } from "../i18n/index.js";
+import { useReducedMotion } from "../tenant/index.js";
 import { cn } from "@mms/ui";
 
 export interface ModalProps<K extends string = string> {

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { UserAvatar, USER_STATUS_COLORS, getInitials } from "./UserAvatar";
 
-describe("UserAvatar Component (@shared/ui)", () => {
+describe("UserAvatar Component (@mms/ui)", () => {
   it("computes initials correctly with getInitials helper", () => {
     expect(getInitials("Syeda Fatima")).toBe("SF");
     expect(getInitials("Zaid")).toBe("Z");

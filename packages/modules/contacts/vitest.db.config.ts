@@ -8,7 +8,7 @@ import { defineConfig } from "vitest/config";
  *
  * These suites share one database and open long-lived transactions, so they run
  * serially — a leaked trigger or an uncommitted `FOR UPDATE` from one file must not
- * deadlock the next (the same single-worker posture as apps/backend/vitest.db.config.ts).
+ * deadlock the next (the same single-worker posture as apps/api/vitest.db.config.ts).
  */
 export default defineConfig({
   test: {

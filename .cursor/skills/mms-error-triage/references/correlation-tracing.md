@@ -14,7 +14,7 @@ MMS standardizes on W3C Trace Context and Request IDs across every layer (`mms-a
 
 ## 2. Searching Fastify Pino Logs
 
-Logs are emitted as JSON in production (`apps/backend`):
+Logs are emitted as JSON in production (`apps/api`):
 
 ```bash
 # Grep production logs by Request ID

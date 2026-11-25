@@ -4,7 +4,7 @@ import {
   type ListPaginationProps as SharedListPaginationProps,
   type ListPaginationLabels,
 } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import { formatNumber, type AppTranslationKey } from "@mms/contracts";
 
 export interface ListPaginationProps extends Omit<SharedListPaginationProps, "labels"> {

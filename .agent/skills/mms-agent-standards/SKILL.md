@@ -1,6 +1,6 @@
 ---
 name: mms-agent-standards
-description: Authors and verifies the MMS agent-standards corpus itself — rules, skills, workflows, commands, hooks, and the mirrors across Cursor, Antigravity, Claude Code, and DeepSeek Harness. Use when adding or editing a rule or skill, when a skill is not firing, or when the standards verifier fails. Do NOT use for reviewing application code (use mms-code-review) or for local environment problems (use mms-dev-setup).
+description: Authors/verifies the agent-standards corpus (rules, skills, workflows, commands, hooks, mirrors). Use when editing a rule/skill or the verifier/sync fails. Do NOT use for app code review (use mms-code-review) or env problems (use mms-dev-setup).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -76,7 +76,7 @@ The verifier covers: skill inventory vs manifest, AGENTS.md count, the `@AGENTS.
 
 ## Checking whether a skill actually fires
 
-A skill nobody invokes is invisible cost: all 50 descriptions load on every turn. Probes worth using: `/skill-doctor` for per-skill context cost and invocation counts, and the `InstructionsLoaded` hook to log which rule files loaded. If a skill never fires on the prompts it is meant for, the fix is the **description**, not the body.
+A skill nobody invokes is invisible cost: all skill descriptions load on every turn. Probes worth using: `/skill-doctor` for per-skill context cost and invocation counts, and the `InstructionsLoaded` hook to log which rule files loaded. If a skill never fires on the prompts it is meant for, the fix is the **description**, not the body.
 
 ## Related skills
 

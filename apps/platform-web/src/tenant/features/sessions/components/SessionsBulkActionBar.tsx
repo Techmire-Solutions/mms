@@ -1,0 +1,71 @@
+import type { ReactElement } from "react";
+import { Calendar } from "lucide-react";
+import { SESSIONS_MODULE_MANIFEST } from "@mms/contracts";
+import { BulkSelectionBar } from "@mms/fe-core/components/BulkSelectionBar";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+export interface SessionsBulkActionBarProps {
+  selectedCount: number;
+  showDeleted: boolean;
+  canWrite?: boolean;
+  canDelete: boolean;
+  canExport?: boolean;
+  statusConfig?: Record<string, StatusBadgeConfigItem>;
+  onBulkStatusChange?: (status: string) => void;
+  statusPending?: boolean;
+  onRequestBulkDelete: () => void;
+  onRequestBulkRestore: () => void;
+  onClearSelection: () => void;
+  onBulkExport?: () => void;
+  bulkActions?: readonly string[];
+}
+
+/** Sessions Work bulk bar — delegates to shared BulkSelectionBar. */
+export function SessionsBulkActionBar({
+  selectedCount,
+  showDeleted,
+  canWrite = false,
+  canDelete,
+  canExport = false,
+  statusConfig,
+  onBulkStatusChange,
+  statusPending = false,
+  onRequestBulkDelete,
+  onRequestBulkRestore,
+  onClearSelection,
+  onBulkExport,
+  bulkActions = SESSIONS_MODULE_MANIFEST.work.bulkActions,
+}: SessionsBulkActionBarProps): ReactElement {
+  const { t } = useTranslation();
+  // Cancelling and completing are per-session actions: they need a reason / completion window and
+  // end enrollments or billing, so they stay out of the generic bulk-status menu.
+  const bulkStatusConfig = statusConfig
+    ? Object.fromEntries(
+        Object.entries(statusConfig).filter(
+          ([status]) => status !== "cancelled" && status !== "completed",
+        ),
+      )
+    : undefined;
+
+  return (
+    <BulkSelectionBar
+      selectedCount={selectedCount}
+      viewingDeleted={showDeleted}
+      canWrite={canWrite}
+      canDelete={canDelete}
+      canExport={canExport}
+      leadingIcon={Calendar}
+      i18nNamespace="sessions"
+      bulkActions={bulkActions}
+      onClearSelection={onClearSelection}
+      onRequestBulkDelete={onRequestBulkDelete}
+      onRequestBulkRestore={onRequestBulkRestore}
+      onBulkExport={onBulkExport}
+      statusConfig={bulkStatusConfig}
+      onBulkStatusChange={onBulkStatusChange}
+      statusPending={statusPending}
+      deleteLabel={t("sessions.archive")}
+    />
+  );
+}

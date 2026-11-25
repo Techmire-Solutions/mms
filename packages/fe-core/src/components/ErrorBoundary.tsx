@@ -1,7 +1,7 @@
 import React, { Component, type ErrorInfo, type ReactNode } from "react";
 import { WORK_SURFACE } from "@mms/ui";
-import { reportClientError } from "@mms/fe-core/reporting/clientErrorReporting";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { reportClientError } from "../reporting/clientErrorReporting.js";
+import { useTranslation } from "../i18n/index.js";
 
 const LazyErrorState = React.lazy(() =>
   import("./ErrorState").then((m) => ({ default: m.ErrorState })),

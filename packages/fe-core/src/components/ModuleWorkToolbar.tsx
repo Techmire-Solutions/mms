@@ -7,9 +7,9 @@ import { WorkViewModeToggle } from "./WorkViewModeToggle";
 import { ModuleColumnCustomizer } from "./ModuleColumnCustomizer";
 import { WORK_SURFACE } from "@mms/ui";
 import { TooltipProvider } from "@mms/ui";
-import { useRovingToolbar } from "@mms/fe-core/hooks";
-import { useDebounce } from "@mms/fe-core/hooks";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useRovingToolbar } from "../hooks/index.js";
+import { useDebounce } from "../hooks/index.js";
+import { useTranslation } from "../i18n/index.js";
 import { cn } from "@mms/ui";
 import type { ModuleWorkToolbarProps } from "./moduleWorkToolbarTypes";
 

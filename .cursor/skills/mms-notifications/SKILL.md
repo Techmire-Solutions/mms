@@ -1,6 +1,6 @@
 ---
 name: mms-notifications
-description: Governs in-app notification center, real-time unread count badges, notification preferences, and event-driven alert triggers. Use when modifying NotificationsPage, in-app notification delivery, read receipts, or notification badge UI. Do NOT use for external SMS/WhatsApp marketing campaigns (use mms-messaging), generic transient UI toasts (use notify.* in mms-ui-ux-design), or background email jobs (use mms-background-jobs).
+description: In-app notification center, unread badges, preferences, event alerts. Use when notification delivery/badges. Do NOT use for SMS/WhatsApp campaigns (use mms-messaging), toasts (use mms-ui-ux-design), or email jobs (use mms-background-jobs).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -29,10 +29,10 @@ metadata:
 
 | Surface | Path |
 |---------|------|
-| Notifications Page | `apps/frontend/src/tenant/features/notifications/NotificationsPage.tsx` |
-| Notification Row | `apps/frontend/src/tenant/features/notifications/components/NotificationsPageRow.tsx` |
-| Notifications Hook | `apps/frontend/src/tenant/hooks/notifications/useTenantNotifications.ts` |
-| Target Navigator | `apps/frontend/src/tenant/hooks/notifications/useOpenTenantNotification.ts` |
+| Notifications Page | `apps/tenant-web/src/tenant/features/notifications/NotificationsPage.tsx` |
+| Notification Row | `apps/tenant-web/src/tenant/features/notifications/components/NotificationsPageRow.tsx` |
+| Notifications Hook | `apps/tenant-web/src/tenant/hooks/notifications/useTenantNotifications.ts` |
+| Target Navigator | `apps/tenant-web/src/tenant/hooks/notifications/useOpenTenantNotification.ts` |
 
 ## 3. Verification Checklist
 
@@ -42,7 +42,7 @@ metadata:
 - [ ] Clicking a row marks it read and navigates to the target entity
 - [ ] Mark all read button disables when unreadCount === 0
 - [ ] WebSocket channel invalidates notifications cache on new events
-- [ ] Verify: pnpm typecheck && pnpm --filter mms-frontend lint
+- [ ] Verify: pnpm typecheck && pnpm --filter mms-tenant-web lint
 ```
 
 ## Related skills

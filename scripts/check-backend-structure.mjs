@@ -25,7 +25,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOT = process.cwd();
-const BACKEND_SRC = path.join(ROOT, "apps/backend/src");
+const BACKEND_SRC = path.join(ROOT, "apps/api/src");
 const SERVICES_DIR = path.join(BACKEND_SRC, "services");
 const TENANT_ROUTES_DIR = path.join(BACKEND_SRC, "routes/tenant");
 

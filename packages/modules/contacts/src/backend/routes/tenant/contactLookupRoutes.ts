@@ -10,11 +10,8 @@ import {
 import { registerModuleLookupRoutes } from "../registerModuleLookupRoutes.js";
 import { replyValidationError } from "@mms/be-core/http/routes";
 import { canReadContacts } from "@mms/be-core/rbac";
-import {
-  loadContactLookupsMap,
-  replaceContactLookupKind,
-} from "../../use-cases/contactLookupsService.js";
-import { mirrorRelationshipLookupsFromPreferences } from "../../use-cases/contactPreferencesService.js";
+import { loadContactLookupsMap, replaceContactLookupKind } from "../../use-cases/index.js";
+import { mirrorRelationshipLookupsFromPreferences } from "../../use-cases/index.js";
 import { auditContact } from "./contactRouteHelpers.js";
 
 /** Contacts Setup lookup option lists (typed `contact_lookups`). */

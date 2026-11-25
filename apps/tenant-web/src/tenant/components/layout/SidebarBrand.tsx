@@ -1,0 +1,48 @@
+import React from "react";
+import { Link } from "react-router-dom";
+import { m, AnimatePresence } from "framer-motion";
+import { useBranding } from "@/tenant/hooks/useBranding";
+import { getInitials } from "@mms/contracts";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ROUTES } from "@mms/fe-core/config/routes";
+import { WorkspaceLogo } from "@mms/ui";
+
+interface SidebarBrandProps {
+  collapsed: boolean;
+}
+
+export function SidebarBrand({ collapsed }: SidebarBrandProps): React.JSX.Element {
+  const branding = useBranding();
+  const { t } = useTranslation();
+
+  return (
+    <div className="h-16 flex items-center px-5 border-b border-sidebar-border">
+      <Link
+        to={ROUTES.home}
+        className="flex min-h-11 min-w-11 items-center gap-3 overflow-hidden hover:opacity-90 transition-opacity"
+      >
+        <WorkspaceLogo
+          logoUrl={branding.logoUrl}
+          madrasaName={branding.madrasaName || t("entry.productName")}
+          size="sm"
+          fallbackText={branding.madrasaName ? getInitials(branding.madrasaName, 1) : "م"}
+          className="border-sidebar-border"
+        />
+        <AnimatePresence>
+          {!collapsed && (
+            <m.div
+              initial={{ opacity: 0, width: 0 }}
+              animate={{ opacity: 1, width: "auto" }}
+              exit={{ opacity: 0, width: 0 }}
+              className="overflow-hidden whitespace-nowrap"
+            >
+              <span className="text-sidebar-foreground font-semibold text-sm tracking-wide">
+                {branding.madrasaName || t("entry.productName")}
+              </span>
+            </m.div>
+          )}
+        </AnimatePresence>
+      </Link>
+    </div>
+  );
+}

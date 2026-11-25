@@ -1,0 +1,296 @@
+import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
+import {
+  isOnboardingAvailable,
+  establishSession,
+  type User,
+} from "../../../services/auth/authService.js";
+import { exchangeAuthHandoff } from "../../../services/auth/authHandoffService.js";
+import { patchUserUiStateBodySchema } from "@mms/contracts";
+import { getUserUiState, patchUserUiState } from "../../../services/auth/userUiStateService.js";
+import { getRequestTenant, runWithTenant } from "../../../lib/tenantContext.js";
+import {
+  ACCESS_COOKIE,
+  clearAuthCookies,
+  hasTenantAccessToken,
+  REFRESH_COOKIE,
+  setAuthCookies,
+} from "../../../services/auth/authCookieService.js";
+import { authenticateTenant } from "../../../middleware/authenticate.js";
+import { consumeAuthArtifact } from "../../../services/auth/authArtifactService.js";
+import { revokeAllUserSessions, revokeToken } from "@mms/be-core/auth/sessionRevocation";
+import { getJwtExpiresIn, loadGlobalSettings } from "../../../services/globalSettingsService.js";
+import { tenantSessionScope, touchSession } from "@mms/mod-sessions/backend/services";
+import { usersUseCases } from "../../../users/use-cases/usersUseCases.js";
+import { facultyUseCases } from "@mms/mod-faculty/backend/use-cases";
+import {
+  enforceTenantSessionClock,
+  SESSION_EXPIRY_RESPONSE,
+} from "@mms/mod-sessions/backend/services";
+import { tenantSessionPolicy } from "@mms/mod-sessions/backend/services";
+import { parseSessionTimeoutMinutes } from "@mms/contracts";
+import { getPublicUserById } from "../../../services/auth/userService.js";
+import {
+  rotateRefreshToken,
+  validateRefreshToken,
+} from "../../../services/auth/twoFactorService.js";
+import { handoffBodySchema } from "@mms/contracts";
+import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
+import { sendForbidden, sendUnauthorized } from "../../../lib/httpErrors.js";
+import { getWorkspaceInstitutionSetupStatus } from "../../../services/workspaceService.js";
+import { AUTH_RATE_LIMIT } from "../../../lib/rateLimitConfig.js";
+import { createStrictRateLimitGuard } from "../../../lib/rateLimitGuard.js";
+
+/**
+ * Sends the authenticated tenant user. Shared by strict `GET /me` and soft `GET /session` so the
+ * probe cannot bypass the deleted-user / deleted-faculty tombstone checks.
+ */
+async function sendTenantSessionUser(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  if (reply.sent) return;
+  const user = request.user as User & { deletedAt?: unknown; deleted_at?: unknown };
+  if (user.deletedAt || user.deleted_at) {
+    sendUnauthorized(reply, "Session revoked");
+    return;
+  }
+  if (user.id) {
+    try {
+      // Scope the session check to the caller's workspace — an id-only lookup
+      // runs with RLS bypassed and could resolve another tenant's user.
+      const sessionTenant = getRequestTenant() ?? user.workspaceSubdomain;
+      const userRow = sessionTenant
+        ? await usersUseCases.loadTenantUserRowById(sessionTenant, String(user.id))
+        : null;
+      if (userRow?.deletedAt) {
+        sendUnauthorized(reply, "Session revoked");
+        return;
+      }
+      // Tombstone probe by linked user id: a hydrated faculty load returns
+      // null when the linked contact is unreadable, which would keep a deleted
+      // teacher signed in. Not gated on the role name — composite
+      // designation roles are not `faculty`/`teacher`.
+      if (await facultyUseCases.isFacultyProfileDeletedForUser(String(user.id))) {
+        sendUnauthorized(reply, "Session revoked");
+        return;
+      }
+    } catch {
+      // Fall through for tests without DB context
+    }
+  }
+  reply.send({ user: request.user as User, isAuthenticated: true });
+}
+
+/**
+ * Pre-handler for the optional boot probe. With no presented access token there is nothing to
+ * validate, so answer `200 { user: null }` and short-circuit `authenticateTenant`; otherwise let
+ * the strict pipeline run unchanged (an invalid/revoked presented token still 401s).
+ */
+async function softTenantSessionProbe(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<FastifyReply | void> {
+  if (hasTenantAccessToken(request)) return;
+  return reply.status(200).send({ user: null, isAuthenticated: false });
+}
+
+/** Session lifecycle, UI state, refresh, onboarding status, and handoff routes. */
+export const authSessionRoutes: FastifyPluginAsync = async (fastify) => {
+  // Brute-force / abuse ceiling for the unauthenticated session endpoints.
+  // (`/me`, `/me/ui-state` and `/session` are intentionally excluded — the SPA calls them
+  // on every load and they must not share the 10/min auth budget.)
+  const authLimit = createStrictRateLimitGuard(fastify, AUTH_RATE_LIMIT);
+
+  fastify.post("/logout", { preHandler: authLimit }, async (request, reply) => {
+    // Server-side revocation, not just cookie clearing: otherwise a stolen
+    // access/refresh token keeps working after the user signs out.
+    const subdomain = getRequestTenant();
+    const refreshToken = request.cookies?.[REFRESH_COOKIE];
+    let userId: string | undefined;
+
+    if (refreshToken && subdomain) {
+      try {
+        const validated = await validateRefreshToken(refreshToken, subdomain);
+        if (validated) {
+          userId = validated.payload.userId;
+          await consumeAuthArtifact(validated.artifactId, "refresh_token");
+        }
+      } catch {
+        // Best effort — logout must still clear cookies on failure.
+      }
+    }
+
+    const accessToken = request.cookies?.[ACCESS_COOKIE];
+    if (accessToken) {
+      try {
+        const decoded = fastify.jwt.decode(accessToken) as {
+          jti?: string;
+          id?: string | number;
+          exp?: number;
+        } | null;
+        if (decoded?.jti) {
+          // Keep the marker at least as long as the token can still be
+          // presented. The old fixed 15-minute TTL expired long before a
+          // default 60-minute access token (up to 24 h), so a stolen token
+          // became valid again after sign-out.
+          const nowSeconds = Math.floor(Date.now() / 1000);
+          const remainingSeconds = typeof decoded.exp === "number" ? decoded.exp - nowSeconds : 0;
+          await revokeToken(decoded.jti, Math.max(60, remainingSeconds));
+        }
+        if (!userId && decoded?.id !== undefined) userId = String(decoded.id);
+      } catch {
+        // Best effort — an unverifiable token cannot be revoked by jti.
+      }
+    }
+
+    clearAuthCookies(reply);
+    return reply.send({ success: true });
+  });
+
+  fastify.get("/me", { preHandler: authenticateTenant }, sendTenantSessionUser);
+
+  // Optional boot probe (mirrors GET /api/platform/auth/me): a visitor with no session cookie must
+  // not receive a 401 the browser logs as a console error on `/login`. A presented token still
+  // goes through the unchanged strict pipeline.
+  fastify.get(
+    "/session",
+    { preHandler: [softTenantSessionProbe, authenticateTenant] },
+    sendTenantSessionUser,
+  );
+
+  fastify.get(
+    "/institution-setup-status",
+    { preHandler: authenticateTenant },
+    async (_request, reply) => {
+      const tenant = getRequestTenant();
+      if (!tenant) {
+        return sendForbidden(reply, "Tenant context is required");
+      }
+      const complete = await getWorkspaceInstitutionSetupStatus(tenant);
+      return reply.send({ complete });
+    },
+  );
+
+  fastify.get("/me/ui-state", { preHandler: authenticateTenant }, async (request, reply) => {
+    const user = request.user as User;
+    const state = await runWithTenant(user.workspaceSubdomain, () =>
+      getUserUiState(user.workspaceSubdomain, user.id),
+    );
+    return reply.send({ state });
+  });
+
+  fastify.patch("/me/ui-state", { preHandler: authenticateTenant }, async (request, reply) => {
+    const parsed = parseRequest(patchUserUiStateBodySchema, request.body ?? {});
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+
+    const user = request.user as User;
+    const newState = await runWithTenant(user.workspaceSubdomain, () =>
+      patchUserUiState(user.workspaceSubdomain, user.id, parsed.data),
+    );
+    return reply.send({ state: newState });
+  });
+
+  fastify.post("/refresh", { preHandler: authLimit }, async (request, reply) => {
+    const refreshToken = request.cookies?.[REFRESH_COOKIE];
+    if (!refreshToken) {
+      return sendUnauthorized(reply, "Refresh token missing");
+    }
+
+    const subdomain = getRequestTenant();
+    if (!subdomain) {
+      return sendForbidden(reply, "Invalid refresh context");
+    }
+
+    const validated = await validateRefreshToken(refreshToken, subdomain);
+    if (!validated) {
+      clearAuthCookies(reply);
+      return sendUnauthorized(reply, "Invalid refresh token");
+    }
+
+    // Atomic consume: only one concurrent refresh can claim this artifact.
+    // A failed claim means the token was already used — treat it as reuse and
+    // revoke every session for the user (stolen-token response).
+    const claimed = await consumeAuthArtifact(validated.artifactId, "refresh_token");
+    if (!claimed) {
+      await revokeAllUserSessions(validated.payload.userId);
+      clearAuthCookies(reply);
+      return sendUnauthorized(reply, "Invalid refresh token");
+    }
+
+    const user = await runWithTenant(subdomain, () => getPublicUserById(validated.payload.userId));
+    if (!user || user.workspaceSubdomain.toLowerCase() !== subdomain.toLowerCase()) {
+      clearAuthCookies(reply);
+      return sendUnauthorized(reply, "Invalid refresh token");
+    }
+
+    // Refreshing must also respect the workspace idle + absolute windows: a
+    // session that has expired cannot be silently resurrected via refresh.
+    const sessionPolicy = tenantSessionPolicy(
+      parseSessionTimeoutMinutes((await loadGlobalSettings(subdomain)).sessionTimeout),
+    );
+    const idleScope = tenantSessionScope(subdomain, String(user.id));
+    const idleOutcome = await enforceTenantSessionClock({
+      scope: idleScope,
+      policy: sessionPolicy,
+      userId: user.id ? String(user.id) : undefined,
+    });
+    if (idleOutcome !== "ok") {
+      const expiry = SESSION_EXPIRY_RESPONSE[idleOutcome];
+      clearAuthCookies(reply);
+      return sendUnauthorized(reply, expiry.message, expiry.type);
+    }
+
+    const accessExpiresIn = await getJwtExpiresIn();
+    const rotated = await rotateRefreshToken(refreshToken, user, fastify.jwt, accessExpiresIn);
+    if (!rotated) {
+      clearAuthCookies(reply);
+      return sendUnauthorized(reply, "Invalid refresh token");
+    }
+
+    // A successful refresh counts as activity — slide the idle window.
+    if (user.id) await touchSession(idleScope, sessionPolicy.idleMs, true);
+
+    setAuthCookies(reply, rotated.accessToken, rotated.refreshToken);
+    return reply.send({ user });
+  });
+
+  // Sliding extension: an authenticated request that resets the idle window
+  // immediately (used by the "stay signed in" warning action).
+  fastify.post("/session/extend", { preHandler: authenticateTenant }, async (request, reply) => {
+    const user = request.user as User;
+    const tenant = getRequestTenant();
+    if (!tenant || !user?.id) {
+      return sendForbidden(reply, "Tenant context is required");
+    }
+    const sessionPolicy = tenantSessionPolicy(
+      parseSessionTimeoutMinutes((await loadGlobalSettings(tenant)).sessionTimeout),
+    );
+    await touchSession(tenantSessionScope(tenant, String(user.id)), sessionPolicy.idleMs, true);
+    return reply.send({ ok: true, idleMs: sessionPolicy.idleMs });
+  });
+
+  fastify.get("/onboarding-status", { preHandler: authLimit }, async (_request, reply) => {
+    const available = await isOnboardingAvailable();
+    return reply.send({ available });
+  });
+
+  fastify.post("/handoff", { preHandler: authLimit }, async (request, reply) => {
+    const parsed = parseRequest(handoffBodySchema, request.body ?? {});
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    const { code } = parsed.data;
+
+    const subdomain = getRequestTenant();
+    if (!subdomain) {
+      return sendForbidden(reply, "Handoff is only available on a tenant subdomain");
+    }
+
+    const result = await exchangeAuthHandoff(code);
+    if (!result) {
+      return sendUnauthorized(reply, "Invalid or expired handoff code");
+    }
+
+    if (result.user.workspaceSubdomain?.toLowerCase() !== subdomain.toLowerCase()) {
+      return sendForbidden(reply, "Handoff code is not valid for this workspace");
+    }
+
+    await establishSession(result.user, fastify.jwt, reply, true);
+    return reply.send({ user: result.user });
+  });
+};

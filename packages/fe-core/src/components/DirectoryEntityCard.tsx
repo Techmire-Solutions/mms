@@ -1,7 +1,7 @@
 import React, { type ReactNode } from "react";
-import { useReducedMotion } from "@mms/fe-core/tenant";
-import { useTranslation } from "@mms/fe-core/i18n";
-import { useWorkCardAction, type UseWorkCardActionReturn } from "@mms/fe-core/hooks";
+import { useReducedMotion } from "../tenant/index.js";
+import { useTranslation } from "../i18n/index.js";
+import { useWorkCardAction, type UseWorkCardActionReturn } from "../hooks/index.js";
 import { EntityCard } from "./EntityCard";
 import { DirectoryCardInfoPills, type EntityCardInfoPillsProps } from "./DirectoryCardInfoPills";
 import { DirectoryCardMetadata } from "./DirectoryCardMetadata";

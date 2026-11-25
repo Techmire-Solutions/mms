@@ -1,8 +1,8 @@
 import React, { memo, type ReactNode } from "react";
 import { m, type HTMLMotionProps } from "framer-motion";
 import { FORM_CARD } from "@mms/ui";
-import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@mms/fe-core/ui/semanticTone";
-import { useReducedMotion } from "@mms/fe-core/tenant";
+import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "../ui/semanticTone.js";
+import { useReducedMotion } from "../tenant/index.js";
 import { cn } from "@mms/ui";
 import { DirectoryCardHeader, type EntityCardHeaderProps } from "@mms/ui/app/DirectoryCardHeader";
 import {

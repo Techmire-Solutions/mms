@@ -113,10 +113,13 @@ const allow = (from, types) => ({
  * rule's `default` is `"disallow"`.
  */
 export const POLICIES = Object.freeze([
-  // Apps choose an audience. The current `apps/frontend` is transitional (both
-  // consoles in one bundle) and may import both FE audiences, never a backend.
+  // Apps choose an audience. `apps/tenant-web` and `apps/platform-web` were
+  // split in P7 and each may import only its own frontend module audience.
+  // The backend app is `apps/api` (renamed from `apps/backend` in P6); it may
+  // reach the shared kernel, the db layer and module backend audiences, never
+  // another app or a frontend audience.
   {
-    from: { element: { type: "app", captured: { app: "backend" } } },
+    from: { element: { type: "app", captured: { app: "api" } } },
     allow: {
       to: {
         element: {
@@ -141,24 +144,6 @@ export const POLICIES = Object.freeze([
       to: {
         element: {
           types: ["contracts", "fe-core", "ui", "tooling", "module-fe-platform", "module-shared"],
-        },
-      },
-    },
-  },
-  {
-    from: { element: { type: "app", captured: { app: "frontend" } } },
-    allow: {
-      to: {
-        element: {
-          types: [
-            "contracts",
-            "fe-core",
-            "ui",
-            "tooling",
-            "module-fe-tenant",
-            "module-fe-platform",
-            "module-shared",
-          ],
         },
       },
     },

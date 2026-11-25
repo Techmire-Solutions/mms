@@ -30,7 +30,7 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const e2eDir = path.resolve(__dirname, "..");
 const repoRoot = path.resolve(e2eDir, "..");
-const backendDir = path.join(repoRoot, "apps/backend");
+const backendDir = path.join(repoRoot, "apps/api");
 const REVIEW_RUN = process.env.UIUX_REVIEW_RUN ?? "2026-10-30";
 const outDir = path.join(repoRoot, `.logs/ui-ux-review-${REVIEW_RUN}`);
 const screensDir = path.join(outDir, "screens");
@@ -76,7 +76,7 @@ function readBackendDatabaseUrl() {
   if (process.env.DATABASE_URL) return process.env.DATABASE_URL;
   const envFile = readFileSync(path.join(backendDir, ".env"), "utf8");
   const match = envFile.match(/^DATABASE_URL=(.*)$/m);
-  if (!match?.[1]) throw new Error("DATABASE_URL not found in apps/backend/.env");
+  if (!match?.[1]) throw new Error("DATABASE_URL not found in apps/api/.env");
   return match[1].trim().replace(/^["']|["']$/g, "");
 }
 

@@ -17,7 +17,7 @@ This workflow guides the end-to-end implementation of a new or extended MMS feat
 
 - [ ] **Database Schema (`mms-schema-migrate`)**: Ensure Drizzle tables are strictly 3NF normalized. Write forward-only migrations with `FORCE RLS` on new tenant tables.
 - [ ] **Strict TDD Red Phase (`mms-tdd.md` §1)**: Write automated Fastify `inject()` and service tests defining expected behavior, status codes, and error contracts before implementing logic.
-- [ ] **Failure Verification**: Run `pnpm --filter mms-backend test <path>` and record the exact failing assertion/stack in the PR body (`mms-tdd.md` §1).
+- [ ] **Failure Verification**: Run `pnpm --filter mms-api test <path>` and record the exact failing assertion/stack in the PR body (`mms-tdd.md` §1).
 - [ ] **Minimal Green Phase**: Implement the Fastify plugin and repository adapter to turn tests green. Enforce `authenticateTenant` or `authenticatePlatform`.
 - [ ] **Transaction RLS**: Wrap tenant writes in `db.transaction()` setting `app.current_tenant` to strictly isolate data.
 - [ ] **Multi-Tenant RLS Integration (`mms-testing-observability.md` §12)**: Add integration assertions proving Tenant A cannot read, mutate, or soft-delete Tenant B records.
@@ -25,7 +25,7 @@ This workflow guides the end-to-end implementation of a new or extended MMS feat
 
 ## Phase 3: Frontend Route & State
 
-- [ ] **Scaffold the feature**: Create the frontend page structure under `apps/frontend/src/tenant/features/{module}/`. Do not import components directly from other features.
+- [ ] **Scaffold the feature**: Create the frontend page structure under `packages/modules/{module}/frontend/tenant/`. Do not import components directly from other features.
 - [ ] **Register the route**: Add the new lazy route into `HostRoutes`.
 - [ ] **Data Hooks**: Create TanStack Query v5 `queryOptions`/`mutationOptions` factories (`mms-query-factories`). If the data needs to be accessed globally, place the facade in `@/tenant/hooks/collections/*`. **Do not** use `useLiveCollection` for primary data paths.
 - [ ] **Form Architecture**: Implement static `FormModal` forms powered by the shared Zod DTOs (`mms-form-architecture.md`). 
@@ -48,8 +48,8 @@ This workflow guides the end-to-end implementation of a new or extended MMS feat
 - [ ] **Run static analysis**:
   ```bash
   pnpm typecheck
-  cd apps/frontend && pnpm lint
-  cd apps/backend && pnpm lint
+  cd apps/tenant-web && pnpm lint
+  cd apps/api && pnpm lint
   ```
 - [ ] **Run tests**: Execute `pnpm test` and verify backend `inject()` checks for allow/deny cases.
 - [ ] **Run completion review & Adversarial Loophole Audit**: Ensure all steps in `mms-completion-review.md` are checked off and deliver the mandatory 3-part Adversarial Loophole Audit report (`mms-completion-review.md` §4).

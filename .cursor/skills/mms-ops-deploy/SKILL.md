@@ -1,6 +1,6 @@
 ---
 name: mms-ops-deploy
-description: Operates the MMS production deployment on Hetzner — Apache vhost isolation, PORT 5002, MMS_APP_DOMAIN, GitHub Actions deploy, PM2 topology, and merge-backend-env. Use when fixing a production server, a failed deploy, or wrong domain routing. Do NOT use for local dev servers (use mms-dev-setup), repo-wide portability auditing (use mms-linux-compatibility), or diagnosing a live outage (use mms-incident-response).
+description: Operates Hetzner prod (Apache vhosts, PORT 5002, domain, GitHub Actions deploy, PM2). Use when deploy/server fixes. Do NOT use for local dev (use mms-dev-setup), portability audits (use mms-linux-compatibility), or outages (use mms-incident-response).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -43,16 +43,16 @@ Operational procedure for deploying, configuring, and verifying the production M
 
 ```bash
 # Environment & Host Configuration
-bash scripts/merge-backend-env.sh apps/backend/.env
-bash scripts/apply-production-host-isolation.sh apps/backend/.env
+bash scripts/merge-backend-env.sh apps/api/.env
+bash scripts/apply-production-host-isolation.sh apps/api/.env
 
 # Deployment & Rollback
 bash scripts/deploy-on-server.sh          # Expects DEPLOY_SHA + /tmp/mms-dist.tar.gz
 bash scripts/deploy-rollback.sh [sha|list]
 
 # Diagnostics & Tenant Verification
-bash scripts/server-diagnose.sh apps/backend/.env
-bash scripts/verify-tenant-hosts.sh <subdomain> apps/backend/.env
+bash scripts/server-diagnose.sh apps/api/.env
+bash scripts/verify-tenant-hosts.sh <subdomain> apps/api/.env
 ```
 
 ## 4. Production Health Verification

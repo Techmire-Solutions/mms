@@ -13,7 +13,7 @@
  *   node scripts/codemod/move-modules.mjs <map.json> [options]
  *
  * Options:
- *   --src-root <dir>     Root whose files are parsed/rewritten (default: apps/frontend/src)
+ *   --src-root <dir>     Root whose files are parsed/rewritten (default: apps/tenant-web/src)
  *   --ext-suffix <none|js>
  *                        Specifier extension convention:
  *                          none  → bundler style, extensionless, `dir` for index  (frontend)
@@ -25,7 +25,7 @@
  *                        retire a re-export shim and repoint its importers.
  *   --verbose            Print every rewritten specifier (old -> new)
  *   --allow-cross-root   Allow a map target outside `--src-root` (e.g.
- *                        apps/backend/src → packages/modules/<slice>/src/backend).
+ *                        apps/api/src → packages/modules/<slice>/src/backend).
  *                        Combined with a matching `--target-alias`, imports of the
  *                        moved files become package specifiers instead of
  *                        `../../packages/...` relative paths.
@@ -41,14 +41,14 @@
  *                        in a workspace package, e.g. a re-export shim such as
  *                        lib/logger.ts -> @mms/be-core/logger). Repeatable, and the
  *                        map argument becomes optional. Example:
- *                          --retarget apps/backend/src/lib/logger.ts=@mms/be-core/logger
+ *                          --retarget apps/api/src/lib/logger.ts=@mms/be-core/logger
  *
  * Cross-root note: only `--src-root` files are rewritten. Run the tool again with
  * `--src-root <destination>` to normalise imports between the moved files.
  *
  * <map.json> maps repo-relative SOURCE paths to TARGET paths:
- *   { "apps/frontend/src/components/ui/PageHeader.tsx":
- *       "apps/frontend/src/components/app/PageHeader.tsx" }
+ *   { "apps/tenant-web/src/components/ui/PageHeader.tsx":
+ *       "apps/tenant-web/src/components/app/PageHeader.tsx" }
  *
  * Uses the classic TypeScript JS API (`typescript-v6`) because the installed
  * `typescript` v7 native build exposes no `createSourceFile`. No new deps.
@@ -72,7 +72,7 @@ const opts = {
   rewriteOnly: false,
   allowCrossRoot: false,
   verbose: false,
-  srcRoot: "apps/frontend/src",
+  srcRoot: "apps/tenant-web/src",
   extSuffix: "none",
   targetAlias: [],
   retarget: [],
@@ -131,7 +131,7 @@ const RETARGETS = opts.retarget.map((raw) => {
   const separator = raw.indexOf("=");
   if (separator <= 0) {
     console.error(
-      `--retarget must look like "apps/backend/src/lib/logger.ts=@mms/be-core/logger" (got: "${raw}")`,
+      `--retarget must look like "apps/api/src/lib/logger.ts=@mms/be-core/logger" (got: "${raw}")`,
     );
     process.exit(1);
   }
@@ -226,7 +226,11 @@ function buildSpecifier(fromAbs, targetAbs, useAlias) {
     const collapsed = within === "index" ? "" : within.replace(/\/index$/, "");
     return collapsed ? `${alias.spec}/${collapsed}` : alias.spec;
   }
-  if (useAlias) {
+  // `@/` is a src-root alias: only a file still inside the source root may keep
+  // it. A moved importer (now under a package dir) must fall through to a
+  // relative specifier, otherwise a cross-root move of two files that import
+  // each other emits a broken `@/../../packages/...` path.
+  if (useAlias && isInside(fromAbs, SRC_ROOT)) {
     return (
       "@/" +
       tidy(stripExt(path.relative(SRC_ROOT, targetAbs).split(path.sep).join("/"))) +

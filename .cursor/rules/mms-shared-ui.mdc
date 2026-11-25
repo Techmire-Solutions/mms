@@ -1,6 +1,6 @@
 ---
 description: Shared UI component architecture governance — @mms/ui SSOT, cross-console duplicate ban, pre-deletion verification gates, and orphaned import detection
-globs: packages/ui/**,apps/frontend/src/components/ui/**,apps/frontend/src/platform/**,apps/frontend/src/tenant/components/**
+globs: packages/ui/**,packages/ui/src/**,apps/platform-web/src/platform/**,apps/tenant-web/src/tenant/components/**
 alwaysApply: false
 ---
 
@@ -19,9 +19,9 @@ alwaysApply: false
 
 ```
 packages/ui/src/          ← @mms/ui (SSOT for ALL reusable UI primitives)
-apps/frontend/src/components/ui/  ← typed re-exports only, zero local JSX
-apps/frontend/src/platform/       ← imports directly from @mms/ui
-apps/frontend/src/tenant/         ← imports from @mms/ui or @/components/ui/*
+apps/tenant-web/src/components/ui/  ← typed re-exports only, zero local JSX
+apps/platform-web/src/platform/       ← imports directly from @mms/ui
+apps/tenant-web/src/tenant/         ← imports from @mms/ui or @/components/ui/*
 ```
 
 **Enforcement:** `pnpm run check:shared-ui` · `pnpm run check:frontend-structure`
@@ -50,15 +50,15 @@ When deleting or migrating any legacy UI file:
 ```bash
 # Step 1 — Pre-deletion baseline (must be green before touching files)
 pnpm typecheck
-pnpm --filter mms-frontend lint
-pnpm --filter mms-frontend build
+pnpm --filter mms-tenant-web lint
+pnpm --filter mms-tenant-web build
 
 # Step 2 — Delete file(s), update call sites to @mms/ui
 
 # Step 3 — Post-deletion verification (must be zero violations)
 pnpm typecheck
-pnpm --filter mms-frontend lint
-pnpm --filter mms-frontend build
+pnpm --filter mms-tenant-web lint
+pnpm --filter mms-tenant-web build
 pnpm run check:shared-ui
 ```
 

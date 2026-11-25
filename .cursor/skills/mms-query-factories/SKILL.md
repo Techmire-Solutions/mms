@@ -1,6 +1,6 @@
 ---
 name: mms-query-factories
-description: Implements TanStack Query v5 queryOptions/mutationOptions factories, tuple keys, optimistic updates, and API facades. Use when building query hooks, data fetching facades under @/tenant/hooks/collections/*, or caching mutations. Do NOT use for app routing (use mms-frontend), legacy document-store db.ts (use mms-data-sync), or Work tier directory UI (use mms-module-work).
+description: TanStack Query v5 queryOptions/mutationOptions, tuple keys, optimistic updates, API facades. Use when query hooks/facades. Do NOT use for routing (use mms-frontend), legacy db.ts (use mms-data-sync), or Work directory (use mms-module-work).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -35,7 +35,7 @@ Under the existing no-optimistic-money rule, await persisted success, retain for
 
 1. **Verify REST Authority**: Confirm entity is server-authoritative REST. Never add `useLiveCollection` for REST entities.
 2. **Tuple Query Keys**: Define query key constants and tuple factories in `features/{module}/hooks/{module}QueryKeys.ts`.
-3. **Query options:** inspect `apps/frontend/src/tenant/features/contacts/hooks/contactsListQueryBuilders.ts` and `apps/frontend/src/lib/query/` for real contract shapes and signal forwarding. Reuse the declared ts-rest client or `apiJson`/`apiFetch`; no exported `apiClient.get/post` object exists.
+3. **Query options:** inspect `apps/tenant-web/src/tenant/features/contacts/hooks/contactsListQueryBuilders.ts` and `apps/tenant-web/src/lib/query/` for real contract shapes and signal forwarding. Reuse the declared ts-rest client or `apiJson`/`apiFetch`; no exported `apiClient.get/post` object exists.
 4. **Invalidation:** await/return the shared invalidator so mutation completion has deliberate freshness semantics. If accepting caller callbacks, compose them explicitly; a trailing options spread must not replace mandatory invalidation.
 5. **Mutation:** derive the write type from the shared contract, gate reads by session/capability, and expose pending, failure and success states. Keep cancellation distinct from server rollback.
 

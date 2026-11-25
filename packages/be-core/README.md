@@ -39,7 +39,7 @@ const authenticateTenant = createTenantAuthGuard({
 });
 ```
 
-`apps/backend/src/middleware/*` are thin composition roots using these
+`apps/api/src/middleware/*` are thin composition roots using these
 factories. Their public names (`authenticateTenant`, `authenticatePlatform`)
 are preserved; `tenantAuthGuard` and `platformAdminGuard` are exported aliases.
 

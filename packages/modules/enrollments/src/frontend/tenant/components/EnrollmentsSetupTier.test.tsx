@@ -1,0 +1,53 @@
+import React from "react";
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { EnrollmentsSetupTier } from "./EnrollmentsSetupTier";
+
+vi.mock("@mms/fe-core/i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
+vi.mock("@mms/ui/app/ModuleTierMotion", () => ({
+  ModuleTierMotion: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="module-tier-motion">{children}</div>
+  ),
+}));
+
+vi.mock("@mms/ui/app/SetupReadOnlyMessage", () => ({
+  SetupReadOnlyMessage: ({ title }: { title: string }) => (
+    <div data-testid="setup-read-only-message">{title}</div>
+  ),
+}));
+
+let mockCanEditSetup = true;
+
+vi.mock("../host/usePermissions", () => ({
+  useModulePermissions: () => ({
+    canEditSetup: mockCanEditSetup,
+  }),
+}));
+
+vi.mock("./EnrollmentsSettings", () => ({
+  default: () => <div data-testid="enrollments-settings">Enrollments Settings Panel</div>,
+  EnrollmentsSettings: () => (
+    <div data-testid="enrollments-settings">Enrollments Settings Panel</div>
+  ),
+}));
+
+describe("EnrollmentsSetupTier Component", () => {
+  it("renders setup tier in editable mode without crashing", () => {
+    mockCanEditSetup = true;
+    const html = renderToStaticMarkup(<EnrollmentsSetupTier />);
+    expect(html).toContain("module-tier-motion");
+    expect(html).toBeDefined();
+  });
+
+  it("renders read-only message when canEditSetup is false", () => {
+    mockCanEditSetup = false;
+    const html = renderToStaticMarkup(<EnrollmentsSetupTier />);
+    expect(html).toContain("setup-read-only-message");
+    expect(html).toContain("enrollments.setup.readOnly");
+  });
+});

@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { FileSpreadsheet, FileText, Printer, Settings as SettingsIcon } from "lucide-react";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import { Button } from "@mms/ui";
-import { useRovingToolbar } from "@mms/fe-core/hooks";
+import { useRovingToolbar } from "../hooks/index.js";
 import { ExportPdfSettingsPopover } from "./ExportPdfSettingsPopover";
 import { exportExcel, exportPdf, type ExportColumn } from "./exportToolbarUtils";
 import { ExportToolbarCompact } from "./ExportToolbarCompact";

@@ -1,0 +1,60 @@
+import React from "react";
+import { Download, Plus, Upload } from "lucide-react";
+import { Button } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+export interface TasksPageHeaderActionsProps {
+  canWrite: boolean;
+  canExport?: boolean;
+  showDeleted: boolean;
+  isExporting?: boolean;
+  onCreate: () => void;
+  onImport: () => void;
+  onExport?: () => void;
+}
+
+export function TasksPageHeaderActions({
+  canWrite,
+  canExport = true,
+  showDeleted,
+  isExporting = false,
+  onCreate,
+  onImport,
+  onExport,
+}: TasksPageHeaderActionsProps): React.JSX.Element | null {
+  const { t } = useTranslation();
+
+  if (showDeleted || (!canWrite && !(canExport && onExport))) return null;
+
+  return (
+    <div className="flex items-center gap-2">
+      {canExport && onExport ? (
+        <Button
+          variant="ghost"
+          icon={Download}
+          onClick={onExport}
+          loading={isExporting}
+          disabled={isExporting}
+          aria-label={t("common.export")}
+        >
+          <span className="hidden sm:inline">{t("common.export")}</span>
+        </Button>
+      ) : null}
+      {canWrite ? (
+        <>
+          <Button
+            variant="outline"
+            icon={Upload}
+            onClick={onImport}
+            aria-label={t("common.import")}
+          >
+            <span className="hidden sm:inline">{t("common.import")}</span>
+          </Button>
+          <Button variant="primary" icon={Plus} onClick={onCreate}>
+            {t("tasks.create")}
+          </Button>
+        </>
+      ) : null}
+    </div>
+  );
+}

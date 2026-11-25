@@ -1,0 +1,284 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { Faculty, User } from "@mms/contracts";
+import { createFacultyUseCases } from "../use-cases/facultyUseCases.js";
+import { SubordinateReassignmentError } from "../use-cases/facultySoftDeleteUseCases.js";
+import { handleSaveDesignation } from "../routes/facultyDesignationRouteHandlers.js";
+import {
+  resolveFacultyFieldExpr,
+  singleFilterSql,
+} from "../repository/db/facultyRepositoryWidgetFilters.js";
+
+const mockBroadcastCollection = vi.fn();
+const mockSaveFacultyDesignation = vi.fn();
+const mockRecordModernAuditEvent = vi.fn().mockResolvedValue(undefined);
+
+vi.mock("@mms/be-core/http", async (importOriginal) => ({
+  ...((await importOriginal()) as Record<string, unknown>),
+  getRequestTenant: () => "demo",
+  requireTenant: () => "demo",
+}));
+
+vi.mock("@mms/db/client", () => ({
+  runInTransaction: (cb: () => unknown) => cb(),
+  runInGlobalTransaction: (cb: () => unknown) => cb(),
+}));
+
+vi.mock("@mms/be-core/realtime", async (importOriginal) => ({
+  ...((await importOriginal()) as Record<string, unknown>),
+  broadcastCollection: (...args: unknown[]) => mockBroadcastCollection(...args),
+}));
+
+vi.mock("@mms/be-core/data/outbox", async (importOriginal) => ({
+  ...((await importOriginal()) as Record<string, unknown>),
+  emitOutboxEvent: vi.fn().mockResolvedValue(undefined),
+  emitOutboxEvents: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("../repository/db/facultyAssignmentCascade.js", () => ({
+  cascadeSoftDeleteFacultyAssignments: vi.fn().mockResolvedValue(0),
+  cascadeRestoreFacultyAssignments: vi.fn().mockResolvedValue(0),
+}));
+
+vi.mock("../repository/db/facultyEmploymentRepository.js", () => ({
+  cascadeSoftDeleteFacultyEmployments: vi.fn().mockResolvedValue(0),
+  cascadeRestoreFacultyEmployments: vi.fn().mockResolvedValue(0),
+  flattenFacultyEmploymentFields: (member: unknown) => member,
+  upsertFacultyEmploymentTx: vi.fn().mockResolvedValue("facemp-mock"),
+}));
+
+vi.mock("../repository/db/facultyEmployDesignationRepository.js", () => ({
+  cascadeSoftDeleteFacultyEmployDesignations: vi.fn().mockResolvedValue(0),
+  cascadeRestoreFacultyEmployDesignations: vi.fn().mockResolvedValue(0),
+  upsertFacultyEmployDesignationTx: vi.fn().mockResolvedValue("faced-mock"),
+}));
+
+vi.mock("@mms/be-core/audit", async (importOriginal) => ({
+  ...((await importOriginal()) as Record<string, unknown>),
+  recordModernAuditEvent: (...args: unknown[]) => mockRecordModernAuditEvent(...args),
+  mapActionStringToAuditType: () => "UPDATE",
+}));
+
+vi.mock("../repository/db/facultyDesignationRepository.js", () => ({
+  listFacultyDesignations: vi.fn().mockResolvedValue([]),
+  saveFacultyDesignation: (...args: unknown[]) => mockSaveFacultyDesignation(...args),
+  listFacultyDesignationAssignments: vi.fn().mockResolvedValue([]),
+  softDeleteFacultyDesignation: vi.fn(),
+}));
+
+describe("Faculty Bulk Soft-Delete Hierarchy Protection", () => {
+  function makeFaculty(id: string, reportingFacultyId?: string): Faculty {
+    return {
+      id,
+      contactId: `c-${id}`,
+      name: `Faculty ${id}`,
+      status: "active",
+      reportingFacultyId,
+    };
+  }
+
+  function createFakeSubordinateRepo(store: Map<string, Faculty>) {
+    return {
+      findById: vi.fn(async (_t: string, id: string) => store.get(id) ?? null),
+      findByIds: vi.fn(async (_t: string, ids: string[]) =>
+        ids.map((id) => store.get(id)).filter((t): t is Faculty => Boolean(t)),
+      ),
+      guardAssignmentDependents: vi.fn().mockResolvedValue(undefined),
+      countSubordinates: vi.fn(
+        async (_t: string, id: string) =>
+          [...store.values()].filter((t) => t.reportingFacultyId === id && !t.deletedAt).length,
+      ),
+      countSubordinatesBatch: vi.fn(async (_t: string, ids: string[]) => {
+        const counts: Record<string, number> = {};
+        ids.forEach((id) => {
+          counts[id] = [...store.values()].filter(
+            (t) => t.reportingFacultyId === id && !t.deletedAt,
+          ).length;
+        });
+        return counts;
+      }),
+      findSubordinates: vi.fn(async (_t: string, id: string) =>
+        [...store.values()].filter((t) => t.reportingFacultyId === id && !t.deletedAt),
+      ),
+      reassignSubordinates: vi.fn().mockResolvedValue(0),
+      bulkSave: vi.fn(async (_t: string, facultyList: Faculty[]) => {
+        facultyList.forEach((t) => store.set(t.id, t));
+      }),
+    };
+  }
+
+  it("refuses a single soft-delete with reassignment instead of silently orphaning subordinates", async () => {
+    const store = new Map<string, Faculty>([
+      ["sup", makeFaculty("sup")],
+      ["sub-1", makeFaculty("sub-1", "sup")],
+      ["target", makeFaculty("target")],
+    ]);
+    const fakeRepo = createFakeSubordinateRepo(store);
+    const useCases = createFacultyUseCases(fakeRepo as never);
+
+    await expect(useCases.deleteFacultyById("sup", "admin", "Testing", "target")).rejects.toThrow(
+      /reassignment is unavailable/i,
+    );
+    expect(fakeRepo.bulkSave).not.toHaveBeenCalled();
+    expect(store.get("sup")?.deletedAt).toBeUndefined();
+  });
+
+  it("archives without re-deriving the linked account role", async () => {
+    // Archiving is not a role event: running the linked-role sync here mutates the
+    // account's RBAC role or 403s the delete for actors without users.manage.
+    const store = new Map<string, Faculty>([["plain", makeFaculty("plain")]]);
+    const fakeRepo = createFakeSubordinateRepo(store);
+    const useCases = createFacultyUseCases(fakeRepo as never);
+
+    await useCases.deleteFacultyById("plain", "admin", "Retired");
+
+    expect(fakeRepo.bulkSave).toHaveBeenCalledWith(
+      "demo",
+      [expect.objectContaining({ id: "plain" })],
+      { syncRole: false },
+    );
+  });
+
+  it("restores keep the default linked-role sync", async () => {
+    const store = new Map<string, Faculty>([
+      ["back", { ...makeFaculty("back"), deletedAt: "2026-01-01T00:00:00.000Z" }],
+    ]);
+    const fakeRepo = createFakeSubordinateRepo(store);
+    const useCases = createFacultyUseCases(fakeRepo as never);
+
+    await useCases.bulkRestoreFaculty(["back"], "admin");
+
+    expect(fakeRepo.bulkSave).toHaveBeenCalledWith("demo", [
+      expect.objectContaining({ id: "back" }),
+    ]);
+  });
+
+  it("rejects bulk soft-delete if supervisor has active subordinates outside the deletion list", async () => {
+    const store = new Map<string, Faculty>([
+      ["sup", makeFaculty("sup")],
+      ["sub-1", makeFaculty("sub-1", "sup")],
+    ]);
+    const fakeRepo = createFakeSubordinateRepo(store);
+    const useCases = createFacultyUseCases(fakeRepo as never);
+    await expect(
+      useCases.bulkSoftDeleteFaculty(["sup"], "admin", "Testing deletion"),
+    ).rejects.toThrow(SubordinateReassignmentError);
+    expect(fakeRepo.bulkSave).not.toHaveBeenCalled();
+  });
+
+  it("allows bulk soft-delete when supervisor and all active subordinates are in the same batch", async () => {
+    const store = new Map<string, Faculty>([
+      ["sup", makeFaculty("sup")],
+      ["sub-1", makeFaculty("sub-1", "sup")],
+      ["sub-2", makeFaculty("sub-2", "sup")],
+    ]);
+    const fakeRepo = createFakeSubordinateRepo(store);
+    const useCases = createFacultyUseCases(fakeRepo as never);
+    const result = await useCases.bulkSoftDeleteFaculty(
+      ["sup", "sub-1", "sub-2"],
+      "admin",
+      "Dept closure",
+    );
+
+    expect(result).toEqual({ succeeded: 3, failed: 0 });
+    expect(fakeRepo.bulkSave).toHaveBeenCalledTimes(1);
+    expect(mockBroadcastCollection).toHaveBeenCalledWith("faculty");
+  });
+});
+
+describe("Faculty Designation RBAC and Outbox Audit", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns 403 Forbidden when user lacks setupWrite permission", async () => {
+    const nonAdminUser: User = {
+      id: "u-teacher",
+      email: "teacher@test.com",
+      name: "Teacher User",
+      role: "teacher",
+      workspaceSubdomain: "demo",
+    };
+
+    const response = await handleSaveDesignation({
+      params: { id: "des-new" },
+      body: {
+        id: "des-new",
+        departmentId: "dept-1",
+        name: "Head of Department",
+        parentDesignationId: null,
+        status: "active",
+      },
+      query: undefined as never,
+      headers: {} as never,
+      request: {
+        user: nonAdminUser,
+        tenant: { id: "demo" },
+      } as never,
+    });
+
+    expect(response.status).toBe(403);
+    expect(response.body).toEqual({ type: "forbidden", message: "Insufficient permissions" });
+    expect(mockSaveFacultyDesignation).not.toHaveBeenCalled();
+  });
+
+  it("saves designation and emits outbox audit event when user has admin role", async () => {
+    const adminUser: User = {
+      id: "u-admin",
+      email: "admin@test.com",
+      name: "Admin User",
+      role: "admin",
+      workspaceSubdomain: "demo",
+    };
+
+    mockSaveFacultyDesignation.mockResolvedValueOnce({
+      id: "des-hod",
+      departmentId: "dept-1",
+      name: "Head of Department",
+      parentDesignationId: null,
+      status: "active",
+      hierarchyRank: 1,
+      assignableRoles: [],
+    });
+
+    const response = await handleSaveDesignation({
+      params: { id: "des-hod" },
+      body: {
+        id: "des-hod",
+        departmentId: "dept-1",
+        name: "Head of Department",
+        parentDesignationId: null,
+        status: "active",
+      },
+      query: undefined as never,
+      headers: {} as never,
+      request: {
+        user: adminUser,
+        tenant: { id: "demo" },
+      } as never,
+    });
+
+    expect(response.status).toBe(200);
+    expect(mockSaveFacultyDesignation).toHaveBeenCalledWith(
+      "demo",
+      expect.objectContaining({ id: "des-hod" }),
+    );
+    expect(mockRecordModernAuditEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        workspaceSubdomain: "demo",
+        tableName: "faculty",
+        recordId: "des-hod",
+        actionType: "UPDATE",
+      }),
+    );
+  });
+});
+
+describe("Faculty Widget Query SQL Field Expressions", () => {
+  it("resolves expressions for faculty hierarchy and department fields", () => {
+    expect(resolveFacultyFieldExpr("department")).toBeDefined();
+    expect(resolveFacultyFieldExpr("designation")).toBeDefined();
+    expect(resolveFacultyFieldExpr("hierarchyRank")).toBeDefined();
+    expect(resolveFacultyFieldExpr("reportingFacultyId")).toBeDefined();
+    expect(singleFilterSql("department", "equals", "Islamic Studies")).not.toBeNull();
+  });
+});

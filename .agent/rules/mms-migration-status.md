@@ -7,11 +7,16 @@ description: Active technical debt register and architectural gaps — do not fi
 
 **Workflow skill:** `mms-migration-fixes` — prioritized gap list and recipes. Rules describe **target architecture**. Fix open gaps only when in task scope. Historical closed milestones: `docs/migration-milestones.md`.
 
+## 0. Module Extraction Status
+
+**14 modules extracted** → `packages/modules/`: accounting, audit, billing, contacts, documents, examinations, faculty, hasanat, iam, messaging, notifications, obligations, question-bank, workshops. **7 domains remain inline in `apps/api/src/`**: users, students, enrollments, sessions, attendance, savedReports, tasks — each moves to a `packages/modules/` slice named `<domain>` (backend + frontend) per `mms-module-architecture.md` §9.
+
 ## 1. Open Gaps Register (Active Debt)
 Only address these residual gaps when explicitly within task scope:
 - **Copy & a11y:** Residual hardcoded strings in secondary modules; niche RTL/contrast checks. Target: full `t()` en/ar/ur/fa + WCAG 2.2 AA (`mms-settings-i18n.md`, `mms-ui-ux-design.md`).
 - **Live Push & Aggregates:** Secondary module WS emit/subscribe and comparison mode dumps. Target: WS `/api/ws` invalidate + SQL `GROUP BY` aggregates (`mms-core.md`, `mms-reports.md`).
 - **Contacts Full Loads:** Niche chart dumps. Target: SQL aggregates across all visualizers (`mms-data-layer.md`, `mms-reports.md`).
+- **Platform console isolation (apps/platform-web):** the split into `apps/tenant-web` + `apps/platform-web` is complete (both typecheck/build; tenant owns the PWA, apex ships no service worker). The platform app currently runs as a **workspace-copy** of the shared shell under a transitional `appKind: "app"` ESLint profile. `apps/platform-web/src/tenant/**` is a leftover duplicate of the tenant feature tree (non-canonical) — tenant code lives only in `apps/tenant-web`; never edit the platform-web tenant copy. Target: refactor the shared shell it renders (`TranslationContext`→`@mms/fe-core/i18n`, `routePrefetch`→host-owned `onPrefetch`, `entityRegistry`→curated platform descriptors) so it can adopt `appKind: "platform"` with zero `@mms/mod-*/frontend/tenant/*` imports (`mms-shared-ui.md`, `mms-structure-naming.md`).
 - **Finance amount precision:** `finance_invoices` / `finance_payments` amounts are `numeric(12,2)` and ledger `debit` / `credit` are two-decimal numbers, so 3-decimal currencies (KWD, BHD, OMR) are refused as document or functional currency (`isSupportedDocumentCurrency`, `isSupportedFunctionalCurrency`); journal `txn_*` amounts already hold 4 decimals. Target: expand/contract to `numeric(19,4)` with a batched backfill and decimal-string DTOs, then lift both guards (`mms-data-layer.md` §7, skill `mms-finance-accounting`).
 
 ## 2. Forbidden Regressions (Canonical Owners)

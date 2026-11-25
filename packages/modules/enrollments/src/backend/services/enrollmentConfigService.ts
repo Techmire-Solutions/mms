@@ -1,0 +1,51 @@
+import {
+  composeEnrollmentsSettings,
+  normalizeEnrollmentsSettings,
+  stripEnrollmentFieldConfigForPersist,
+  type FieldDefinition,
+  type EnrollmentsSettings,
+  type TabDefinition,
+} from "@mms/contracts";
+import {
+  createModuleFieldConfigService,
+  requireFieldConfigTenant,
+} from "@mms/be-core/data/module-field-config";
+import {
+  getEnrollmentFieldConfigByWorkspace,
+  upsertEnrollmentFieldConfig,
+} from "../repository/db/enrollmentFieldConfigRepository.js";
+import { getEnrollmentModulePreferencesByWorkspace } from "../repository/db/enrollmentModulePreferencesRepository.js";
+
+const enrollmentFieldConfig = createModuleFieldConfigService<
+  Record<string, unknown>,
+  EnrollmentsSettings,
+  TabDefinition,
+  Record<string, FieldDefinition[]> | undefined,
+  ReturnType<typeof stripEnrollmentFieldConfigForPersist>
+>({
+  broadcastKey: "enrollments",
+  getByWorkspace: getEnrollmentFieldConfigByWorkspace,
+  upsert: upsertEnrollmentFieldConfig,
+  toDocument: async (raw, tenant) => {
+    const prefs = await getEnrollmentModulePreferencesByWorkspace(tenant);
+    return composeEnrollmentsSettings(raw, prefs);
+  },
+  stripForPersist: stripEnrollmentFieldConfigForPersist,
+  reloadFailedMessage: "Failed to reload enrollment field config after save",
+});
+
+export const loadEnrollmentFieldConfig = enrollmentFieldConfig.load;
+
+export async function saveEnrollmentFieldConfig(
+  config: EnrollmentsSettings | Record<string, unknown>,
+): Promise<EnrollmentsSettings> {
+  return enrollmentFieldConfig.save(normalizeEnrollmentsSettings(config));
+}
+
+/** Full EnrollmentsSettings for export / validation (field-config + preferences + tabs). */
+export async function loadEnrollmentsSettingsCombined(): Promise<EnrollmentsSettings> {
+  const tenant = requireFieldConfigTenant();
+  const field = await getEnrollmentFieldConfigByWorkspace(tenant);
+  const prefs = await getEnrollmentModulePreferencesByWorkspace(tenant);
+  return composeEnrollmentsSettings(field, prefs);
+}

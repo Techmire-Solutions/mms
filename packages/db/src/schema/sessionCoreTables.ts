@@ -89,7 +89,7 @@ export const sessions = pgTable(
     index("sessions_workspace_status_idx").on(table.workspaceSubdomain, table.status),
     index("sessions_workspace_start_date_idx").on(table.workspaceSubdomain, table.startDate),
     // Work list: status equality + start_date sort, and end_date sort, active rows only.
-    // Built concurrently by scripts/sessions_concurrent_indexes.sql (mms-schema-migrate §7).
+    // Built concurrently by packages/db/scripts/sql/sessions_concurrent_indexes.sql (mms-schema-migrate §7).
     index("sessions_ws_status_start_active_idx")
       .on(table.workspaceSubdomain, table.status, table.startDate)
       .where(sql`${table.deletedAt} is null`),

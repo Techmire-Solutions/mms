@@ -5,16 +5,9 @@
  * The DB integration suite is excluded from the unit coverage gate; this script
  * enforces a scoped floor for the finance/accounting storage, use-case and route
  * slice. Floors are the measured baseline minus a two-point margin and may only be
- * raised (re-measure with `pnpm --filter mms-backend run test:db:coverage:finance` and
- * `pnpm --filter @mms/mod-accounting run test:db:coverage:finance`).
+ * raised (re-measure with `pnpm --filter mms-api run test:db:coverage:finance`).
  *
- * The slice spans the backend app and `@mms/mod-accounting` (the extraction moved the
- * accounting repository/routes/ledger posting there), so every report passed with
- * `--coverage` is merged before the floors are checked.
- *
- * Usage: node scripts/ci/check-finance-coverage.mjs \
- *   --coverage apps/backend/coverage-finance-db \
- *   --coverage packages/modules/accounting/coverage-finance-db
+ * Usage: node scripts/ci/check-finance-coverage.mjs --coverage apps/api/coverage-finance-db
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -46,7 +39,7 @@ function isFinanceFile(file) {
 }
 
 const coverageDirs = argValues("--coverage");
-const dirs = coverageDirs.length > 0 ? coverageDirs : ["apps/backend/coverage-finance-db"];
+const dirs = coverageDirs.length > 0 ? coverageDirs : ["apps/api/coverage-finance-db"];
 
 const data = {};
 for (const coverageDir of dirs) {

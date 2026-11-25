@@ -1,6 +1,6 @@
 ---
 name: mms-background-jobs
-description: Implements or reviews MMS background jobs and queued processing — large exports, imports, bulk ops, dedup scans, progress UI, and artifacts. Use when adding or changing background processing, export downloads, job tray UX, or queued sync recovery. Do NOT use for immediate synchronous REST endpoints (use mms-backend-api), UI module page layout (use mms-module-page), or database schema migrations (use mms-schema-migrate).
+description: Implements/reviews background jobs (exports, imports, bulk ops, dedup, progress UI, artifacts). Use when background processing or job tray UX. Do NOT use for sync REST (use mms-backend-api), page layout (use mms-module-page), or DDL (use mms-schema-migrate).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -28,17 +28,17 @@ For report packs use a cutoff-consistent dataset and retain evidence per [closin
 
 ## Reference Files
 
-- Backend routes: `apps/backend/src/routes/common/backgroundJobs.ts`
-- Worker registry: `apps/backend/src/services/backgroundJobWorkerService.ts`
-- Runners: `apps/backend/src/services/backgroundJobRunnerService.ts`
-- Artifacts: `apps/backend/src/services/exportArtifactService.ts`
-- Frontend API/store: `apps/frontend/src/lib/backgroundJobs/`
+- Backend routes: `apps/api/src/routes/common/backgroundJobs.ts`
+- Worker registry: `apps/api/src/services/backgroundJobWorkerService.ts`
+- Runners: `apps/api/src/services/backgroundJobRunnerService.ts`
+- Artifacts: `apps/api/src/services/exportArtifactService.ts`
+- Frontend API/store: `apps/tenant-web/src/lib/backgroundJobs/`
 - Data transfer SSOT: `packages/contracts/src/dataTransfer/` (`createModuleTransferSchema`, `buildExportGrid`, `moduleTransferRegistry`)
-- Frontend transfer actions: `apps/frontend/src/lib/backgroundJobs/useModuleCsvImportActions.ts`, `useModuleServerCsvExportActions.ts`
-- Generic import dialog: `apps/frontend/src/components/app/ModuleImportDialog.tsx`
-- Backend route helpers: `apps/backend/src/lib/registerModuleCsvImportRoutes.ts`, `registerModuleCsvExportRoutes.ts`
-- Tray: `apps/frontend/src/components/app/BackgroundJobsTray.tsx`
-- Hook: `apps/frontend/src/tenant/hooks/useBackgroundJobs.ts`
+- Frontend transfer actions: `apps/tenant-web/src/lib/backgroundJobs/useModuleCsvImportActions.ts`, `useModuleServerCsvExportActions.ts`
+- Generic import dialog: `apps/tenant-web/src/components/app/ModuleImportDialog.tsx`
+- Backend route helpers: `apps/api/src/lib/registerModuleCsvImportRoutes.ts`, `registerModuleCsvExportRoutes.ts`
+- Tray: `apps/tenant-web/src/components/app/BackgroundJobsTray.tsx`
+- Hook: `apps/tenant-web/src/tenant/hooks/useBackgroundJobs.ts`
 
 ## Workflow
 

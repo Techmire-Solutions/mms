@@ -1,6 +1,6 @@
 ---
 name: mms-db-performance
-description: Triages PostgreSQL performance in MMS — slow queries, missing or unused indexes, N+1 patterns, autovacuum/bloat, and partition maintenance. Use when a list, report, or dashboard is slow, a query plan regressed, or DB load is climbing. Do NOT use for authoring DDL (use mms-schema-migrate), for queue backlog (use mms-queue-ops), or for frontend render/bundle cost (use mms-performance.md norms via mms-frontend).
+description: Triages Postgres performance (slow queries, indexes, N+1, bloat, partitions). Use when a query/dashboard is slow. Do NOT use for DDL (use mms-schema-migrate), queue backlog (use mms-queue-ops), or render/bundle cost (use mms-frontend).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -22,8 +22,8 @@ metadata:
 |---|---|---|
 | Wildcard projections | `pnpm run check:db-projections` | no new `SELECT *` / bare `db.select()` |
 | Migration index locks | `pnpm run check:migration-indexes` | no new write-blocking `CREATE INDEX` on large tables |
-| Audit partition upkeep | `pnpm --filter mms-backend audit:partitions` | monthly partitions exist ahead of time |
-| Worker heap | `pnpm --filter mms-backend benchmark:worker` | per-job memory ceiling |
+| Audit partition upkeep | `pnpm --filter mms-api audit:partitions` | monthly partitions exist ahead of time |
+| Worker heap | `pnpm --filter mms-api benchmark:worker` | per-job memory ceiling |
 
 Run the relevant ratchet before and after a change — a green ratchet is the cheapest proof you did not regress the class of problem it guards.
 
@@ -46,7 +46,7 @@ Run the relevant ratchet before and after a change — a green ratchet is the ch
 4. **Index with the MMS conventions:** prefix compound indexes with the tenant scope, add the matching partial index for the active/trash split (`WHERE deleted_at IS NULL` / `IS NOT NULL`), and use BRIN for append-only time-series (`transaction_timestamp`, `created_at`) rather than another B-tree (`mms-data-layer.md` §6.3, `mms-performance.md` §1).
 5. **Build indexes without locking the app:**
    ```bash
-   pnpm --filter mms-backend index:concurrent
+   pnpm --filter mms-api index:concurrent
    ```
    A plain `CREATE INDEX` in a migration is a production write-stall — the CI ratchet blocks new ones, and existing usage is baselined, not endorsed (`mms-data-layer.md` §7). For deep query plans, BRIN indexes, and covering index recipes, see [references/query-index-triage.md](references/query-index-triage.md).
 6. **Bloat and autovacuum:** high-churn soft-deletable tables (`message_logs`, `audit_trail_events`, `attendance_records`) carry aggressive autovacuum settings; verify they were applied before considering manual `VACUUM`.
@@ -59,8 +59,8 @@ State baseline vs after (plan nodes, rows, buffers, milliseconds) and what you c
 ## Verification
 
 - Re-run the same `EXPLAIN (ANALYZE, BUFFERS)` before/after and attach the plan delta (rows, buffers, ms) to the change.
-- Ratchets: `pnpm run check:db-projections` and `pnpm run check:migration-indexes` stay green; `pnpm --filter mms-backend index:concurrent` is the only index-build path for live tables.
-- Suite: the owning backend tests (`pnpm --filter mms-backend test <path>`) plus `pnpm ci:local`; DB invariants need `pnpm ci:local --with-db`.
+- Ratchets: `pnpm run check:db-projections` and `pnpm run check:migration-indexes` stay green; `pnpm --filter mms-api index:concurrent` is the only index-build path for live tables.
+- Suite: the owning backend tests (`pnpm --filter mms-api test <path>`) plus `pnpm ci:local`; DB invariants need `pnpm ci:local --with-db`.
 
 ## Do not
 

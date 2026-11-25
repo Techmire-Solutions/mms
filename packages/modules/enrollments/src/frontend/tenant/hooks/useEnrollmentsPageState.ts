@@ -1,0 +1,199 @@
+import { useState, useEffect, useMemo } from "react";
+import { useIdentityReset } from "@mms/fe-core/forms/useIdentityReset";
+import { usePersistedTabState } from "@mms/fe-core/lib/usePersistedTabState";
+import { useModuleShortcuts } from "@mms/fe-core/lib/useModuleShortcuts";
+import { ENROLLMENTS_WORK_SEARCH_INPUT_ID } from "../components/EnrollmentsListFilters";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useFilteredModuleTierTabs } from "@mms/fe-core/lib/useModuleTierTabs";
+import { ClipboardList, UserCheck, Inbox } from "lucide-react";
+import { useModulePermissions } from "../host/usePermissions";
+import { type Enrollment } from "../lib/enrollmentData";
+import { useEnrollmentsPaginated } from "./useEnrollmentsApi";
+import { useEnrollmentsDirectoryFilters } from "./useEnrollmentsDirectoryFilters";
+import { ENROLLMENTS_MODULE_MANIFEST } from "@mms/contracts";
+import { useWorkDrillDownListener } from "../../tenant/host/useWorkDrillDownListener.js";
+import {
+  ENROLLMENTS_WORK_DRILLDOWN_EVENT,
+  consumeEnrollmentsWorkDrillDown,
+  type EnrollmentsWorkDrillDown,
+} from "./enrollmentsWorkDrillDown";
+import { useEnrollmentsPageActions } from "./useEnrollmentsPageActions";
+import {
+  defaultEnrollmentsExportColumns,
+  useEnrollmentsExportActions,
+} from "./useEnrollmentsExportActions";
+import { useEnrollmentColumnLayout } from "./useEnrollmentColumnLayout";
+import { useWorkSelection } from "@mms/fe-core/hooks/useWorkSelection";
+
+export function useEnrollmentsPageState() {
+  const { t } = useTranslation();
+  const SUB_TABS = useMemo(
+    () => [
+      { id: "directory", label: t("enrollments.list"), icon: ClipboardList },
+      { id: "eligibility", label: t("enrollments.eligibility"), icon: UserCheck },
+      { id: "admissions", label: t("enrollments.admissions.title"), icon: Inbox },
+    ],
+    [t],
+  );
+  const permissions = useModulePermissions(ENROLLMENTS_MODULE_MANIFEST);
+  const {
+    canWrite: canWriteEnrollments,
+    canManage: canManageEnrollments,
+    canDelete,
+    canExport,
+    canReports: canViewReports,
+    canViewSetup,
+  } = permissions;
+
+  const TABS = useFilteredModuleTierTabs({
+    canViewSetup,
+    canViewReports,
+    workLabelKey: "nav.enrollments",
+  });
+  const [tab, setTab] = usePersistedTabState<string>("enrollments_active_tab", "work");
+  const [activeSubTab, setActiveSubTab] = useState("directory");
+  // Notifications (e.g. a freed waitlist seat) open a specific Work sub-tab.
+  useWorkDrillDownListener<EnrollmentsWorkDrillDown>(
+    ENROLLMENTS_WORK_DRILLDOWN_EVENT,
+    consumeEnrollmentsWorkDrillDown,
+    (drillDown: any) => {
+      setTab("work");
+      setActiveSubTab(drillDown.subTab);
+    },
+  );
+  const directoryFilters = useEnrollmentsDirectoryFilters();
+  const {
+    listPage,
+    showDeleted,
+    setSearch,
+    debouncedSearch,
+    statusFilter,
+    setStatusFilter,
+    sessionFilter,
+    setSessionFilter,
+  } = directoryFilters;
+
+  const useServerWork = tab === "work" && activeSubTab === "directory";
+  /** Drives the export audit scope and the shortcuts gate (same definition, one place). */
+  const hasActiveFilters =
+    statusFilter !== "all" || sessionFilter !== "all" || Boolean(debouncedSearch.trim());
+  const {
+    data: workPageData,
+    isError: isWorkPageError,
+    refetch: refetchWorkPage,
+  } = useEnrollmentsPaginated({
+    page: listPage,
+    limit: ENROLLMENTS_MODULE_MANIFEST.defaultPageSize,
+    search: debouncedSearch,
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    sessionId: sessionFilter !== "all" ? sessionFilter : undefined,
+    includeDeleted: showDeleted,
+    enabled: useServerWork,
+  });
+
+  const pageData = (workPageData?.body ?? workPageData) as
+    { enrollments?: Enrollment[]; total?: number } | undefined;
+
+  const enrollments = (pageData?.enrollments ?? []) as Enrollment[];
+  const filteredCount = pageData?.total ?? enrollments.length;
+
+  const [viewing, setViewing] = useState<Enrollment | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const [confirmBulkDeleteOpen, setConfirmBulkDeleteOpen] = useState(false);
+  const [confirmBulkRestoreOpen, setConfirmBulkRestoreOpen] = useState(false);
+  const columnLayout = useEnrollmentColumnLayout();
+  const selection = useWorkSelection(enrollments);
+  // `clearSelection` is a stable `useCallback` (empty deps) — depend on the
+  // granular ref so the effect only re-runs when a filter dimension changes,
+  // not on every re-render of the `selection` object.
+  const { clearSelection } = selection;
+
+  useEffect(() => {
+    clearSelection();
+  }, [debouncedSearch, statusFilter, sessionFilter, showDeleted, clearSelection]);
+
+  const exportColumns = useMemo(() => defaultEnrollmentsExportColumns(t), [t]);
+  const exportActions = useEnrollmentsExportActions({
+    tableColumns: exportColumns,
+    canExport,
+    // Debounced: the export must cover exactly what the visible list was filtered by.
+    search: debouncedSearch,
+    statusFilter,
+    sessionFilter,
+    viewingDeleted: showDeleted,
+    hasActiveFilters,
+    selectedIds: selection.selectedIds,
+  });
+
+  // No write access → the eligibility sub-tab is not available (render-phase reset, no effect).
+  const subTabAccessKey = `${canWriteEnrollments}|${activeSubTab}`;
+  useIdentityReset(subTabAccessKey, () => {
+    if (!canWriteEnrollments && activeSubTab === "eligibility") {
+      setActiveSubTab("directory");
+    }
+  });
+
+  useModuleShortcuts({
+    searchInputId: ENROLLMENTS_WORK_SEARCH_INPUT_ID,
+    selectedCount: selection.selectedIds.length,
+    hasActiveFilters,
+    clearFilters: () => {
+      setStatusFilter("all");
+      setSessionFilter("all");
+      setSearch("");
+    },
+    clearSelection: selection.clearSelection,
+    canWrite: canWriteEnrollments,
+    showDeleted,
+    onCreate: () => {
+      setTab("work");
+      setShowWizard(true);
+    },
+    enabled: tab === "work",
+  });
+
+  const pageActions = useEnrollmentsPageActions({
+    enrollments,
+    viewing,
+    canManage: canManageEnrollments,
+    onViewingChange: setViewing,
+    onActiveSubTabChange: setActiveSubTab,
+  });
+
+  const canSelectEnrollments = canWriteEnrollments || canDelete;
+
+  return {
+    t,
+    SUB_TABS,
+    TABS,
+    tab,
+    setTab,
+    activeSubTab,
+    setActiveSubTab,
+    canWriteEnrollments,
+    canManageEnrollments,
+    canDelete,
+    canExport,
+    canSelectEnrollments,
+    directoryFilters,
+    enrollments,
+    filteredCount,
+    isWorkPageError,
+    refetchWorkPage,
+    viewing,
+    setViewing,
+    showWizard,
+    setShowWizard,
+    pendingDeleteId,
+    setPendingDeleteId,
+    confirmBulkDeleteOpen,
+    setConfirmBulkDeleteOpen,
+    confirmBulkRestoreOpen,
+    setConfirmBulkRestoreOpen,
+    columnLayout,
+    selection,
+    exportActions,
+    pageActions,
+  };
+}

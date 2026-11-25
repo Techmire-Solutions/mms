@@ -1,8 +1,8 @@
 import React from "react";
 import { m, AnimatePresence } from "framer-motion";
 import { X, ChevronDown, ChevronUp } from "lucide-react";
-import { useTranslation } from "@mms/fe-core/i18n";
-import { useReducedMotion } from "@mms/fe-core/tenant";
+import { useTranslation } from "../i18n/index.js";
+import { useReducedMotion } from "../tenant/index.js";
 import { Button } from "@mms/ui";
 import { cn } from "@mms/ui";
 

@@ -5,6 +5,11 @@
   // app build reads the Tailwind theme). Hash them globally so a tooling change
   // always invalidates the tasks it can affect instead of replaying stale cache.
   "globalDependencies": ["tooling/**", "scripts/eslint-ts-compat.cjs", "tsconfig.base.json"],
+  // `turbo prune` must also carry the global tooling files (tsconfig.base.json,
+  // tooling/*, the eslint shim) so a pruned `apps/api` image can still run `tsc`.
+  "futureFlags": {
+    "pruneIncludesGlobalFiles": true
+  },
   "globalPassThroughEnv": [
     "DATABASE_URL",
     "JWT_SECRET",

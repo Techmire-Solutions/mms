@@ -16,7 +16,7 @@ case "${AUDIT:-}" in
   *) echo "ops-audit: '${AUDIT:-}' is not an allowlisted audit" >&2; exit 2 ;;
 esac
 
-cd /var/www/mmsv2/apps/backend
+cd /var/www/mmsv2/apps/api
 script="dist/scripts/audit-${AUDIT}.js"
 [ -f "${script}" ] || { echo "ops-audit: ${script} is not in the deployed build — deploy first" >&2; exit 1; }
 

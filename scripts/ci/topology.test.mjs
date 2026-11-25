@@ -27,7 +27,7 @@ const json = (root, rel, value) => write(root, rel, `${JSON.stringify(value, nul
  */
 function makeRepo({
   apps = [
-    ["backend", "mms-backend"],
+    ["api", "mms-api"],
     ["frontend", "mms-frontend"],
   ],
   packages = [["contracts", "@mms/contracts"]],
@@ -68,7 +68,6 @@ test("accepts the minimal valid topology", () => {
 test("reports transitional and target apps separately", () => {
   const root = makeRepo({
     apps: [
-      ["backend", "mms-backend"],
       ["frontend", "mms-frontend"],
       ["api", "mms-api"],
       ["tenant-web", "mms-tenant-web"],
@@ -76,7 +75,7 @@ test("reports transitional and target apps separately", () => {
   });
   const { errors, summary } = evaluateTopology({ root });
   assert.deepEqual(errors, []);
-  assert.deepEqual(summary.transitionalApps, ["backend", "frontend"]);
+  assert.deepEqual(summary.transitionalApps, ["frontend"]);
   assert.deepEqual(summary.targetApps, ["api", "tenant-web"]);
 });
 
@@ -94,13 +93,13 @@ test("rejects an undeclared app root", () => {
 });
 
 test("rejects an app whose package name is not mms-<kebab>", () => {
-  const root = makeRepo({ apps: [["backend", "backend-app"]] });
+  const root = makeRepo({ apps: [["api", "api-app"]] });
   assert.match(errorsOf(root).join("\n"), /must be named mms-<kebab>/);
 });
 
 test("rejects an app without src/", () => {
   const root = makeRepo({ appSrc: false });
-  assert.match(errorsOf(root).join("\n"), /apps\/backend has no src\//);
+  assert.match(errorsOf(root).join("\n"), /apps\/api has no src\//);
 });
 
 test("rejects an undeclared flat package and a name mismatch", () => {
@@ -176,7 +175,7 @@ test("rejects a missing pnpm-workspace.yaml", () => {
 });
 
 test("exposes the declared app and module rosters", () => {
-  assert.deepEqual([...TRANSITIONAL_APPS], ["backend", "frontend"]);
+  assert.deepEqual([...TRANSITIONAL_APPS], ["frontend"]);
   assert.deepEqual([...TARGET_APPS], ["api", "tenant-web", "platform-web"]);
   assert.equal(MODULE_SLICES["question-bank"], "question-bank");
   assert.equal(Object.keys(MODULE_SLICES).length, 22);

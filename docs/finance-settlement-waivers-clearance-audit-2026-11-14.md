@@ -149,7 +149,7 @@ while the figure the rest of Finance shows is `finalAmt + lateFeeAmt − credite
 
 **Applied:** the lateral now includes `COALESCE(fi.late_fee_amt, 0)`, keeping the same `GREATEST(0, …)` per-invoice clamp so a credit on one invoice cannot mask a debt on another, and the same `deleted_at IS NULL` / `status <> 'cancelled'` / `enrollment_id = e.id` scoping. Pinned by:
 
-- [`sessionCompletionGateDues.test.ts`](../apps/backend/src/__tests__/sessionCompletionGateDues.test.ts) — a source-level assertion that the lateral still contains each component (late fee, paid, credited, clamp, scoping). A single SQL lateral that cannot be executed without a database is exactly where a text assertion earns its keep: removing `late_fee_amt` is otherwise a silent gate bypass.
+- [`sessionCompletionGateDues.test.ts`](../packages/modules/sessions/src/backend/__tests__/sessionCompletionGateDues.test.ts) — a source-level assertion that the lateral still contains each component (late fee, paid, credited, clamp, scoping). A single SQL lateral that cannot be executed without a database is exactly where a text assertion earns its keep: removing `late_fee_amt` is otherwise a silent gate bypass.
 - [`financeInvoiceAmounts.test.ts`](../packages/contracts/src/finance/financeInvoiceAmounts.test.ts) — the canonical rule: a late-fee-only invoice is worth 10, not 0.
 - The existing DB integration suite (`sessionCompletionDb`) remains the end-to-end proof in CI.
 

@@ -1,0 +1,292 @@
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@mms/fe-core/forms/translateValidationMessage";
+import React, { useState } from "react";
+import { ReceiptText } from "lucide-react";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { useAuth } from "@mms/fe-core/auth/AuthContext";
+import { notify } from "@mms/fe-core/notify";
+import { PAYMENT_METHODS, type Invoice } from "../lib/financeData";
+import { SectionCard } from "@mms/ui";
+import { PaymentFormFields } from "./PaymentFormFields";
+import { useFinanceCurrency } from "../host/useCurrency.js";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { moneyToCents, tryParseMoneyAmountNumber } from "@mms/contracts";
+import {
+  formatMoney,
+  isValidExchangeRate,
+  type PaymentCreateInput,
+  paymentRecordInsertSchema,
+} from "@mms/contracts";
+import { DocumentCurrencyFields } from "@mms/fe-core/components/DocumentCurrencyFields";
+import { useDocumentCurrency } from "../host/useDocumentCurrency";
+import { useSubmitGuard } from "@mms/fe-core/forms/useSubmitGuard";
+import { invoiceAmountInPaymentCurrency } from "../lib/paymentCurrency";
+import { mapZodFormErrors } from "@mms/fe-core/forms/mapZodFormErrors";
+import { mapApiFormError } from "@mms/fe-core/forms/serverFormErrors";
+import { useIdentityReset } from "@mms/fe-core/forms/useIdentityReset";
+import { NotifiedMutationError } from "@mms/fe-core/lib/notifiedMutationError";
+import {
+  PAYMENT_METHOD_LABEL_KEYS,
+  buildInitialPaymentDraft,
+  buildPaymentCreatePayload,
+  validatePaymentFormDraft,
+} from "../lib/paymentFormHelpers";
+
+export interface PaymentFormProps {
+  open: boolean;
+  invoice: Invoice | null;
+  onClose: () => void;
+  onSave: (payment: PaymentCreateInput) => void | Promise<void>;
+}
+
+export function PaymentForm({
+  open,
+  invoice,
+  onClose,
+  onSave,
+}: PaymentFormProps): React.JSX.Element {
+  const { user: authUser } = useAuth();
+  const { t } = useTranslation();
+  const { formatCurrency: formatFunctional, activeCurrency } = useFinanceCurrency();
+  /**
+   * Integer cents, not a float subtraction: `1200.30 - 400.10` renders as
+   * `800.1999…`, which fails the two-decimal text contract and left Save disabled
+   * for a perfectly payable invoice. The pre-filled amount is the same cents value
+   * rendered with exactly two decimals.
+   */
+  const invoiceBalanceCents =
+    moneyToCents(invoice?.finalAmt ?? 0) - moneyToCents(invoice?.paidAmt ?? 0);
+  const invoiceBalance = invoiceBalanceCents / 100;
+  const buildDraft = (receivedByUserId: string) => ({
+    ...buildInitialPaymentDraft(invoiceBalance, receivedByUserId),
+    amount: invoiceBalanceCents > 0 ? (invoiceBalanceCents / 100).toFixed(2) : "",
+  });
+
+  const [saving, setSaving] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [formError, setFormError] = useState<string | null>(null);
+  const [paymentDraft, setPaymentDraft] = useState(() => buildDraft(authUser?.id || ""));
+
+  // A different invoice (or a reopen) must not inherit the previous amount/date.
+  useIdentityReset(`${open ? "open" : "closed"}:${invoice?.id ?? "none"}`, () => {
+    setPaymentDraft(buildDraft(authUser?.id || ""));
+    setErrors({});
+    setFormError(null);
+  });
+
+  // IAS 21: pay in the invoice currency or the functional currency (cross-currency settlement).
+  const fx = useDocumentCurrency({
+    date: paymentDraft.date,
+    initialCurrency: invoice?.currency ?? null,
+    counterCurrency: invoice?.currency ?? null,
+    allowedCurrencies: invoice?.currency ? [invoice.currency] : [],
+  });
+  const invoiceCurrency = invoice?.currency || fx.functionalCurrency;
+  const formatIn = (currency: string) => (amount: number) =>
+    currency && currency !== fx.functionalCurrency
+      ? formatMoney(amount, currency, { useSymbol: true })
+      : formatFunctional(amount);
+  const formatCurrency = formatIn(fx.currency);
+  const balance =
+    invoiceAmountInPaymentCurrency(
+      invoiceBalance,
+      invoiceCurrency,
+      fx.currency || invoiceCurrency,
+      fx.functionalCurrency,
+      fx.rate,
+    ) ?? invoiceBalance;
+
+  const paymentMethodOptions = (() =>
+    PAYMENT_METHODS.map((method) => ({
+      value: method,
+      label: t(PAYMENT_METHOD_LABEL_KEYS[method]),
+    })))();
+
+  const updateDraft = (patch: Partial<typeof paymentDraft>) => {
+    setPaymentDraft((prev) => ({ ...prev, ...patch }));
+    setFormError(null);
+    const patchedKeys = Object.keys(patch);
+    setErrors((prev) => {
+      let changed = false;
+      const next = { ...prev };
+      for (const key of patchedKeys) {
+        if (next[key]) {
+          delete next[key];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  };
+
+  const guard = useSubmitGuard();
+
+  const handleSave = () =>
+    guard(async () => {
+      setErrors({});
+      const newErrors = validatePaymentFormDraft(paymentDraft, balance, t);
+      if (fx.needsRate && !isValidExchangeRate(fx.rate)) {
+        newErrors.exchangeRate = t("fx.field.rateMissing");
+      }
+
+      if (Object.keys(newErrors).length > 0) {
+        setErrors(newErrors);
+        notify.error(t("finance.fixErrors"));
+        return;
+      }
+
+      if (!invoice) return;
+
+      const payload = {
+        ...buildPaymentCreatePayload(
+          paymentDraft,
+          invoice.id,
+          invoice.studentId,
+          invoice.studentName,
+          authUser?.id || "",
+        ),
+        ...(fx.needsRate ? { currency: fx.currency, exchangeRate: fx.rate.trim() } : {}),
+      };
+
+      const parsed = paymentRecordInsertSchema.safeParse(payload);
+      if (!parsed.success) {
+        setErrors((prev) => ({
+          ...prev,
+          ...mapZodFormErrors(parsed.error, (message) => translateValidationMessage(message, t)),
+        }));
+        notify.error(t("finance.fixErrors"));
+        return;
+      }
+
+      setSaving(true);
+      try {
+        await onSave(parsed.data);
+        notify.success(t("finance.paymentSaved"));
+        onClose();
+      } catch (err: unknown) {
+        const mapped = mapApiFormError(err, (message) => translateApiMessage(message, t));
+        if (mapped.fieldErrors) {
+          setErrors((prev) => ({ ...prev, ...mapped.fieldErrors }));
+        }
+        setFormError(mapped.message ?? t("finance.paymentSaveFailed"));
+        if (!mapped.fieldErrors && !(err instanceof NotifiedMutationError)) {
+          notify.error(t("finance.paymentSaveFailed"), {
+            description: mapped.message ?? (err instanceof Error ? err.message : String(err)),
+          });
+        }
+      } finally {
+        setSaving(false);
+      }
+    });
+
+  const footerStart = invoice ? (
+    <div className="flex flex-wrap items-center gap-2.5 text-xs">
+      <span className="font-bold text-foreground bg-muted/65 px-2.5 py-1 rounded-lg border border-border/60">
+        {invoice.studentName}
+      </span>
+      <div className="flex items-center gap-1.5">
+        <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-success/10 text-success font-semibold border border-success/20 text-xs">
+          {t("finance.balance", {
+            balance: formatCurrency(
+              balance - (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0),
+            ),
+          })}
+        </span>
+      </div>
+    </div>
+  ) : null;
+
+  return (
+    <FormModal
+      open={open}
+      onClose={onClose}
+      title={t("finance.recordPayment")}
+      icon={ReceiptText}
+      cancelLabel={t("common.cancel")}
+      saveLabel={t("finance.recordPayment")}
+      onSave={handleSave}
+      saving={saving}
+      saveDisabled={
+        saving ||
+        !invoice ||
+        !paymentDraft.amount ||
+        (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) <= 0 ||
+        (balance > 0 && (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) > balance) ||
+        !paymentDraft.date
+      }
+      error={formError ?? Object.values(errors).filter(Boolean)}
+      footerStart={footerStart || undefined}
+      formId="payment-form"
+    >
+      <form
+        id="payment-form"
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (
+            !saving &&
+            invoice &&
+            paymentDraft.amount &&
+            (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) > 0 &&
+            !(balance > 0 && (tryParseMoneyAmountNumber(paymentDraft.amount) ?? 0) > balance) &&
+            paymentDraft.date
+          ) {
+            void handleSave();
+          }
+        }}
+        className="space-y-3 text-start"
+      >
+        {invoice && (
+          <SectionCard accentColor="primary" padding="p-5">
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h4 className="truncate text-sm font-bold text-foreground m-0">
+                  {invoice.studentName}
+                </h4>
+                <p className="truncate text-xs text-muted-foreground m-0 mt-0.5">
+                  {invoice.id} · {invoice.class}
+                </p>
+              </div>
+              <div className="shrink-0 text-end">
+                <p className="text-xs uppercase font-bold text-muted-foreground">
+                  {t("finance.balanceDue")}
+                </p>
+                <p className="text-sm font-bold text-primary m-0 mt-0.5">
+                  {formatIn(invoiceCurrency)(invoiceBalance)}
+                </p>
+              </div>
+            </div>
+          </SectionCard>
+        )}
+
+        <DocumentCurrencyFields
+          t={t}
+          idPrefix="payment"
+          fx={fx}
+          error={errors.exchangeRate}
+          preview={
+            fx.currency !== invoiceCurrency
+              ? {
+                  label: t("fx.field.balanceInPaymentCurrency"),
+                  value: formatCurrency(balance),
+                }
+              : undefined
+          }
+        />
+
+        <PaymentFormFields
+          paymentDraft={paymentDraft}
+          updateDraft={updateDraft}
+          errors={errors}
+          balance={balance}
+          activeCurrencyCode={fx.currency || activeCurrency.code}
+          formatCurrency={formatCurrency}
+          paymentMethodOptions={paymentMethodOptions}
+          t={t}
+        />
+      </form>
+    </FormModal>
+  );
+}

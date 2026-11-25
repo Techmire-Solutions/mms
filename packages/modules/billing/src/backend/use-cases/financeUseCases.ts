@@ -1,0 +1,295 @@
+import type { FinanceRepository } from "../repository/financeRepository.js";
+import { financeRepository } from "../repository/financeRepositoryAdapter.js";
+import { getRequestTenant } from "@mms/be-core/http";
+import { invoiceRecordSchema, paymentRecordSchema } from "@mms/contracts";
+import { createGenericRelationalService } from "@mms/be-core/data";
+import {
+  dedupeTrimmedIds,
+  normalizeFinanceReportComparisonQuery,
+  type FinanceCommandMetricsSnapshot,
+  type FinanceListQuery,
+  type FinanceReportComparisonQuery,
+  type Invoice,
+  type Payment,
+  type PaymentUpdate,
+} from "@mms/contracts";
+import { withTenant } from "@mms/db/context";
+import { createFinanceLifecycleOperations } from "./financeRecordLifecycle.js";
+import { createFinanceMutationOperations } from "./financeMutationOperations.js";
+import { paymentAuditState, recordPaymentAudit } from "./financeAuditEvents.js";
+import {
+  assertPaymentLedgerFieldsUnchanged,
+  paymentLedgerSensitiveChanges,
+} from "./financePaymentEditGuards.js";
+import { reconcilePaymentEditDeltas } from "./financePaymentArchiveDeltas.js";
+import { assertPaymentEditAllocationsValid } from "./financePaymentAllocationGuards.js";
+
+const EMPTY_FINANCE_METRICS: FinanceCommandMetricsSnapshot = {
+  totalInvoices: 0,
+  outstanding: 0,
+  overdue: 0,
+  paid: 0,
+  partial: 0,
+  totalPayments: 0,
+  collectedTotal: 0,
+  outstandingBalance: 0,
+  discountTotal: 0,
+  collectedThisMonth: 0,
+  collectedPrevMonth: 0,
+  outstandingThisMonth: 0,
+  outstandingPrevMonth: 0,
+};
+
+function requireRequestTenant(): string {
+  const tenant = getRequestTenant();
+  if (!tenant) throw new Error("Tenant context required");
+  return tenant;
+}
+
+/**
+ * Finance use-cases — composition root binding a {@link FinanceRepository} to
+ * every operation. Production uses the default Drizzle-backed `financeUseCases`;
+ * tests can pass a fake repository to exercise orchestration in isolation.
+ */
+export function createFinanceUseCases(repo: FinanceRepository = financeRepository) {
+  const invoiceCrud = createGenericRelationalService<Invoice>({
+    repo: {
+      listByWorkspace: repo.listInvoicesByWorkspace,
+      findById: repo.findInvoiceById,
+      save: repo.saveInvoice,
+      bulkDelete: repo.bulkSoftDeleteInvoices,
+      bulkRestore: repo.bulkRestoreInvoices,
+    },
+    schema: invoiceRecordSchema,
+    websocketCollection: "finance_invoices",
+    idPrefix: "inv",
+  });
+
+  const paymentCrud = createGenericRelationalService<Payment>({
+    repo: {
+      listByWorkspace: repo.listPaymentsByWorkspace,
+      findById: repo.findPaymentById,
+      save: repo.savePayment,
+      bulkDelete: repo.bulkSoftDeletePayments,
+      bulkRestore: repo.bulkRestorePayments,
+    },
+    schema: paymentRecordSchema,
+    websocketCollection: "finance_payments",
+    idPrefix: "pay",
+  });
+
+  /**
+   * Archive / restore carry ledger and invoice-balance consequences, so they
+   * are composed here rather than exposing the bare soft delete.
+   */
+  const lifecycle = createFinanceLifecycleOperations({
+    repo,
+    invoiceCrud,
+    paymentCrud,
+    requireTenant: requireRequestTenant,
+  });
+
+  const mutations = createFinanceMutationOperations({
+    repo,
+    invoiceCrud,
+    requireTenant: requireRequestTenant,
+  });
+
+  return {
+    // --- Invoices ---
+    loadInvoices: invoiceCrud.loadAll,
+    createInvoice: mutations.createInvoice,
+    updateInvoiceById: mutations.updateInvoiceById,
+    deleteInvoiceById: lifecycle.deleteInvoiceById,
+    restoreInvoiceById: lifecycle.restoreInvoiceById,
+    bulkSoftDeleteInvoices: lifecycle.bulkSoftDeleteInvoices,
+    bulkRestoreInvoices: lifecycle.bulkRestoreInvoices,
+
+    getInvoiceById: async (id: string, includeDeleted = false): Promise<Invoice | null> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return null;
+      const cleanId = id?.trim();
+      if (!cleanId) return null;
+      const invoice = await repo.findInvoiceById(tenant, cleanId);
+      if (!invoice) return null;
+      if (!includeDeleted && invoice.deletedAt) return null;
+      return invoice;
+    },
+
+    /**
+     * Locking read for settlement read-modify-write flows (credit note, cancel).
+     * Must be called inside the caller's write transaction.
+     */
+    getInvoiceByIdForUpdate: async (id: string): Promise<Invoice | null> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return null;
+      const cleanId = id?.trim();
+      if (!cleanId) return null;
+      return repo.findInvoiceById(tenant, cleanId, { forUpdate: true });
+    },
+
+    getInvoicesByIds: async (ids: string[], includeDeleted = false): Promise<Invoice[]> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return [];
+      const cleanIds = dedupeTrimmedIds(ids);
+      if (cleanIds.length === 0) return [];
+      return repo.findInvoicesByIds(tenant, cleanIds, { includeDeleted });
+    },
+
+    bulkUpdateInvoicesStatus: mutations.bulkUpdateInvoicesStatus,
+
+    loadInvoicesPage: async (query: FinanceListQuery & { includeDeleted?: boolean }) => {
+      const tenant = getRequestTenant();
+      if (!tenant) {
+        return {
+          invoices: [],
+          total: 0,
+          page: query.page ?? 1,
+          limit: query.limit ?? 12,
+          hasMore: false,
+        };
+      }
+      return repo.listInvoicesPage(tenant, query);
+    },
+
+    // --- Payments ---
+    loadPayments: paymentCrud.loadAll,
+    updatePaymentById: async (id: string, record: PaymentUpdate): Promise<Payment | null> => {
+      const tenant = getRequestTenant();
+      if (!tenant) throw new Error("Tenant context required");
+      const cleanId = id?.trim();
+      if (!cleanId) return null;
+
+      const existing = await repo.findPaymentById(tenant, cleanId);
+      if (!existing || existing.deletedAt) return null;
+
+      // A posted payment is a ledger document: money/date/currency/allocations
+      // edits would leave the journal and the invoice balance behind.
+      const postingId = await repo.findLedgerPostingIdBySource(tenant, "payment", cleanId);
+      assertPaymentLedgerFieldsUnchanged(existing, record, Boolean(postingId));
+
+      const { allocations: rawAllocations, ...rest } = record;
+      const allocations = rawAllocations
+        ? (rawAllocations.map((alloc, index) => ({
+            ...alloc,
+            id: alloc.id ?? `pa-${index + 1}`,
+          })) as Payment["allocations"])
+        : undefined;
+
+      // An edit is the second writer of the allocation rows, so it enforces the same invariants.
+      if (allocations) assertPaymentEditAllocationsValid(existing, record, allocations);
+
+      return withTenant(tenant, async () => {
+        // An unposted payment still moved invoice.paidAmt when it was created, so a
+        // financial edit has to reconcile the invoice even without a ledger row.
+        if (!postingId) {
+          const changed = paymentLedgerSensitiveChanges(existing, record);
+          const isForeign = Boolean(existing.exchangeRate) && existing.exchangeRate !== "1";
+          if (changed.length > 0 && (changed.includes("amount") || changed.includes("invoiceId"))) {
+            if (isForeign) {
+              throw Object.assign(
+                new Error(
+                  "A foreign-currency payment's amount cannot be edited — archive it and re-enter the payment",
+                ),
+                { statusCode: 422, type: "validation_error" },
+              );
+            }
+            const after: Payment = {
+              ...existing,
+              ...(record.amount !== undefined
+                ? { amount: record.amount, invoiceAmount: record.amount }
+                : {}),
+              ...(record.invoiceId !== undefined ? { invoiceId: record.invoiceId } : {}),
+            };
+            await reconcilePaymentEditDeltas(repo, tenant, existing, after);
+          } else if (changed.length > 0) {
+            const after: Payment = {
+              ...existing,
+              ...(record.amount !== undefined ? { amount: record.amount } : {}),
+            };
+            await reconcilePaymentEditDeltas(repo, tenant, existing, after);
+          }
+        }
+        const updated = await paymentCrud.updateById(cleanId, {
+          ...rest,
+          ...(allocations ? { allocations } : {}),
+        });
+        if (!updated) {
+          // The reconciliation above already moved the invoice balance; roll the
+          // whole transaction back rather than commit an orphan adjustment.
+          throw Object.assign(new Error("Payment not found"), {
+            statusCode: 404,
+            type: "not_found",
+          });
+        }
+        await recordPaymentAudit(tenant, updated, "UPDATE", paymentAuditState(existing));
+        return updated;
+      });
+    },
+    deletePaymentById: lifecycle.deletePaymentById,
+    restorePaymentById: lifecycle.restorePaymentById,
+    bulkSoftDeletePayments: lifecycle.bulkSoftDeletePayments,
+    bulkRestorePayments: lifecycle.bulkRestorePayments,
+
+    getPaymentById: async (id: string, includeDeleted = false): Promise<Payment | null> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return null;
+      const cleanId = id?.trim();
+      if (!cleanId) return null;
+      const payment = await repo.findPaymentById(tenant, cleanId);
+      if (!payment) return null;
+      if (!includeDeleted && payment.deletedAt) return null;
+      return payment;
+    },
+
+    getPaymentsByIds: async (ids: string[], includeDeleted = false): Promise<Payment[]> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return [];
+      const cleanIds = dedupeTrimmedIds(ids);
+      if (cleanIds.length === 0) return [];
+      return repo.findPaymentsByIds(tenant, cleanIds, { includeDeleted });
+    },
+
+    loadPaymentsPage: async (query: FinanceListQuery & { includeDeleted?: boolean }) => {
+      const tenant = getRequestTenant();
+      if (!tenant) {
+        return {
+          payments: [],
+          total: 0,
+          page: query.page ?? 1,
+          limit: query.limit ?? 12,
+          hasMore: false,
+        };
+      }
+      return repo.listPaymentsPage(tenant, query);
+    },
+
+    createPayment: mutations.createPayment,
+
+    // --- Aggregates ---
+    loadFinanceReportAggregates: async (comparisonQuery?: FinanceReportComparisonQuery) => {
+      const tenant = getRequestTenant();
+      if (!tenant) {
+        return { comparison: { sessions: [], monthly: { a: [], b: [] } } };
+      }
+      const normalized = normalizeFinanceReportComparisonQuery(comparisonQuery);
+      return repo.loadFinanceReportAggregates(tenant, normalized);
+    },
+
+    loadFinanceCommandMetrics: async (): Promise<FinanceCommandMetricsSnapshot> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return EMPTY_FINANCE_METRICS;
+      return repo.aggregateFinanceCommandMetrics(tenant);
+    },
+
+    loadFinanceWidgetAggregates: async (
+      queries: import("@mms/contracts").WidgetQuery[],
+    ): Promise<Record<string, import("@mms/contracts").WidgetAggregateResult>> => {
+      const tenant = getRequestTenant();
+      if (!tenant) return {};
+      return repo.aggregateFinanceWidgetQueries(tenant, queries);
+    },
+  };
+}
+
+export const financeUseCases = createFinanceUseCases();

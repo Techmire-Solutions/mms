@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import type { WorkBatchTableColumn } from "./workBatchTableTypes";
 
 /**

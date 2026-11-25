@@ -30,8 +30,8 @@ Refactor the code following the strict MMS invariants (`rules/mms-core.md`):
 ## Phase 4: Verification & Completion Review
 
 - [ ] **Verify changes**: Run applicable checks based on the scope:
-  - Backend changes: `cd apps/backend && pnpm lint`, backend tests.
-  - Frontend changes: `cd apps/frontend && pnpm lint`, frontend tests.
+  - Backend changes: `cd apps/api && pnpm lint`, backend tests.
+  - Frontend changes: `cd apps/tenant-web && pnpm lint` (platform: `cd apps/platform-web && pnpm lint`), frontend tests.
   - Always run `pnpm typecheck` at the monorepo root.
 - [ ] **Follow Completion Review**: Ensure all steps in `mms-completion-review.md` are satisfied.
 - [ ] **Update the registry**: Move the fixed item from the open gaps table to the "Recently Resolved" table in `rules/mms-migration-status.md` (and update the `mms-migration-fixes` SKILL.md if needed).

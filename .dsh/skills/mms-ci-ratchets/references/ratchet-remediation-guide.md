@@ -23,7 +23,7 @@ This guide details the custom AST and heuristic ratchets enforced across the MMS
 
 ### A. Backend Layering Boundaries (`check-backend-boundaries.mjs`)
 
-- **Failure:** `Route file 'apps/backend/src/routes/.../contacts.ts' imports 'drizzle-orm' or database pool directly.`
+- **Failure:** `Route file 'apps/api/src/routes/.../contacts.ts' imports 'drizzle-orm' or database pool directly.`
 - **Why:** Route handlers are HTTP translation layers. They handle authentication, input validation (`zod`), status mapping, and response serialization. Business logic and database mutations must live in domain services.
 - **Fix:**
   ```typescript

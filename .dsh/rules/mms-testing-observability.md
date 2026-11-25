@@ -10,8 +10,8 @@ description: Testing strategy (unit, API inject, Playwright E2E), coverage gates
 ## 1. Testing Strategy & Execution Invariants
 - **Test-first delivery:** Red → Green → Refactor is owned by `mms-tdd.md` (advisory pairing check: `pnpm run check:tdd-pairing`). The rules below govern how that spec is written and run.
 - **Workspace Test Execution:**
-  - Unit/Integration: `pnpm test` (root turbo) · `pnpm --filter mms-backend test:coverage` · `pnpm --filter @mms/contracts test:coverage`.
-  - Backend DB/RLS Integration: `pnpm --filter mms-backend run test:db` (requires live PostgreSQL).
+  - Unit/Integration: `pnpm test` (root turbo) · `pnpm --filter mms-api test:coverage` · `pnpm --filter @mms/contracts test:coverage`.
+  - Backend DB/RLS Integration: `pnpm --filter mms-api run test:db` (requires live PostgreSQL).
   - Browser E2E: `pnpm test:e2e` (root) or `pnpm --filter e2e-tests exec playwright test tests/<spec>.spec.ts`.
 - **Deterministic Execution (Zero Skip Latches):** Banned: conditionally-skipping tests (`if (!isDbAvailable) return;`). Mocks use in-memory repository fakes with Fastify `inject()`. Real DB integration tests must fail if database infrastructure is unavailable.
 - **New-Endpoint Branch Coverage:** A new route/endpoint pins at least forbidden, invalid/malformed, guarded/skipped, and success outcomes; upload/media routes also pin the owning-action gate.
@@ -22,9 +22,9 @@ description: Testing strategy (unit, API inject, Playwright E2E), coverage gates
 
 ## 2. Test File Organization & Specification Standards
 - **Co-Location & Layout:**
-  - Unit/Component: `[feature].test.ts` or `[feature].test.tsx` colocated next to `[feature].ts(x)` in `apps/frontend` and `packages/contracts`.
-  - Backend Unit/Routes: `apps/backend/src/__tests__/**/*.{test,spec}.ts` (or co-located `*.test.ts`).
-  - Feature Integration: `features/[feature]/__tests__/[feature].integration.test.ts` or `apps/backend/src/__tests__/db-integration/`.
+  - Unit/Component: `[feature].test.ts` or `[feature].test.tsx` colocated next to `[feature].ts(x)` in `apps/tenant-web` and `packages/contracts`.
+  - Backend Unit/Routes: `apps/api/src/__tests__/**/*.{test,spec}.ts` (or co-located `*.test.ts`).
+  - Feature Integration: `features/[feature]/__tests__/[feature].integration.test.ts` or `apps/api/src/__tests__/db-integration/`.
   - Browser E2E: `e2e/tests/[user-journey].spec.ts`.
   - Fixtures & Factories: `__fixtures__/[model].factory.ts` or typed test factories.
 - **Specification Naming Pattern:** Every test must read like a verifiable specification:
@@ -64,8 +64,8 @@ The per-workspace `thresholds` blocks are the only authoritative floors — neve
 
 | Workspace | Config (SSOT) | lines / statements / functions / branches |
 | :--- | :--- | :--- |
-| Frontend | `apps/frontend/vitest.config.ts` | 42 / 41 / 34 / 40 |
-| Backend | `apps/backend/vitest.config.ts` | 44 / 42 / 40 / 32 |
+| Frontend | `apps/tenant-web/vitest.config.ts` | 42 / 41 / 34 / 40 |
+| Backend | `apps/api/vitest.config.ts` | 44 / 42 / 40 / 32 |
 | `@mms/contracts` | `packages/contracts/vitest.config.ts` | 77 / 74 / 71 / 55 |
 
 - **The Ratchet Rule:** A pull request or code generation task must never lower the configured floors to make a change pass; raise a floor only with the measured value from a green run.
@@ -101,13 +101,13 @@ The per-workspace `thresholds` blocks are the only authoritative floors — neve
 - **Safe Retries:** Query retries idempotent GETs; mutations never auto-retry. On 429, honor `Retry-After`. Failed dynamic chunk imports must provide a reload affordance.
 
 ## 12. Multi-Tenant Integration & Contract Testing
-- **Database & Persistence Verification:** A change touching Drizzle schemas, migrations, relations or SQL queries needs an integration test (`*.integration.test.ts` or `vitest.db.config.ts`) against a real test database. Run the DB bucket locally with `pnpm ci:local --with-db` (`pnpm --filter mms-backend run test:db`); CI runs `test-backend-db` on the same path filter. Review-gated: no gate can prove the test exists.
+- **Database & Persistence Verification:** A change touching Drizzle schemas, migrations, relations or SQL queries needs an integration test (`*.integration.test.ts` or `vitest.db.config.ts`) against a real test database. Run the DB bucket locally with `pnpm ci:local --with-db` (`pnpm --filter mms-api run test:db`); CI runs `test-backend-db` on the same path filter. Review-gated: no gate can prove the test exists.
 - **Multi-Tenant RLS & Boundary Verification:**
   - Explicitly test Row-Level Security (RLS) enforcement and `tenant_id` scoping.
   - Execute cross-tenant isolation assertions: verify that Tenant A cannot read, mutate, or soft-delete records belonging to Tenant B under any circumstance.
   - Validate transaction rollbacks on failure to ensure atomic consistency across multi-table writes.
 - **API Route & Serialization Integrity:** Validate Fastify route handlers, authentication/session cookies, CSRF guards, and response payload serialization against their corresponding `@mms/contracts` contract schemas.
-- **Zero Regression Suite:** Run the dependent subsystem suites (`pnpm --filter mms-backend run test:db` and `pnpm test`) to guarantee modifications do not introduce regressions across related modules.
+- **Zero Regression Suite:** Run the dependent subsystem suites (`pnpm --filter mms-api run test:db` and `pnpm test`) to guarantee modifications do not introduce regressions across related modules.
 
 ## 13. Derived Projection & Concurrency Testing
 - **Lifecycle matrix:** Every system-managed projection needs real-DB coverage for add, rename/relabel, end/unlink, soft-delete/restore, and archived naming. Event-only or import-only paths are not enough.

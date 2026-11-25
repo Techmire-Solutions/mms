@@ -46,8 +46,8 @@ const BANNED_FILE_PATTERNS = [
 
 const ALLOWED_FILES = new Set([
   ".env.example",
-  "apps/backend/.env.example",
-  "apps/frontend/.env.example",
+  "apps/api/.env.example",
+  "apps/tenant-web/.env.example",
 ]);
 
 let violations = [];
@@ -68,7 +68,7 @@ function report() {
 for (const file of stagedFiles) {
   if (ALLOWED_FILES.has(file)) continue;
   // The patterns are anchored (`^…$`), so test the basename as well as the full
-  // path — otherwise a root `.env` is blocked but `apps/backend/.env` slips through.
+  // path — otherwise a root `.env` is blocked but `apps/api/.env` slips through.
   const basename = file.split("/").pop() ?? file;
   for (const pattern of BANNED_FILE_PATTERNS) {
     if (pattern.test(file) || pattern.test(basename)) {

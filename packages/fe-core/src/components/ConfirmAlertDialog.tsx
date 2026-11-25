@@ -4,7 +4,7 @@ import {
   type ConfirmAlertDialogProps as SharedConfirmAlertDialogProps,
   type ConfirmAlertDialogOptionalReason,
 } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 
 export type { ConfirmAlertDialogOptionalReason };
 export type ConfirmAlertDialogProps = SharedConfirmAlertDialogProps;

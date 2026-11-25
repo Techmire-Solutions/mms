@@ -106,7 +106,7 @@ domain reports already record; run the module's unit/integration tests.
 ## Phase 7 — Final verification & regression gate
 
 - [ ] `bash .agent/skills/mms-code-review/scripts/pre-pr-review.sh`
-- [ ] `pnpm typecheck` · `pnpm lint` · `pnpm --filter mms-frontend test`
+- [ ] `pnpm typecheck` · `pnpm lint` · `pnpm --filter mms-tenant-web test`
 - [ ] `pnpm run check:forms` (baselines non-increasing)
 - [ ] `node scripts/ci/check-ratchet-baselines.mjs --base <base>` — see
       `skills/mms-ci-ratchets/references/ratchet-remediation-guide.md`

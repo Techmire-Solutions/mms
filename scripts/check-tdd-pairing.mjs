@@ -30,10 +30,11 @@ const STRICT = argv.includes("--strict");
  */
 const STRICT_USE_CASES = argv.includes("--strict-use-cases");
 
-const DOMAIN_RE = /^apps\/backend\/src\/.+\/(?:use-cases|services|repositories|repository)\//;
+const DOMAIN_RE =
+  /^(?:apps\/api\/src\/.+\/(?:use-cases|services|repositories|repository)|packages\/modules\/[^/]+\/src\/backend\/(?:use-cases|services|repository))\//;
 
 // Fail closed: "no domain files" must mean nothing changed, never "the root moved".
-assertScanDirs({ "backend source": fromRoot("apps/backend/src") }, "TDD pairing");
+assertScanDirs({ "backend source": fromRoot("apps/api/src") }, "TDD pairing");
 const TEST_RE = /\.(?:integration\.)?test\.(?:ts|tsx)$/;
 
 const git = (args) => {
@@ -69,7 +70,7 @@ if (!base) {
 
 const changed = new Set([
   ...git(["diff", "--name-only", "--diff-filter=ACMR", base]),
-  ...git(["diff", "--name-only", "HEAD"]),
+  ...git(["diff", "--name-only", "--diff-filter=ACMR", "HEAD"]),
   ...git(["ls-files", "--others", "--exclude-standard"]),
 ]);
 
@@ -106,10 +107,15 @@ const KNOWN_MODULES = [
   "workshops",
 ];
 
-/** First four path segments: `apps/backend/src/<module>`, mapping `__tests__` paths to the target module. */
+/** Map backend domain files and specs (`apps/api/src` & `packages/modules/*`) to a canonical module id. */
 const moduleOf = (file) => {
-  if (file.startsWith("apps/backend/src/__tests__/")) {
-    const rel = file.slice("apps/backend/src/__tests__/".length).toLowerCase();
+  const modPkg = file.match(/^packages\/modules\/([^/]+)\//);
+  if (modPkg) {
+    const camel = modPkg[1].replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    return `apps/api/src/${camel}`;
+  }
+  if (file.startsWith("apps/api/src/__tests__/")) {
+    const rel = file.slice("apps/api/src/__tests__/".length).toLowerCase();
     const found = KNOWN_MODULES.find((mod) => {
       const lower = mod.toLowerCase();
       return (
@@ -120,7 +126,7 @@ const moduleOf = (file) => {
       );
     });
     if (found) {
-      return `apps/backend/src/${found}`;
+      return `apps/api/src/${found}`;
     }
   }
   return file.split("/").slice(0, 4).join("/");

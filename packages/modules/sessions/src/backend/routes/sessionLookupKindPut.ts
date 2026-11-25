@@ -1,0 +1,28 @@
+import {
+  SESSIONS_MODULE_MANIFEST,
+  SESSION_LOOKUP_KINDS,
+  sessionLookupPutBodySchema,
+  type SessionLookupKind,
+} from "@mms/contracts";
+import { createLookupKindPutHandler } from "../lib/createLookupKindPutHandler.js";
+import { replaceSessionLookupKind } from "../services/index.js";
+import { withTenant } from "@mms/db/context";
+import { getRequestTenant } from "@mms/be-core/http";
+import { auditSession } from "./sessionRouteHelpers.js";
+
+const handler = createLookupKindPutHandler<SessionLookupKind, string[]>({
+  kinds: SESSION_LOOKUP_KINDS,
+  setupWritePermission: SESSIONS_MODULE_MANIFEST.permissions.setupWrite,
+  putBodySchema: sessionLookupPutBodySchema,
+  replaceKind: (kind, items) => replaceSessionLookupKind(kind, items),
+  audit: auditSession,
+  auditAction: "session.lookups",
+  saveError: "Failed to save session lookups",
+});
+
+/** `PUT /api/sessions/lookups/:kind` — replace + audit in one transaction. */
+export const putSessionLookupKind: typeof handler = async (args) => {
+  const tenant = getRequestTenant();
+  if (!tenant) return handler(args);
+  return withTenant(tenant, () => handler(args));
+};

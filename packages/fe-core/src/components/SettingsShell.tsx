@@ -1,0 +1,157 @@
+import React from "react";
+import type { AppTranslationKey } from "@mms/contracts";
+import { useTranslation } from "../i18n/index.js";
+import { ToggleRow } from "@mms/ui";
+import { cn } from "@mms/ui";
+import { WORK_SURFACE_INNER } from "@mms/ui";
+
+export { SettingsColoursBadge } from "@mms/ui/app/SettingsShellBadges";
+
+export const SETTINGS_WIDTH = {
+  narrow: "max-w-2xl",
+  medium: "max-w-3xl",
+  wide: "max-w-4xl",
+} as const;
+
+interface SettingsPanelProps {
+  width?: keyof typeof SETTINGS_WIDTH;
+  /** Translation key for supplementary panel copy (`*Desc` sibling). */
+  introKey: AppTranslationKey;
+  isDirty?: boolean;
+  saved?: boolean;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  /** Reserve space for a sticky footer action bar. */
+  footerSticky?: boolean;
+}
+
+/**
+ * Consistent settings tab shell — intro, status, content, sticky actions.
+ */
+export function SettingsPanel({
+  width = "medium",
+  introKey,
+  isDirty = false,
+  saved = false,
+  children,
+  footer,
+  footerSticky = false,
+}: SettingsPanelProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const introDescKey = `${introKey}Desc` as AppTranslationKey;
+
+  return (
+    // Centre the capped column so a wide settings card keeps equal space on both
+    // sides instead of a ~100px gap on the end edge only.
+    <div className={cn(SETTINGS_WIDTH[width], "mx-auto w-full space-y-8 pb-2")}>
+      <SettingsPanelIntro description={t(introDescKey)} />
+      <SettingsStatusBadges isDirty={isDirty} saved={saved} />
+      {footerSticky && footer ? (
+        <div className="sticky top-header z-sticky -mx-1 bg-background/95 px-1 backdrop-blur-md">
+          {footer}
+        </div>
+      ) : null}
+      <div className="space-y-8">{children}</div>
+      {!footerSticky ? footer : null}
+    </div>
+  );
+}
+
+interface SettingsPanelIntroProps {
+  description: string;
+  className?: string;
+}
+
+export function SettingsPanelIntro({
+  description,
+  className,
+}: SettingsPanelIntroProps): React.JSX.Element {
+  return (
+    <p
+      className={cn(
+        "rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-xs leading-relaxed text-pretty text-muted-foreground sm:px-5",
+        className,
+      )}
+    >
+      {description}
+    </p>
+  );
+}
+
+export function SettingsStatusBadges({
+  isDirty,
+  saved,
+}: {
+  isDirty: boolean;
+  saved: boolean;
+}): React.JSX.Element | null {
+  const { t } = useTranslation();
+  if (!isDirty && !saved) return null;
+
+  return (
+    <div
+      className={cn(
+        "flex flex-wrap items-center gap-2 rounded-lg border px-3 py-2 transition-all",
+        isDirty ? "border-warning/30 bg-warning/5" : "border-border/60 bg-muted/20",
+      )}
+      aria-live="polite"
+    >
+      {isDirty ? (
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-warning">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-xs bg-warning" aria-hidden="true" />
+          {t("settings.unsavedChanges")}
+        </span>
+      ) : null}
+      {saved && !isDirty ? (
+        <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
+          <span className="h-1.5 w-1.5 shrink-0 rounded-xs bg-success" aria-hidden="true" />
+          {t("settings.savedBadge")}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
+interface SettingsToggleRowProps {
+  id: string;
+  label: string;
+  description?: string;
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  disabled?: boolean;
+}
+
+export function SettingsToggleRow(props: SettingsToggleRowProps): React.JSX.Element {
+  return <ToggleRow variant="card" {...props} />;
+}
+
+export function SettingsFieldGroup({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}): React.JSX.Element {
+  return <div className={cn("grid grid-cols-1 gap-4 sm:grid-cols-2", className)}>{children}</div>;
+}
+
+export function SettingsCallout({
+  variant = "info",
+  children,
+}: {
+  variant?: "info" | "warning";
+  children: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <div
+      className={cn(
+        "rounded-lg border px-3 py-2.5 text-xs leading-relaxed",
+        variant === "warning"
+          ? "border-warning/30 bg-warning/10 text-warning dark:border-warning/30 dark:bg-warning/10 dark:text-warning"
+          : `${WORK_SURFACE_INNER} text-muted-foreground`,
+      )}
+    >
+      {children}
+    </div>
+  );
+}

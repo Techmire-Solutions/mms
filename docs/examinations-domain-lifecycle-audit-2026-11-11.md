@@ -29,9 +29,9 @@ the server.
 
 | Finding | Evidence | Status |
 |---|---|---|
-| **F1 · P1 — Domain logic in the route layer.** Eligibility + teacher class scope + server stamping were composed in `routes/tenant/examinations/examResultsWriteGuard.ts`. | `examResultsWriteGuard.ts` (deleted) | **Fixed:** moved to [`examResultsSubmission.ts`](../apps/backend/src/examinations/use-cases/examResultsSubmission.ts); the route keeps one `beforeSave` reference. |
-| **F2 · P1 — A state transition was orchestrated in a handler**, and the *repository* chose the resulting status (`status: input.finalized ? "completed" : before.status`). | `examinationGateHandlers.ts:142-190`, `examClassMembershipRepository.ts:70-118` | **Fixed:** [`examLifecycleUseCases.ts`](../apps/backend/src/examinations/use-cases/examLifecycleUseCases.ts) decides the next state; the repository persists an explicit `{ resultsFinalizedAt, status }`. |
-| **F3 · P2 — Write guards lived where they could be bypassed.** `beforeSave` runs *before* the transaction, so a publish racing the save could still be overwritten. | `crudBulkRouteFactories.ts:70-73` | **Fixed for the invariants that matter:** the publication/archived lock and OCC are enforced inside the write transaction ([`examinationResultsPersist.ts`](../apps/backend/src/db/repositories/examinationResultsPersist.ts)). The eligibility *evaluation* still runs pre-transaction — documented residual TOCTOU, harmless now because the exam row lock closes the state race. |
+| **F1 · P1 — Domain logic in the route layer.** Eligibility + teacher class scope + server stamping were composed in `routes/tenant/examinations/examResultsWriteGuard.ts`. | `examResultsWriteGuard.ts` (deleted) | **Fixed:** moved to [`examResultsSubmission.ts`](../packages/modules/examinations/src/backend/use-cases/examResultsSubmission.ts); the route keeps one `beforeSave` reference. |
+| **F2 · P1 — A state transition was orchestrated in a handler**, and the *repository* chose the resulting status (`status: input.finalized ? "completed" : before.status`). | `examinationGateHandlers.ts:142-190`, `examClassMembershipRepository.ts:70-118` | **Fixed:** [`examLifecycleUseCases.ts`](../packages/modules/examinations/src/backend/use-cases/examLifecycleUseCases.ts) decides the next state; the repository persists an explicit `{ resultsFinalizedAt, status }`. |
+| **F3 · P2 — Write guards lived where they could be bypassed.** `beforeSave` runs *before* the transaction, so a publish racing the save could still be overwritten. | `crudBulkRouteFactories.ts:70-73` | **Fixed for the invariants that matter:** the publication/archived lock and OCC are enforced inside the write transaction ([`examinationResultsPersist.ts`](../packages/modules/examinations/src/backend/repository/examinationResultsPersist.ts)). The eligibility *evaluation* still runs pre-transaction — documented residual TOCTOU, harmless now because the exam row lock closes the state race. |
 | **F4 · P2 — Two registration surfaces.** The contract declares `bulkUpdateExams`, `bulkUpdateResults`, `deleteExam`, `restoreExam`; the contract router's implementation object omits all four and the legacy bulk router serves those paths. | `examinations.contract.ts:98-126`, `examinationContractRouter.ts:15-176` | **Documented, not refactored** (see §5). |
 | **F5 · P1 — Grading is UI-only and config-blind.** `getGrade` hardcodes 90/80/70/60/50 and is consumed only by the frontend; the server never recomputes a grade, so printed report cards carry a client-supplied grade. Tenant settings `gradingSystem`, `passMark`, `maxMark`, `autoPublishResults`, `allowRetake` have **no consumer** outside the settings screen. | `gradeUtils.ts:14-62`, `useResultsViewData.ts:94`, `reportCardPayload.ts:104`, `examinationsModuleSettings.ts:10-31` | **Documented** (§3). |
 | **F6 · P2 — Permission semantics for publication.** Publishing/unpublishing results is gated on `examinations.delete` (`canDeleteCollection`), i.e. the delete right is standing in for "publish". | `examinationGateHandlers.ts:150` | **Documented** (§3) — deliberately not changed in a remediation, because swapping the check either tightens or loosens authorization with no product decision. |
@@ -69,7 +69,7 @@ nobody sat, and twice; there was no reason and no unlock workflow.
   `ongoing → completed | cancelled`, `completed`/`cancelled` terminal; a no-op is an update, not a
   transition; unknown states fail closed.
 - The backend rejects an illegal move with **409 `illegal_exam_transition`** inside the write
-  transaction ([`examWriteGuards.ts`](../apps/backend/src/examinations/domain/examWriteGuards.ts)),
+  transaction ([`examWriteGuards.ts`](../packages/modules/examinations/src/backend/domain/examWriteGuards.ts)),
   and the form only offers legal options (`ExaminationFormFields.tsx`).
 - **Published = locked.** A published exam rejects changes to name, subject, totals, date, duration,
   status and class membership (**409 `exam_published_immutable`**), rejects marks writes
@@ -126,9 +126,9 @@ retention), not a remediation — see §5 for the target model.
 ## 5. Delivered
 
 - [`examLifecycle.ts`](../packages/contracts/src/examinations/examLifecycle.ts) + 6 unit tests.
-- [`examWriteGuards.ts`](../apps/backend/src/examinations/domain/examWriteGuards.ts) (pure guards).
-- [`examLifecycleUseCases.ts`](../apps/backend/src/examinations/use-cases/examLifecycleUseCases.ts) + 10 unit tests.
-- [`examResultsSubmission.ts`](../apps/backend/src/examinations/use-cases/examResultsSubmission.ts)
+- [`examWriteGuards.ts`](../packages/modules/examinations/src/backend/domain/examWriteGuards.ts) (pure guards).
+- [`examLifecycleUseCases.ts`](../packages/modules/examinations/src/backend/use-cases/examLifecycleUseCases.ts) + 10 unit tests.
+- [`examResultsSubmission.ts`](../packages/modules/examinations/src/backend/use-cases/examResultsSubmission.ts)
   (moved route guard); route layer reduced to transport + authorization + error mapping.
 - `resultsFinalizedAt` on the exam DTO and every exam projection; publish/unpublish UI with a required
   unlock reason; read-only marks grid while published; status options filtered by the transition table.

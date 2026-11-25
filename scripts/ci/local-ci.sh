@@ -72,18 +72,18 @@ bucket() {
     # touching only a future app root must not skip its bucket silently.
     frontend)
       printf '%s\n' "$CHANGED_TEXT" | paths_match \
-        'apps/frontend/*' 'apps/tenant-web/*' 'apps/platform-web/*' "${COMMON_ROOT[@]}"
+        'apps/tenant-web/*' 'apps/platform-web/*' "${COMMON_ROOT[@]}"
       ;;
     backend_unit)
-      printf '%s\n' "$CHANGED_TEXT" | paths_match 'apps/backend/*' 'apps/api/*' "${COMMON_ROOT[@]}"
+      printf '%s\n' "$CHANGED_TEXT" | paths_match 'apps/api/*' "${COMMON_ROOT[@]}"
       ;;
     backend_db)
       printf '%s\n' "$CHANGED_TEXT" | paths_match \
-        'apps/backend/src/db/*' 'apps/api/src/db/*' 'packages/db/*' 'packages/be-core/*' \
+        'apps/api/src/db/*' 'packages/db/*' 'packages/be-core/*' \
         'packages/db/drizzle.config.ts' \
-        'apps/backend/src/*/repository/*' 'apps/api/src/*/repository/*' \
-        'apps/backend/src/*/ledgerPosting/*' 'apps/api/src/*/ledgerPosting/*' \
-        'apps/backend/src/accounting/*' 'apps/backend/vitest.db.config.ts' 'apps/api/vitest.db.config.ts' \
+        'apps/api/src/*/repository/*' \
+        'apps/api/src/*/ledgerPosting/*' \
+        'apps/api/vitest.db.config.ts' \
         "${COMMON_ROOT[@]}"
       ;;
     e2e) printf '%s\n' "$CHANGED_TEXT" | paths_match 'e2e/*' 'apps/*' "${COMMON_ROOT[@]}" ;;
@@ -127,6 +127,8 @@ echo ""
 echo "Phase A: quality gates (pre-pr-review.sh)"
 bash .agent/skills/mms-code-review/scripts/pre-pr-review.sh
 note_ran "gates"
+# Clear potentially huge path list from child env before Prettier/Turbo/Vitest (macOS ARG_MAX stack headroom).
+unset MMS_CI_CHANGED
 
 # Mirrors CI `pnpm format:check`. --end-of-line auto: Windows autocrlf checkouts are
 # CRLF on disk but committed as LF, so the configured "lf" would flag every file.
@@ -167,13 +169,21 @@ if [[ "$NEED_FE" -eq 1 || "$NEED_BE_UNIT" -eq 1 ]]; then
   pnpm --filter @mms/mod-iam test && note_ran "mod-iam-test"
   pnpm --filter @mms/mod-accounting test && note_ran "mod-accounting-test"
   pnpm --filter @mms/mod-contacts test && note_ran "mod-contacts-test"
+  pnpm --filter @mms/mod-hasanat test && note_ran "mod-hasanat-test"
+  pnpm --filter @mms/mod-faculty test && note_ran "mod-faculty-test"
+  pnpm --filter @mms/mod-messaging test && note_ran "mod-messaging-test"
+  pnpm --filter @mms/mod-billing test && note_ran "mod-billing-test"
+  pnpm --filter @mms/mod-students test && note_ran "mod-students-test"
+  pnpm --filter @mms/mod-sessions test && note_ran "mod-sessions-test"
 fi
 
 echo ""
 echo "Phase C: affected unit tests"
 if [[ "$NEED_FE" -eq 1 ]]; then
-  run_vitest mms-frontend 'packages/contracts/*' 'apps/frontend/vite*.config.ts' 'apps/frontend/src/test/*'
+  run_vitest mms-tenant-web 'packages/contracts/*' 'apps/tenant-web/vite*.config.ts' 'apps/tenant-web/src/test/*'
   note_ran "frontend-vitest"
+  run_vitest mms-platform-web 'packages/contracts/*' 'apps/platform-web/vite*.config.ts' 'apps/platform-web/src/test/*'
+  note_ran "platform-vitest"
   pnpm --filter @mms/ui test && note_ran "ui-test"
   pnpm --filter @mms/fe-core test && note_ran "fe-core-test"
 else
@@ -188,7 +198,7 @@ if [[ "$NEED_BE_UNIT" -eq 1 ]]; then
     run_vitest @mms/contracts 'packages/contracts/vitest.config.ts'
     note_ran "shared-test"
   fi
-  run_vitest mms-backend 'packages/contracts/*' 'apps/backend/vitest.config.ts'
+  run_vitest mms-api 'packages/contracts/*' 'apps/api/vitest.config.ts'
   note_ran "backend-vitest"
   pnpm --filter @mms/db test && note_ran "db-test"
   pnpm --filter @mms/be-core test && note_ran "be-core-test"
@@ -215,7 +225,7 @@ if [[ "$FULL" -eq 1 || "$WITH_LIGHTHOUSE" -eq 1 ]]; then
   echo ""
   echo "Phase G: Lighthouse CI (mobile + desktop)"
   if [[ "$FULL" -ne 1 ]]; then
-    pnpm --filter mms-frontend build
+    pnpm --filter mms-tenant-web build
   fi
   # Clean up stale results from a previous local run (the `mv` below would
   # otherwise fail once .lighthouseci-mobile/.lighthouseci-desktop exist).
@@ -234,14 +244,14 @@ if [[ "$WITH_DB" -eq 1 && "$NEED_BE_DB" -eq 1 ]]; then
   if command -v pg_isready >/dev/null 2>&1 && pg_isready -q 2>/dev/null; then
     echo ""
     echo "Phase E: backend DB (--with-db)"
-    pnpm --filter mms-backend run db:migrate
+    pnpm --filter mms-api run db:migrate
     pnpm --filter @mms/mod-accounting run test:db
-    pnpm --filter mms-backend run test:db
-    pnpm --filter mms-backend run test:db:coverage:attendance
-    node scripts/ci/check-attendance-coverage.mjs --coverage apps/backend/coverage-attendance-db
+    pnpm --filter mms-api run test:db
+    pnpm --filter mms-api run test:db:coverage:attendance
+    node scripts/ci/check-attendance-coverage.mjs --coverage apps/api/coverage-attendance-db
     node scripts/ci/check-db-test-hygiene.mjs
     node scripts/ci/check-db-test-manifest.mjs
-    pnpm --filter mms-backend run test:db:concurrency
+    pnpm --filter mms-api run test:db:concurrency
     note_ran "backend-db"
   else
     echo "SKIP backend-db: Postgres not ready (pg_isready)."

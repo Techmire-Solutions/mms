@@ -4,7 +4,7 @@
 #
 # Usage (on production VPS as root):
 #   cd /var/www/mmsv2
-#   bash scripts/production/fix-tenant-tls-wildcard.sh apps/backend/.env
+#   bash scripts/production/fix-tenant-tls-wildcard.sh apps/api/.env
 #
 # Requires interactive certbot DNS challenge unless MMS_WILDCARD_CERT_DIR is preset.
 set -euo pipefail
@@ -17,7 +17,7 @@ source "$ROOT_DIR/scripts/lib/deploy-ports.sh"
 # shellcheck source=../lib/read-env.sh
 source "$ROOT_DIR/scripts/lib/read-env.sh"
 
-ENV_FILE="${1:-apps/backend/.env}"
+ENV_FILE="${1:-apps/api/.env}"
 
 APP_DOMAIN="$(read_env_var MMS_APP_DOMAIN "${MMS_APP_DOMAIN:-}")"
 if [[ -z "$APP_DOMAIN" ]]; then

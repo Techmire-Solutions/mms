@@ -16,7 +16,7 @@ while IFS= read -r file; do
     echo "❌ CRLF line terminator found in: $file"
     ERRORS=$((ERRORS + 1))
   fi
-done < <(find scripts .agent/scripts apps/backend/src apps/frontend/src -type f \( -name "*.sh" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" \) 2>/dev/null)
+done < <(find scripts .agent/scripts apps/api/src apps/tenant-web/src -type f \( -name "*.sh" -o -name "*.ts" -o -name "*.tsx" -o -name "*.json" \) 2>/dev/null)
 
 # 2. Executable permission check for shell scripts
 echo "Checking script execute bits..."

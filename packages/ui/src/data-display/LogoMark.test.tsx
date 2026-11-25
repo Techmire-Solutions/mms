@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { LogoMark, PlatformLogoMark } from "./LogoMark";
 
-describe("LogoMark & PlatformLogoMark (@shared/ui)", () => {
+describe("LogoMark & PlatformLogoMark (@mms/ui)", () => {
   it("renders large logo mark by default with modern priority attributes", () => {
     const html = renderToStaticMarkup(<LogoMark />);
     expect(html).toContain("h-20 w-20");

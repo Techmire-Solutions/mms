@@ -1,6 +1,6 @@
 ---
 name: mms-fields-registry
-description: Adds or changes field/tab registries, module Setup Fields UI, and field configuration per mms-fields.md. Use when working with custom fields, system tabs, field types, column registries, field delete guards, or getSortedFields. Do NOT use for core entity Drizzle database migrations (use mms-schema-migrate) or generic form modal layouts (use mms-form-architecture).
+description: Adds/changes field/tab registries, Setup Fields UI, field config. Use when custom fields, system tabs, column registries, delete guards. Do NOT use for Drizzle DDL (use mms-schema-migrate) or form layouts (use mms-form-architecture).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -38,7 +38,7 @@ Every new or modified field must complete:
 |---------|----------------|
 | Sort helper | `packages/contracts/src/settings/moduleFieldSchema.ts` (`getSortedFields`) |
 | Removal guards | `packages/contracts/src/contacts/contactFieldDependencies.ts` (`getContactFieldRemovalIssues`), faculty/student siblings, `createFieldRemovalIssuesChecker` |
-| Setup routes | `apps/backend/src/lib/registerModuleSetupConfigRoutes.ts` |
+| Setup routes | `apps/api/src/lib/registerModuleSetupConfigRoutes.ts` |
 | Column layout | `useModuleColumnLayout` |
 | Descriptors | `createEntityDescriptorFromFieldConfig` |
 
@@ -60,8 +60,8 @@ Every new or modified field must complete:
 
 ```bash
 pnpm typecheck
-pnpm --filter mms-frontend lint
-pnpm --filter mms-backend test:db contactsSystemTagsDb
+pnpm --filter mms-tenant-web lint
+pnpm --filter mms-api test:db contactsSystemTagsDb
 ```
 
 ## Related skills

@@ -19,7 +19,7 @@ log_err() { echo -e "${RED}[MMS-RESTORE-ERR]${NC} $1"; }
 trap 'log_err "Failed at line $LINENO: command \"$BASH_COMMAND\" exited with status $?"' ERR
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
-ENV_FILE="${MMS_DEPLOY_ENV:-${ROOT_DIR}/apps/backend/.env}"
+ENV_FILE="${MMS_DEPLOY_ENV:-${ROOT_DIR}/apps/api/.env}"
 
 # 1. Parse input arguments
 if [[ $# -ne 1 ]]; then

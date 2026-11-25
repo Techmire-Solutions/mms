@@ -9,7 +9,7 @@ description: DRY guidelines, duplication thresholds, extraction patterns, and @m
 
 ## 1. Proactive Search & Duplication Audits
 - **Shared Component Architecture SSOT (`@mms/ui`):** All reusable UI primitives live in `@mms/ui` (`packages/ui`). Zero duplicate components across Tenant and Platform consoles; see `mms-shared-ui.md` for the authoritative topology, facade rules, and console boundaries.
-- **Search First:** Audit `@mms/contracts`, `packages/ui/` (`@mms/ui`), `apps/frontend/src/lib/config/`, `apps/frontend/src/hooks/`, `@/components/ui/`, `@/components/app/`, and `@/components/common/` before creating components, layouts, forms, dialogs, utilities, or DTOs. Extend existing abstractions via optional props rather than duplicating.
+- **Search First:** Audit `@mms/contracts`, `packages/ui/` (`@mms/ui`), `apps/tenant-web/src/lib/config/`, `apps/tenant-web/src/hooks/`, `@/components/ui/`, `@/components/app/`, and `@/components/common/` before creating components, layouts, forms, dialogs, utilities, or DTOs. Extend existing abstractions via optional props rather than duplicating.
 - **Consumer Compatibility:** Shared component changes must maintain backward compatibility for existing consumers. Verify consumers, run tests, and check affected pages.
 - **Right-Sized Abstractions:** Consolidate identical duplication without changing behavior; do not force unrelated functionality into monolithic abstractions. Compose small primitives when call sites differ.
 - **Shared Chrome SSOT:** Enforce central primitives and design tokens:
@@ -35,8 +35,8 @@ description: DRY guidelines, duplication thresholds, extraction patterns, and @m
 
 ## 3. Monorepo Layer Boundaries
 - **`@mms/contracts`:** Pure validation schemas, types, constants, default configs, and formatters. Named exports only; no `@mms/contracts/src/**` deep imports — only the root entry point and the subpaths declared in `packages/contracts/package.json` `exports` (`mms-structure-naming.md` §1). Zero React, DOM, Fastify, or DB dependencies.
-- **`apps/frontend`:** React hooks, UI primitives, providers, TanStack Query facades. Ban direct cross-feature imports (`featureA` from `featureB`); route via `@/tenant/hooks/collections/*` facades or promote to `components/app` (composites) / `@mms/ui` (`packages/ui`) (primitives).
-- **`apps/backend`:** Fastify routes, services, repositories, and Drizzle schemas/queries.
+- **`apps/tenant-web`:** React hooks, UI primitives, providers, TanStack Query facades. Ban direct cross-feature imports (`featureA` from `featureB`); route via `@/tenant/hooks/collections/*` facades or promote to `components/app` (composites) / `@mms/ui` (`packages/ui`) (primitives).
+- **`apps/api`:** Fastify routes, services, repositories, and Drizzle schemas/queries.
 
 ## 4. Quality Bar & Code Cleanup
 - **Strict Typing:** Strict TypeScript required. Use `unknown` + narrowing. Explicit `any` is banned (`@typescript-eslint/no-explicit-any`).

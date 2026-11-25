@@ -6,7 +6,7 @@ import { sendDatabaseError, sendNotFound, sendServiceUnavailable } from "@mms/be
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
 import { canReadContacts, canDeleteContacts } from "@mms/be-core/rbac";
 import { hasBackgroundJobRunner } from "../../deps.js";
-import { contactUseCases } from "../../use-cases/contactUseCases.js";
+import { contactUseCases } from "../../use-cases/index.js";
 import {
   buildContactMergeBodySchema,
   contactsCsvExportBodySchema,
@@ -21,7 +21,7 @@ import {
   sanitizeOneForUser,
 } from "./contactRouteHelpers.js";
 import { contactIdentityMatchBodySchema, collectContactWriteExtraFieldKeys } from "@mms/contracts";
-import { loadContactFieldConfig } from "../../use-cases/contactConfigService.js";
+import { loadContactFieldConfig } from "../../use-cases/index.js";
 
 /** Contact CSV export queue, merge, and audit logging routes. */
 export const contactAuditExportRoutes: FastifyPluginAsync = async (fastify) => {

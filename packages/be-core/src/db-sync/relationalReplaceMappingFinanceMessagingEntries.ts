@@ -6,51 +6,51 @@ export const RELATIONAL_REPLACE_MAPPING_FINANCE_MESSAGING: Record<
   RelationalCollectionMapping
 > = {
   finance_invoices: {
-    importPath: "./repositories/financeRepository.js",
+    importPath: "@mms/mod-billing/backend/repository",
     fnName: "replaceInvoicesForWorkspace",
     snapshotFnName: "listInvoicesByWorkspace",
   },
   finance_payments: {
-    importPath: "./repositories/financeRepository.js",
+    importPath: "@mms/mod-billing/backend/repository",
     fnName: "replacePaymentsForWorkspace",
     snapshotFnName: "listPaymentsByWorkspace",
   },
   finance_field_configs: {
     priority: 36,
-    importPath: "./repositories/financeFieldConfigRepository.js",
+    importPath: "@mms/mod-billing/backend/repository",
     fnName: "replaceFinanceFieldConfigsForWorkspace",
     snapshotFnName: "listAllFinanceFieldConfigsByWorkspace",
   },
   finance_module_preferences: {
     priority: 37,
-    importPath: "./repositories/financeModulePreferencesRepository.js",
+    importPath: "@mms/mod-billing/backend/repository",
     fnName: "replaceFinanceModulePreferencesForWorkspace",
     snapshotFnName: "listAllFinanceModulePreferencesByWorkspace",
   },
   accounting_field_configs: {
     priority: 43,
-    importPath: "./repositories/accountingFieldConfigRepository.js",
+    importPath: "@mms/mod-accounting/backend/repository",
     fnName: "replaceAccountingFieldConfigsForWorkspace",
     snapshotFnName: "listAllAccountingFieldConfigsByWorkspace",
   },
   accounting_module_preferences: {
     priority: 44,
-    importPath: "./repositories/accountingModulePreferencesRepository.js",
+    importPath: "@mms/mod-accounting/backend/repository",
     fnName: "replaceAccountingModulePreferencesForWorkspace",
     snapshotFnName: "listAllAccountingModulePreferencesByWorkspace",
   },
   accounting_accounts: {
-    importPath: "./repositories/accountingRepository.js",
+    importPath: "@mms/mod-accounting/backend/repository",
     fnName: "replaceAccountsForWorkspace",
     snapshotFnName: "listAccountsByWorkspace",
   },
   accounting_entries: {
-    importPath: "./repositories/accountingRepository.js",
+    importPath: "@mms/mod-accounting/backend/repository",
     fnName: "replaceEntriesForWorkspace",
     snapshotFnName: "listEntriesByWorkspace",
   },
   accounting_fiscal_years: {
-    importPath: "./repositories/accountingRepository.js",
+    importPath: "@mms/mod-accounting/backend/repository",
     fnName: "replaceFiscalYearsForWorkspace",
     snapshotFnName: "listFiscalYearsByWorkspace",
   },
@@ -60,12 +60,12 @@ export const RELATIONAL_REPLACE_MAPPING_FINANCE_MESSAGING: Record<
     snapshotFnName: "listActivityLogsByWorkspace",
   },
   message_templates: {
-    importPath: "./repositories/messagingRepository.js",
+    importPath: "@mms/mod-messaging/backend/repository",
     fnName: "replaceMessageTemplatesForWorkspace",
     snapshotFnName: "listMessageTemplatesByWorkspace",
   },
   message_logs: {
-    importPath: "./repositories/messagingRepository.js",
+    importPath: "@mms/mod-messaging/backend/repository",
     fnName: "replaceMessageLogsForWorkspace",
     // Archived rows are part of the workspace state: the restore hard-replaces
     // the table, so an active-only snapshot would silently drop the archived

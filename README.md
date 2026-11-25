@@ -37,7 +37,7 @@ mms/
 └── turbo.json
 ```
 
-### Backend source (`apps/backend/src/`)
+### Backend source (`apps/api/src/`)
 
 | Directory       | Purpose                                             |
 | --------------- | --------------------------------------------------- |
@@ -108,10 +108,10 @@ pnpm install
 cp .env.example .env
 
 # Backend app config
-cp apps/backend/.env.example apps/backend/.env
+cp apps/api/.env.example apps/api/.env
 ```
 
-Edit `apps/backend/.env` — minimum required vars:
+Edit `apps/api/.env` — minimum required vars:
 
 ```env
 JWT_SECRET=<openssl rand -hex 32>
@@ -133,7 +133,7 @@ docker compose up postgres redis -d
 ### 4. Run migrations
 
 ```bash
-cd apps/backend
+cd apps/api
 pnpm db:migrate
 ```
 
@@ -172,7 +172,7 @@ pnpm test:e2e       # Playwright E2E suite
 pnpm check:i18n     # Verify translation key completeness (en/ar/ur/fa)
 ```
 
-### Backend (`apps/backend/`)
+### Backend (`apps/api/`)
 
 ```bash
 pnpm dev              # tsx watch (hot reload)
@@ -218,7 +218,7 @@ role password is embedded in `DATABASE_URL`, so use URL-safe characters.
 | -------------- | ---------------- | --------------------------------- |
 | `mms-postgres` | `127.0.0.1:5432` | Bound to loopback only            |
 | `mms-redis`    | `127.0.0.1:6379` | Password-protected, loopback only |
-| `mms-backend`  | `5002`           | API + health endpoint             |
+| `mms-api`      | `5002`           | API + health endpoint             |
 | `mms-worker`   | —                | BullMQ job processor              |
 
 ---
@@ -243,7 +243,7 @@ After the migration, build the search indexes out of band (they are intentionall
 migration, which runs in a transaction):
 
 ```bash
-pnpm --filter mms-backend tsx src/scripts/create-index-concurrently.ts \
+pnpm --filter mms-api tsx src/scripts/create-index-concurrently.ts \
   --file scripts/sql/0197_search_indexes_concurrent.sql
 ```
 
@@ -263,7 +263,7 @@ Automated deploys on push to `main` via [`.github/workflows/deploy.yml`](.github
 | `POSTGRES_USER`     | —        | Default: `postgres`                         |
 | `POSTGRES_DB`       | —        | Default: `mms`                              |
 
-### `apps/backend/.env`
+### `apps/api/.env`
 
 | Variable                       | Required | Description                               |
 | ------------------------------ | -------- | ----------------------------------------- |
@@ -280,7 +280,7 @@ Automated deploys on push to `main` via [`.github/workflows/deploy.yml`](.github
 | `PLATFORM_SMTP_HOST`           | —        | Transactional email via SMTP              |
 | `PLATFORM_ALLOW_ENV_BOOTSTRAP` | —        | `false` by default; enables admin seeding |
 
-See [`apps/backend/.env.example`](apps/backend/.env.example) for the full reference with comments.
+See [`apps/api/.env.example`](apps/api/.env.example) for the full reference with comments.
 
 ---
 
@@ -345,7 +345,7 @@ pnpm test:coverage     # Coverage with @vitest/coverage-v8
 pnpm test:e2e          # Playwright E2E (requires running stack)
 
 # Scoped
-cd apps/backend && pnpm test:db   # Integration tests against real Postgres
+cd apps/api && pnpm test:db   # Integration tests against real Postgres
 cd packages/contracts && pnpm test   # Shared utility unit tests
 ```
 

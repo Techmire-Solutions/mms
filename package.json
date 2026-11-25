@@ -7,7 +7,7 @@
     "node": ">=24.14.0"
   },
   "scripts": {
-    "dev": "turbo run dev --filter=mms-frontend --filter=mms-backend",
+    "dev": "turbo run dev --filter=mms-tenant-web --filter=mms-api",
     "db:migrate": "turbo run db:migrate",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
@@ -17,7 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test:e2e": "pnpm --filter e2e-tests exec playwright test",
-    "check:i18n": "pnpm --filter mms-backend exec tsx ../../scripts/i18n/check-translations.ts",
+    "check:i18n": "pnpm --filter mms-api exec tsx ../../scripts/i18n/check-translations.ts",
     "check:i18n-unused": "node scripts/i18n/check-unused-keys.mjs",
     "verify:rules": "node scripts/verify-rules-integrity.mjs",
     "check:bundle": "node scripts/check-bundle-budget.mjs",
@@ -54,12 +54,13 @@
     "check:obligations-route-injection": "node scripts/ci/check-obligations-route-injection.mjs",
     "check:accounting-route-injection": "node scripts/ci/check-accounting-route-injection.mjs",
     "check:accounting-route-security": "node scripts/ci/check-accounting-route-security.mjs",
-    "check:accounting-coverage": "node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db --coverage packages/modules/accounting/coverage-finance-db",
+    "check:accounting-coverage": "node scripts/ci/check-accounting-coverage.mjs --coverage apps/api/coverage-finance-db --coverage packages/modules/accounting/coverage-finance-db",
     "check:examinations-route-injection": "node scripts/ci/check-examinations-route-injection.mjs",
     "check:examinations-route-security": "node scripts/ci/check-examinations-route-security.mjs",
     "check:money-safety": "node scripts/check-money-safety.mjs",
     "check:contracts": "node scripts/check-finance-contract-parity.mjs",
-    "check:module-boundaries": "node scripts/check-module-boundaries.mjs"
+    "check:module-boundaries": "node scripts/check-module-boundaries.mjs",
+    "report:dead-sources": "node scripts/report-dead-sources.mjs"
   },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",

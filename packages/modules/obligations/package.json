@@ -1,0 +1,77 @@
+{
+  "name": "@mms/mod-obligations",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Obligations vertical module: financial obligations, wakala types, distributions and reports.",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./shared": {
+      "import": "./dist/shared/index.js",
+      "types": "./dist/shared/index.d.ts"
+    },
+    "./backend/tenant": {
+      "import": "./dist/backend/tenant.router.js",
+      "types": "./dist/backend/tenant.router.d.ts"
+    },
+    "./backend/use-cases": {
+      "import": "./dist/backend/use-cases/index.js",
+      "types": "./dist/backend/use-cases/index.d.ts"
+    },
+    "./backend/repository": {
+      "import": "./dist/backend/repository/index.js",
+      "types": "./dist/backend/repository/index.d.ts"
+    },
+    "./backend/services": {
+      "import": "./dist/backend/services/index.js",
+      "types": "./dist/backend/services/index.d.ts"
+    },
+    "./frontend/tenant": "./src/frontend/tenant/index.ts",
+    "./package.json": "./package.json",
+    "./backend/ports": {
+      "import": "./dist/backend/ports.js",
+      "types": "./dist/backend/ports.d.ts"
+    },
+    "./backend/domain": {
+      "import": "./dist/backend/domain/index.js",
+      "types": "./dist/backend/domain/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json && tsc --noEmit -p tsconfig.frontend.json",
+    "typecheck": "tsc --noEmit -p tsconfig.backend.json && tsc --noEmit -p tsconfig.frontend.json",
+    "lint": "node -r ../../../scripts/eslint-ts-compat.cjs node_modules/eslint/bin/eslint.js --cache --cache-strategy content --cache-location node_modules/.cache/eslint/ . --quiet --rule '@typescript-eslint/no-explicit-any:off'",
+    "test": "vitest run --config vitest.backend.config.ts --passWithNoTests && vitest run --config vitest.frontend.config.ts --passWithNoTests"
+  },
+  "dependencies": {
+    "@mms/be-core": "workspace:*",
+    "@mms/contracts": "workspace:*",
+    "@mms/db": "workspace:*",
+    "@mms/fe-core": "workspace:*",
+    "@mms/ui": "workspace:*",
+    "@tanstack/react-query": "catalog:",
+    "@ts-rest/core": "^3.52.1",
+    "@ts-rest/fastify": "^3.52.1",
+    "drizzle-orm": "catalog:",
+    "zod": "catalog:"
+  },
+  "peerDependencies": {
+    "fastify": "^5.12.8",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@mms/eslint-config": "workspace:*",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^10.15.0",
+    "fastify": "catalog:",
+    "happy-dom": "^21.0.4",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "typescript": "~7.0.2",
+    "vite": "catalog:",
+    "vitest": "5.1.0"
+  }
+}

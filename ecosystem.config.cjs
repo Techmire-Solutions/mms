@@ -4,7 +4,7 @@ const fs = require("fs");
 const os = require("os");
 
 const root = __dirname;
-const backendEnvPath = path.join(root, "apps/backend/.env");
+const backendEnvPath = path.join(root, "apps/api/.env");
 const backendPort = process.env.PORT || "5002";
 
 /** @type {Record<string, string>} */
@@ -49,7 +49,7 @@ module.exports = {
     {
       name: "mmsv2-backend",
       cwd: root,
-      script: path.join(root, "apps/backend/dist/index.js"),
+      script: path.join(root, "apps/api/dist/index.js"),
       instances: apiInstances,
       exec_mode: process.env.PM2_EXEC_MODE || "cluster",
       autorestart: true,
@@ -67,7 +67,7 @@ module.exports = {
     {
       name: "mmsv2-worker",
       cwd: root,
-      script: path.join(root, "apps/backend/dist/worker/index.js"),
+      script: path.join(root, "apps/api/dist/worker/index.js"),
       instances: 1,
       exec_mode: "fork",
       autorestart: true,

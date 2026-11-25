@@ -4,7 +4,7 @@ import { FormProgressBar } from "./FormProgressBar";
 import type { SubTab } from "@mms/ui/app/SubTabBar";
 import { Button } from "@mms/ui";
 import { cn } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import { useDomFormProgress } from "./useDomFormProgress";
 
 type FormModalSize = "sm" | "md" | "lg" | "xl" | "2xl" | "3xl";

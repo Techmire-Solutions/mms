@@ -1,6 +1,6 @@
 ---
 name: mms-release-versioning
-description: Manages MMS release bookkeeping — version bumps, changelog entries, migration-milestone updates, and deploy SHA handoff. Use when cutting a release, tagging a deploy, recording a closed migration milestone, or marking work complete in the debt register. Do NOT use for the deploy mechanics themselves (use mms-ops-deploy), for dependency version bumps (use mms-dependency-upgrade), or for rules/skills versioning (use mms-agent-standards).
+description: Release bookkeeping (version bumps, changelog, migration milestones, SHA handoff). Use when cutting a release. Do NOT use for deploy mechanics (use mms-ops-deploy), dep bumps (use mms-dependency-upgrade), or rules versioning (use mms-agent-standards).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -18,7 +18,7 @@ metadata:
 
 ## What "a release" means here
 
-The repository is a private monorepo deployed from `main` via GitHub Actions → `DEPLOY_SHA` → tarball on the Hetzner host with retained releases in `.deploy-releases/`. There is **no** published package version: `apps/frontend/package.json` is `0.0.0` and the apps are never published. So a "release" is a deployable commit plus its bookkeeping — not an npm publish.
+The repository is a private monorepo deployed from `main` via GitHub Actions → `DEPLOY_SHA` → tarball on the Hetzner host with retained releases in `.deploy-releases/`. There is **no** published package version: `apps/tenant-web/package.json` is `0.0.0` and the apps are never published. So a "release" is a deployable commit plus its bookkeeping — not an npm publish.
 
 | Artifact | Source of truth | Update when |
 |---|---|---|
@@ -32,7 +32,7 @@ The repository is a private monorepo deployed from `main` via GitHub Actions →
 
 1. **Confirm the tree is release-ready**, in this order: `pnpm typecheck` → `pnpm lint` → `pnpm test` → `pnpm test:e2e` for anything touching auth/routing/onboarding → `node scripts/verify-rules-integrity.mjs` → `pnpm audit --audit-level=high`. Do not skip a gate because the change "felt small"; `mms-completion-review.mdc` lists the scoped checks per change type.
 2. **Check migrations are release-safe:** no write-blocking `CREATE INDEX`, forward-only, and — for anything that already ran in an environment — remember a rollback does **not** reverse it (`mms-data-layer.mdc` §7).
-3. **Write the changelog entry** in the release/PR description, grouped by Conventional Commit type, and call out explicitly: schema changes, env-var additions (with the `apps/backend/.env.example` update), security fixes, and any behaviour change users will notice.
+3. **Write the changelog entry** in the release/PR description, grouped by Conventional Commit type, and call out explicitly: schema changes, env-var additions (with the `apps/api/.env.example` update), security fixes, and any behaviour change users will notice.
 4. **Update the registers** that the next agent will actually read:
    - closed migration work → `docs/migration-milestones.md`, and remove the row from the open register in `mms-migration-status.mdc`;
    - new known debt → a concrete row (paths, counts, owner) in the open register — vague rows are unactionable and were explicitly reworked;
@@ -48,7 +48,7 @@ The repository is a private monorepo deployed from `main` via GitHub Actions →
 
 ## Do not
 
-- Bump `apps/frontend`/`apps/backend` `version` fields as a release gesture — nothing consumes them, and a fake version is worse than none.
+- Bump `apps/tenant-web`/`apps/api` `version` fields as a release gesture — nothing consumes them, and a fake version is worse than none.
 - Tag or push anything: git operations belong to the user (`mms-agent-universal.mdc`).
 - Mark a milestone closed while its verification is unrun.
 - Delete a row from the debt register without moving it to `docs/migration-milestones.md`.

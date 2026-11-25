@@ -4,7 +4,7 @@ description: Run all unit, integration, typecheck, lint, and E2E tests across MM
 
 # Workflow: Run Tests & Resolve Diagnostics
 
-This workflow provides a comprehensive, systematic procedure for executing test suites, type checking, and linting across the MMS monorepo (`apps/frontend`, `apps/backend`, `packages/contracts`), diagnosing any failures, and applying root-cause fixes until all checks pass cleanly.
+This workflow provides a comprehensive, systematic procedure for executing test suites, type checking, and linting across the MMS monorepo (`apps/tenant-web`, `apps/platform-web`, `apps/api`, `packages/contracts`), diagnosing any failures, and applying root-cause fixes until all checks pass cleanly.
 
 ## Phase 1: Environment & Context Gathering
 
@@ -13,10 +13,10 @@ This workflow provides a comprehensive, systematic procedure for executing test 
 
 | Scope | Command | Description |
 |---|---|---|
-| **Monorepo Typecheck** | `pnpm typecheck` | Strict TS check across `@mms/contracts`, `mms-backend`, `mms-frontend`, `e2e-tests` |
-| **Full Unit/Integration** | `pnpm test` | Vitest execution across `@mms/contracts`, `apps/backend`, and `apps/frontend` |
-| **Monorepo Lint** | `pnpm lint` | Complete ESLint check across all packages (`@mms/contracts`, `mms-frontend`, `mms-backend`) |
-| **Isolated Test** | `pnpm --filter <pkg> test <file>` | Rapid Vitest run on a specific file (`@mms/contracts`, `mms-backend`, `mms-frontend`) |
+| **Monorepo Typecheck** | `pnpm typecheck` | Strict TS check across `@mms/contracts`, `mms-api`, `mms-tenant-web`, `mms-platform-web`, `e2e-tests` |
+| **Full Unit/Integration** | `pnpm test` | Vitest execution across `@mms/contracts`, `apps/api`, `apps/tenant-web`, and `apps/platform-web` |
+| **Monorepo Lint** | `pnpm lint` | Complete ESLint check across all packages (`@mms/contracts`, `mms-tenant-web`, `mms-platform-web`, `mms-api`) |
+| **Isolated Test** | `pnpm --filter <pkg> test <file>` | Rapid Vitest run on a specific file (`@mms/contracts`, `mms-api`, `mms-tenant-web`, `mms-platform-web`) |
 | **E2E Playwright** | `pnpm --filter e2e-tests test` | Full browser integration via Playwright + axe-core a11y checks |
 | **All-in-One** | `pnpm typecheck && pnpm test && pnpm lint` | Complete single-command monorepo validation pass |
 
@@ -73,8 +73,8 @@ For any failed test or diagnostic error, follow these steps sequentially:
 - [ ] **Run fast isolated tests**: Provide rapid feedback loop on the specific file:
   ```bash
   pnpm --filter @mms/contracts test <filename>.test.ts
-  pnpm --filter mms-backend test <filename>.test.ts
-  pnpm --filter mms-frontend test <filename>.test.tsx
+  pnpm --filter mms-api test <filename>.test.ts
+  pnpm --filter mms-tenant-web test <filename>.test.tsx
   ```
 - [ ] **Verify adjacent scope**: Ensure the patch did not introduce regressions in shared utilities (`packages/contracts`), hooks, or database queries.
 

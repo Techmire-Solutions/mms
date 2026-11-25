@@ -7,7 +7,7 @@
  * (2026-11: statements 65.9 / functions 74.9 / branches 53.9) minus a two-point margin and may
  * only be raised.
  *
- * Usage: node scripts/ci/check-enrollment-coverage.mjs --coverage apps/backend/coverage-enrollments-db
+ * Usage: node scripts/ci/check-enrollment-coverage.mjs --coverage apps/api/coverage-enrollments-db
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -19,7 +19,7 @@ function argValue(flag) {
   return index >= 0 ? process.argv[index + 1] : undefined;
 }
 
-const coverageDir = argValue("--coverage") ?? "apps/backend/coverage-enrollments-db";
+const coverageDir = argValue("--coverage") ?? "apps/api/coverage-enrollments-db";
 const jsonPath = path.join(coverageDir, "coverage-final.json");
 if (!fs.existsSync(jsonPath)) {
   console.error(`✗ Enrollments coverage report not found: ${jsonPath}`);

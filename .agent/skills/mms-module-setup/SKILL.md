@@ -1,6 +1,6 @@
 ---
 name: mms-module-setup
-description: Implements or modifies the module Setup tier per mms-module-architecture.md — the Preferences/setup shell, sub-tab registration, setup audit, and preference cascading. Use when configuring module settings, setup sub-tabs, or module preferences. Do NOT use for the field registry and Setup → Fields field definitions (use mms-fields-registry), global workspace settings under /settings (use mms-settings-i18n), or Work tier tables/drawers (use mms-module-work).
+description: Implements module Setup tier (Preferences, sub-tabs, setup audit, cascading). Use when module settings/setup. Do NOT use for field registry (use mms-fields-registry), /settings (use mms-settings-i18n), or work tier (use mms-module-work).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -20,7 +20,7 @@ metadata:
 ## 1. Setup Tier Architecture & Sub-Tabs
 
 - **Tier Structure**: Module Setup (`tierId: 'setup'`) houses Preferences and manifest-declared `setupSubTabs` (e.g. `['preferences', 'fields']`).
-- **Shell Standard**: Render via `SubTabBar` + `useModuleSetupSubTabs` (`apps/frontend/src/lib/setup/useModuleSetupSubTabs.ts`).
+- **Shell Standard**: Render via `SubTabBar` + `useModuleSetupSubTabs` (`apps/tenant-web/src/lib/setup/useModuleSetupSubTabs.ts`).
 - **RBAC Gating**: Gate edit with `canEditSetup`; render `SetupReadOnlyMessage` for view-only.
 - **Isolation**: Module preferences stay in the module Setup tab — never under global `/settings`.
 
@@ -30,8 +30,8 @@ metadata:
 |---------|----------------|
 | Sub-tabs | `useModuleSetupSubTabs`, `SubTabBar` |
 | Drafts | `useSettingsDraft` |
-| Backend routes | `apps/backend/src/lib/registerModuleSetupConfigRoutes.ts` |
-| Module panels | `*SetupSaveActions` / `*SetupPanelState` under `apps/frontend/src/tenant/features/*/` |
+| Backend routes | `apps/api/src/lib/registerModuleSetupConfigRoutes.ts` |
+| Module panels | `*SetupSaveActions` / `*SetupPanelState` under `apps/tenant-web/src/tenant/features/*/` |
 
 ## 3. Preferences & Drafting
 
@@ -47,7 +47,7 @@ Prefer deactivating fields over erasure. Before delete, run `get*FieldRemovalIss
 
 ```bash
 pnpm typecheck
-pnpm --filter mms-frontend lint
+pnpm --filter mms-tenant-web lint
 # Spot-check Setup save + reload for the module you touched
 ```
 

@@ -1,0 +1,281 @@
+import { and, eq, or, sql } from "drizzle-orm";
+import { type Student } from "@mms/contracts";
+import { students, studentEnrolledSessionsLegacy } from "@mms/db/schema";
+import { withTenant, type AppDb } from "@mms/db/context";
+import { mapAuditToInsert } from "@mms/db";
+import { invalidateMultiTierCache } from "@mms/be-core/cache";
+import { naiveTimestamp, requireDbDate } from "@mms/be-core/http";
+
+export type StudentInsert = typeof students.$inferInsert;
+
+const KNOWN_STUDENT_KEYS = new Set([
+  "id",
+  "workspaceSubdomain",
+  "contactId",
+  "fatherContactId",
+  "motherContactId",
+  "guardianContactId",
+  "fatherName",
+  "motherName",
+  "guardianName",
+  "grNumber",
+  "studentId",
+  "status",
+  "registeredDate",
+  "enrollmentDate",
+  "discountType",
+  "discountPct",
+  "registrationType",
+  "notes",
+  "enrolledSessions",
+  "createdAt",
+  "updatedAt",
+  "deletedAt",
+  "deletedBy",
+  "deletionReason",
+  "restoredAt",
+  "restoredBy",
+  "deletedWithCascade",
+  "createdBy",
+  "updatedBy",
+  "customFields",
+  "name",
+  "gender",
+  "dob",
+  "phone",
+  "email",
+  "city",
+  "cnic",
+  "isSyed",
+  "avatar",
+]);
+
+function extractStudentCustomFields(student: Student): Record<string, unknown> {
+  const custom: Record<string, unknown> = {
+    ...(typeof student.customFields === "object" && student.customFields !== null
+      ? student.customFields
+      : {}),
+  };
+  for (const [key, val] of Object.entries(student)) {
+    if (!KNOWN_STUDENT_KEYS.has(key) && val !== undefined) {
+      custom[key] = val;
+    }
+  }
+  return custom;
+}
+
+export function studentWriteValues(subdomain: string, student: Student): StudentInsert {
+  const fatherContactId = student.fatherContactId ? String(student.fatherContactId) : null;
+  const motherContactId = student.motherContactId ? String(student.motherContactId) : null;
+  const guardianContactId = student.guardianContactId ? String(student.guardianContactId) : null;
+  // Store the operator's casing; the partial unique indexes use `lower(btrim(...))`, so
+  // uniqueness stays case-insensitive while `GR{yy}{seq}` templates keep their literal case.
+  const grNumber = student.grNumber?.trim() ? student.grNumber.trim() : null;
+  const studentId = student.studentId?.trim() ? student.studentId.trim() : null;
+  return {
+    id: String(student.id),
+    workspaceSubdomain: subdomain,
+    contactId: student.contactId ? String(student.contactId) : null,
+    fatherContactId,
+    motherContactId,
+    guardianContactId,
+    // Person Modules: identity names live on linked contacts when FKs are set.
+    fatherName: fatherContactId ? null : (student.fatherName ?? null),
+    motherName: motherContactId ? null : (student.motherName ?? null),
+    guardianName: guardianContactId ? null : (student.guardianName ?? null),
+    grNumber,
+    studentId,
+    status: student.status ?? "active",
+    registeredDate: requireDbDate(student.registeredDate, "Registered date"),
+    enrollmentDate: requireDbDate(student.enrollmentDate, "Enrollment date"),
+    discountType: student.discountType ?? null,
+    discountPct: student.discountPct != null ? String(student.discountPct) : null,
+    registrationType: student.registrationType ?? null,
+    notes: student.notes ?? null,
+    customFields: extractStudentCustomFields(student),
+    ...mapAuditToInsert(student),
+  } satisfies StudentInsert;
+}
+
+export function studentUpdateSetValues(subdomain: string, student: Student) {
+  const {
+    id: _id,
+    workspaceSubdomain: _subdomain,
+    createdAt: _createdAt,
+    createdBy: _createdBy,
+    ...setFields
+  } = studentWriteValues(subdomain, student);
+  return setFields;
+}
+
+export async function persistStudentTx(
+  tx: AppDb,
+  subdomain: string,
+  student: Student,
+): Promise<void> {
+  await tx
+    .insert(students)
+    .values(studentWriteValues(subdomain, student))
+    .onConflictDoUpdate({
+      target: [students.workspaceSubdomain, students.id],
+      set: studentUpdateSetValues(subdomain, student),
+    });
+
+  // `enrolledSessions` is derived from enrollments (enrollmentSessionSync) — never written from a student save.
+}
+
+export async function saveStudent(tenant: string, student: Student): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  await withTenant(subdomain, async (tx) => {
+    await persistStudentTx(tx, subdomain, student);
+  });
+  await invalidateMultiTierCache({
+    tenantId: subdomain,
+    domain: "students",
+    key: String(student.id),
+  });
+}
+
+/**
+ * Insert-only student persistence for the create path.
+ *
+ * The ordinary `saveStudent` upserts on `(workspace_subdomain, id)`; a create must
+ * never overwrite a row another writer claimed between its collision probe and the
+ * write, so it inserts and lets the caller map a unique-violation to a 409.
+ */
+export async function persistStudentTxInsertOnly(
+  tx: AppDb,
+  subdomain: string,
+  student: Student,
+): Promise<void> {
+  await tx.insert(students).values(studentWriteValues(subdomain, student));
+}
+
+export async function saveStudentInsertOnly(tenant: string, student: Student): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  await withTenant(subdomain, async (tx) => {
+    await persistStudentTxInsertOnly(tx, subdomain, student);
+  });
+  await invalidateMultiTierCache({
+    tenantId: subdomain,
+    domain: "students",
+    key: String(student.id),
+  });
+}
+
+/**
+ * Conditional save for optimistic concurrency (`mms-api-interface` §6).
+ *
+ * The `updated_at` predicate lives in the UPDATE, so a writer that committed
+ * after the caller's read cannot be silently overwritten. A zero-row result
+ * means a stale token (or a concurrently removed row) → caller maps it to 409.
+ */
+export async function saveStudentIfVersionMatches(
+  tenant: string,
+  student: Student,
+  expectedUpdatedAt: string,
+): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  const expected = new Date(expectedUpdatedAt);
+  if (Number.isNaN(expected.getTime())) return false;
+  const naiveExpected = naiveTimestamp(expected);
+  const saved = await withTenant(subdomain, async (tx) => {
+    const rows = await tx
+      .update(students)
+      .set(studentUpdateSetValues(subdomain, student))
+      .where(
+        and(
+          eq(students.workspaceSubdomain, subdomain),
+          eq(students.id, String(student.id)),
+          or(
+            sql`date_trunc('milliseconds', ${students.updatedAt}) = ${naiveExpected}::timestamp`,
+            sql`date_trunc('milliseconds', ${students.updatedAt}) = ${expected}::timestamptz`,
+          ),
+        ),
+      )
+      .returning({ id: students.id });
+    return rows.length > 0;
+  });
+  if (saved) {
+    await invalidateMultiTierCache({
+      tenantId: subdomain,
+      domain: "students",
+      key: String(student.id),
+    });
+  }
+  return saved;
+}
+
+export async function bulkSaveStudents(tenant: string, items: Student[]): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  if (items.length === 0) return;
+  await withTenant(subdomain, async (tx) => {
+    await tx
+      .insert(students)
+      .values(items.map((student) => studentWriteValues(subdomain, student)))
+      .onConflictDoUpdate({
+        target: [students.workspaceSubdomain, students.id],
+        set: {
+          contactId: sql`excluded.contact_id`,
+          fatherContactId: sql`excluded.father_contact_id`,
+          motherContactId: sql`excluded.mother_contact_id`,
+          guardianContactId: sql`excluded.guardian_contact_id`,
+          fatherName: sql`excluded.father_name`,
+          motherName: sql`excluded.mother_name`,
+          guardianName: sql`excluded.guardian_name`,
+          grNumber: sql`excluded.gr_number`,
+          studentId: sql`excluded.student_id`,
+          status: sql`excluded.status`,
+          registeredDate: sql`excluded.registered_on`,
+          enrollmentDate: sql`excluded.enrollment_on`,
+          discountType: sql`excluded.discount_type`,
+          discountPct: sql`excluded.discount_pct`,
+          registrationType: sql`excluded.registration_type`,
+          notes: sql`excluded.notes`,
+          customFields: sql`excluded.custom_fields`,
+          deletedAt: sql`excluded.deleted_at`,
+          deletedBy: sql`excluded.deleted_by`,
+          deletionReason: sql`excluded.deletion_reason`,
+          restoredAt: sql`excluded.restored_at`,
+          restoredBy: sql`excluded.restored_by`,
+          updatedAt: new Date(),
+          updatedBy: sql`excluded.updated_by`,
+        },
+      });
+  });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
+}
+
+export async function replaceStudentsForWorkspace(tenant: string, items: Student[]): Promise<void> {
+  const subdomain = tenant.trim().toLowerCase();
+  await withTenant(subdomain, async (tx) => {
+    await tx.execute(sql`SET LOCAL app.allow_hard_purge = 'true'`);
+    await tx
+      .delete(studentEnrolledSessionsLegacy)
+      .where(eq(studentEnrolledSessionsLegacy.workspaceSubdomain, subdomain));
+    await tx.delete(students).where(eq(students.workspaceSubdomain, subdomain));
+    if (items.length === 0) return;
+
+    await tx
+      .insert(students)
+      .values(items.map((student) => studentWriteValues(subdomain, student)));
+
+    const allSessions = items.flatMap((student) => {
+      const sessions = Array.isArray(student.enrolledSessions) ? student.enrolledSessions : [];
+      return sessions.map((sessionId, idx) => ({
+        id: `${student.id}_sess_${idx}_${String(sessionId).slice(0, 30)}`,
+        workspaceSubdomain: subdomain,
+        studentId: student.id,
+        sessionId: String(sessionId),
+        sortOrder: idx,
+      }));
+    });
+
+    if (allSessions.length > 0) {
+      // Membership is derived from enrollments; restored pairs are kept only as legacy rows
+      // (the view hides any pair that has enrollment history).
+      await tx.insert(studentEnrolledSessionsLegacy).values(allSessions).onConflictDoNothing();
+    }
+  });
+  await invalidateMultiTierCache({ tenantId: subdomain, domain: "students" });
+}

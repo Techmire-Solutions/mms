@@ -1,11 +1,11 @@
 import React, { useRef, useMemo, type ReactNode } from "react";
 import { m } from "framer-motion";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { useReducedMotion } from "@mms/fe-core/tenant";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useReducedMotion } from "../tenant/index.js";
+import { useTranslation } from "../i18n/index.js";
 import { DirectoryCardsSelectAllBar } from "@mms/ui/app/DirectoryCardsSelectAllBar";
-import { useMediaQuery } from "@mms/fe-core/tenant";
-import { MEDIA_SM_UP } from "@mms/fe-core/tenant";
+import { useMediaQuery } from "../tenant/index.js";
+import { MEDIA_SM_UP } from "../tenant/index.js";
 import { containerVariants } from "@mms/ui/app/motionVariants";
 import { cn } from "@mms/ui";
 

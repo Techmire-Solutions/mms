@@ -1,0 +1,108 @@
+import React from "react";
+import { RotateCcw, Save } from "lucide-react";
+import { Button } from "@mms/ui";
+import { cn } from "@mms/ui";
+import { useTranslation } from "../i18n/index.js";
+
+export interface SettingsFormActionsProps {
+  saveLabel: string;
+  savingLabel?: string;
+  onSave?: () => void;
+  onDiscard?: () => void;
+  discardLabel?: string;
+  dirty?: boolean;
+  saving?: boolean;
+  saveDisabled?: boolean;
+  showSave?: boolean;
+  /** Pin the action bar to the bottom of the scrollport on long settings panels. */
+  sticky?: boolean;
+  children?: React.ReactNode;
+}
+
+/**
+ * Consistent Save and Discard actions for `/settings` panels.
+ */
+export function SettingsFormActions({
+  saveLabel,
+  savingLabel,
+  onSave,
+  onDiscard,
+  discardLabel,
+  dirty = false,
+  saving = false,
+  saveDisabled = false,
+  showSave = true,
+  sticky = false,
+  children,
+}: SettingsFormActionsProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const saveText = saving ? (savingLabel ?? saveLabel) : saveLabel;
+  const stickyClass = sticky
+    ? "sticky bottom-0 z-sticky -mx-1 bg-background/95 px-1 pb-[env(safe-area-inset-bottom)] backdrop-blur-md"
+    : "";
+
+  if (!showSave || !onSave) {
+    return children || (dirty && onDiscard) ? (
+      <div
+        className={cn(
+          "flex w-full items-center justify-end gap-3 border-t border-border/40 mt-6 pt-4",
+          stickyClass,
+        )}
+      >
+        {dirty && onDiscard && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onDiscard}
+            disabled={saving}
+            className="min-h-11 gap-2 px-4"
+          >
+            <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+            <span>{discardLabel ?? t("theme.discardChanges")}</span>
+          </Button>
+        )}
+        {children}
+      </div>
+    ) : (
+      <></>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "flex w-full flex-wrap items-center justify-between gap-3 border-t border-border/40 mt-6 pt-4",
+        stickyClass,
+      )}
+    >
+      <div className="flex flex-wrap items-center gap-2">
+        {dirty && onDiscard && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={onDiscard}
+            disabled={saving}
+            className="min-h-11 gap-2 px-4"
+          >
+            <RotateCcw className="h-3.5 w-3.5" aria-hidden />
+            <span>{discardLabel ?? t("theme.discardChanges")}</span>
+          </Button>
+        )}
+        {children}
+      </div>
+      <Button
+        type="button"
+        onClick={onSave}
+        disabled={saveDisabled || !dirty || saving}
+        loading={saving}
+        loadingText={saveText}
+        className="min-h-11 gap-2 px-5 py-2.5 ms-auto font-semibold shadow-xs"
+      >
+        <Save className="h-3.5 w-3.5" aria-hidden />
+        <span>{saveText}</span>
+      </Button>
+    </div>
+  );
+}

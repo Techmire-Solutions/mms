@@ -30,7 +30,7 @@ An exhaustive search across `apps/backend/src`, `apps/frontend/src`, and `packag
 | `timezone` / `next_occurrence_at` column | `tasksTables.ts` | ❌ Not present |
 | `recurring_parent_id` column | `tasksTables.ts` | ❌ Not present |
 | RRULE parsing library | `package.json` / any import | ❌ Not present |
-| Recurrence BullMQ worker | [`backgroundJobTasksRunners.ts`](../apps/backend/src/services/backgroundJobTasksRunners.ts) | ❌ Not present — only CSV import/export runners registered |
+| Recurrence BullMQ worker | [`backgroundJobTasksRunners.ts`](../apps/api/src/services/backgroundJobTasksRunners.ts) | ❌ Not present — only CSV import/export runners registered |
 | Recurrence types / schemas | [`tasksModuleManifest.ts`](../packages/contracts/src/tasks/tasksModuleManifest.ts) | ❌ Not present |
 | Recurrence settings | [`taskSettingsTables.ts`](../packages/db/src/schema/taskSettingsTables.ts) `task_module_preferences` | ❌ Not present — only `delegationScope`, `allowSelfAssignment`, `notifyOnAssignment`, `notifyOnStatusChange` |
 | Recurrence UI controls | `apps/frontend/src/tenant/features/tasks/**` | ❌ Not present |
@@ -87,7 +87,7 @@ No Kanban board view exists in the frontend. The tasks schema has no ordering co
 | Kanban board component | `apps/frontend/src/tenant/features/tasks/**` | ❌ Only `TasksListDesktopTable.tsx` and `TasksListCards.tsx` exist |
 | Drag-and-drop handler | `useTasksPageController.ts` | ❌ Only `setPageIndex`, `serverFilters`, offset-based pagination — no position mutation |
 | LexoRank / fractional index algorithm | Anywhere in codebase | ❌ Not present |
-| Reorder API endpoint | [`tasksRoutes.ts`](../apps/backend/src/routes/tenant/tasksRoutes.ts) | ❌ Not present |
+| Reorder API endpoint | [`tasksRoutes.ts`](../apps/api/src/routes/tenant/tasksRoutes.ts) | ❌ Not present |
 
 ### 2.3 Risk Analysis — Failure Modes If Implemented Naively
 
@@ -131,7 +131,7 @@ Body: { afterId?: string, beforeId?: string, columnStatus: TaskStatus }
 
 **Status: FEATURE GAP — NOT IMPLEMENTED.**
 
-No task dependency graph exists. No SLA breach monitoring or automated cascade system exists. The only "overdue" logic in the codebase is a **read-only metric count** in [`tasksMetricsRepository.ts`](../apps/backend/src/db/repositories/tasksMetricsRepository.ts):
+No task dependency graph exists. No SLA breach monitoring or automated cascade system exists. The only "overdue" logic in the codebase is a **read-only metric count** in [`tasksMetricsRepository.ts`](../apps/api/src/db/repositories/tasksMetricsRepository.ts):
 
 ```sql
 count(*) FILTER (WHERE due_at < CURRENT_TIMESTAMP AND status NOT IN ('completed', 'cancelled'))
@@ -262,11 +262,11 @@ The three missing subsystems will interact with previously identified defects on
 |---|---|
 | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts) | Full task schema — confirmed no recurrence, ordering, or dependency columns |
 | [`taskSettingsTables.ts`](../packages/db/src/schema/taskSettingsTables.ts) | Module preferences — confirmed no recurrence settings |
-| [`backgroundJobTasksRunners.ts`](../apps/backend/src/services/backgroundJobTasksRunners.ts) | Background workers — only CSV import/export registered |
-| [`tasksMetricsRepository.ts`](../apps/backend/src/db/repositories/tasksMetricsRepository.ts) | Only overdue metric count — no cascade triggers |
+| [`backgroundJobTasksRunners.ts`](../apps/api/src/services/backgroundJobTasksRunners.ts) | Background workers — only CSV import/export registered |
+| [`tasksMetricsRepository.ts`](../apps/api/src/db/repositories/tasksMetricsRepository.ts) | Only overdue metric count — no cascade triggers |
 | [`tasksModuleManifest.ts`](../packages/contracts/src/tasks/tasksModuleManifest.ts) | Shared types/enums — no recurrence, dependency, or Kanban types |
-| [`taskMutationService.ts`](../apps/backend/src/services/taskMutationService.ts) | Task mutation service — no cascade or recurrence spawn logic |
-| [`tasksRoutes.ts`](../apps/backend/src/routes/tenant/tasksRoutes.ts) | API routes — no reorder or dependency endpoints |
+| [`taskMutationService.ts`](../apps/api/src/services/taskMutationService.ts) | Task mutation service — no cascade or recurrence spawn logic |
+| [`tasksRoutes.ts`](../apps/api/src/routes/tenant/tasksRoutes.ts) | API routes — no reorder or dependency endpoints |
 | `TasksListDesktopTable.tsx`, `TasksListCards.tsx` | Frontend views — table and cards only, no Kanban component |
-| [`useTasksPageController.ts`](../apps/frontend/src/tenant/features/tasks/hooks/useTasksPageController.ts) | Frontend controller — offset pagination only, no drag-and-drop |
+| [`useTasksPageController.ts`](../apps/tenant-web/src/tenant/features/tasks/hooks/useTasksPageController.ts) | Frontend controller — offset pagination only, no drag-and-drop |
 | Migrations `0121`, `0134`–`0137` | SQL migration history — no recurrence, Kanban, or dependency tables added |

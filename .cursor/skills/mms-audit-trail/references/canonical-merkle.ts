@@ -3,9 +3,9 @@
  *
  * Use packages/contracts/src/auditTypes.ts for canonicalizeJson and
  * formatAuditEventHashInput; verify behavior with auditTypes.test.ts.
- * The writer is apps/backend/src/services/auditTrailService.ts.
+ * The writer is apps/api/src/services/auditTrailService.ts.
  * Verification and checkpoint construction are in
- * apps/backend/src/services/auditVerificationService.ts.
+ * apps/api/src/services/auditVerificationService.ts.
  *
  * Advisory: preserve deployed framing, ordering, shard identity and algorithm
  * version. A new serializer or Merkle algorithm requires compatibility evidence

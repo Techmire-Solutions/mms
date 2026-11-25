@@ -5,7 +5,7 @@ import { ModuleTableSelectionCell } from "./ModuleTableSelectionCell";
 import { workTableRowBg, workTableStickyCellBg } from "@mms/ui/app/tableWorkSticky";
 import { cn } from "@mms/ui";
 import { WORK_TABLE_ACTIONS_WIDTH_CLASS } from "./workBatchTableWidths";
-import type { ListRowMotionFn } from "@mms/fe-core/hooks";
+import type { ListRowMotionFn } from "../hooks/index.js";
 import type { WorkBatchTableColumn } from "./WorkBatchTable";
 
 export interface WorkBatchTableRowProps<TData extends { id: string | number }> {

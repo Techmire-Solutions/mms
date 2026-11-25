@@ -1,0 +1,23 @@
+# Keep the Docker build context small for `turbo prune` (COPY . .).
+# The pruner regenerates dist/ and node_modules/ is re-installed per stage.
+node_modules
+**/node_modules
+.git
+**/.git
+.turbo
+**/.turbo
+dist
+**/dist
+coverage
+**/coverage*
+.pnpm-store
+.logs
+.worktrees
+.playwright-browsers
+.tmp
+**/.tmp
+**/*.log
+**/.vitest-reports
+**/blob-report
+**/playwright-report
+**/test-results

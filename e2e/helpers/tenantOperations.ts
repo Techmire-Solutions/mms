@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const backendDir = path.resolve(__dirname, "../../apps/backend");
+const backendDir = path.resolve(__dirname, "../../apps/api");
 
 /**
  * Runs a backend seed script without a shell: the script name and subdomain travel as

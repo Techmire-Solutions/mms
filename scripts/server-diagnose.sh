@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Quick production diagnostics — run on the Hetzner host over SSH.
-# Usage: bash scripts/server-diagnose.sh [apps/backend/.env]
+# Usage: bash scripts/server-diagnose.sh [apps/api/.env]
 set -uo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -13,7 +13,7 @@ source "$ROOT_DIR/scripts/lib/read-env.sh"
 # shellcheck source=lib/curl-local-backend.sh
 source "$ROOT_DIR/scripts/lib/curl-local-backend.sh"
 
-ENV_FILE="${1:-apps/backend/.env}"
+ENV_FILE="${1:-apps/api/.env}"
 BACKEND_PORT="$MMS_PROD_BACKEND_PORT"
 FRONTEND_PORT="$MMS_PROD_FRONTEND_PORT"
 

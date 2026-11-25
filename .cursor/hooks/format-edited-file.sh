@@ -51,7 +51,7 @@ esac
 
 case "$file" in
   *.ts|*.tsx|*.js|*.jsx|*.mjs|*.cjs)
-    if [ -x "node_modules/.bin/eslint" ] || [ -x "apps/frontend/node_modules/.bin/eslint" ] || [ -x "apps/backend/node_modules/.bin/eslint" ]; then
+    if [ -x "node_modules/.bin/eslint" ] || [ -x "apps/frontend/node_modules/.bin/eslint" ] || [ -x "apps/api/node_modules/.bin/eslint" ]; then
       NODE_OPTIONS='-r ./scripts/eslint-ts-compat.cjs' npx --no-install eslint --fix "$file" >"$log" 2>&1 || true
       if grep -qE "^\s+[0-9]+:[0-9]+\s+error" "$log"; then
         echo "eslint reported errors it could not fix in $file:"

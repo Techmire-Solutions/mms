@@ -21,7 +21,7 @@ No root export; backend/shared are Node ESM `dist`, frontend subpaths are source
 The module currently owns the accounting shared policy, the pure accounting
 frontend data/lib layer, module backend service/ports and route plugins for the
 core account/entry/period/report/consolidation paths. The legacy
-`apps/backend/src/accounting/**` and `apps/frontend/src/tenant/features/accounting/**`
+`apps/api/src/accounting/**` and `apps/frontend/src/tenant/features/accounting/**`
 surfaces remain the active app implementation while the full repository/route/UI
 extraction is completed in follow-up waves. App consumers use
 `@mms/mod-accounting/frontend/tenant` for the moved pure helpers.
@@ -61,7 +61,7 @@ The ts-rest accounting contract router, report-PDF/ledger-export handlers and th
 
 ## Background runners
 
-Chart import/export and report-PDF runner registration plus the import implementation now live in `src/backend/jobs`. The app supplies queue/artifact/PDF worker dependencies through `configureAccountingRunnerDeps`; `apps/backend/src/services/backgroundJobAccountingRunners.ts` is the composition wrapper.
+Chart import/export and report-PDF runner registration plus the import implementation now live in `src/backend/jobs`. The app supplies queue/artifact/PDF worker dependencies through `configureAccountingRunnerDeps`; `apps/api/src/services/backgroundJobAccountingRunners.ts` is the composition wrapper.
 
 ## Setup and specialized routes
 

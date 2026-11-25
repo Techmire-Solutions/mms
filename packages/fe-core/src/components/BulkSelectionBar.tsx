@@ -3,7 +3,7 @@ import { ModuleWorkBulkActionBar } from "./ModuleWorkBulkActionBar";
 import { type BulkSelectionMessageChannel } from "@mms/ui/app/BulkSelectionActions";
 import { BulkSelectionStatusAction } from "./BulkSelectionStatusAction";
 import type { StatusBadgeConfigItem } from "./StatusBadge";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import { APP_TRANSLATIONS_EN, type AppTranslationKey } from "@mms/contracts";
 
 export interface BulkSelectionBarProps<T = unknown> {

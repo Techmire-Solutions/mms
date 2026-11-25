@@ -1,6 +1,6 @@
 ---
 name: mms-shared-package
-description: Extends @mms/contracts with types, settings defaults, module manifests, translation keys, messaging schemas, and pure utilities shared by frontend and backend. Use when adding shared types, formatDate, formatMoney, parsePhoneNumber, manifests, or moving duplicated logic to packages/contracts. Do NOT use for UI components or JSX (use mms-shared-ui or mms-frontend) or Fastify backend-only services (use mms-backend-api).
+description: Extends @mms/contracts (types, settings defaults, manifests, translation keys, pure utils). Use when shared types/utils. Do NOT use for UI/JSX (use mms-shared-ui/mms-frontend) or backend services (use mms-backend-api).
 license: Proprietary
 metadata:
   owner: mms-platform

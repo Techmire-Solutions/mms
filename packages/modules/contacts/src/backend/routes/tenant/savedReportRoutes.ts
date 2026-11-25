@@ -6,7 +6,7 @@ import {
   deleteContactsSavedReport,
   listContactsSavedReports,
   touchContactsSavedReportRun,
-} from "../../use-cases/contactSavedReportUseCases.js";
+} from "../../use-cases/index.js";
 import { contactsSavedReportCreateSchema, resourceIdParamsSchema } from "@mms/contracts";
 import { sendDatabaseError, sendForbidden, sendNotFound } from "@mms/be-core/http/errors";
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";

@@ -197,7 +197,7 @@ if (fs.existsSync(contractsDir)) {
 
 if (violations > 0) {
   console.error(`\nFound ${violations} purity violation(s) in @mms/contracts.`);
-  console.error("Move runtime-specific logic to apps/frontend or apps/backend instead (mms-shared-package, mms-dry.md).");
+  console.error("Move runtime-specific logic to apps/tenant-web or apps/api instead (mms-shared-package, mms-dry.md).");
   process.exit(1);
 }
 console.log(`  All ${scanned} non-test files in @mms/contracts stay pure (no DOM, React, Fastify, DB, Redis, or Node builtins).`);

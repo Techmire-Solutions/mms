@@ -1,10 +1,10 @@
-import { resolveAccentTone, withAccentAliases } from "@mms/fe-core/ui/accentTone";
+import { resolveAccentTone, withAccentAliases } from "../ui/accentTone.js";
 import {
   type CardAccentColor,
   getCardStripeClass,
   SEMANTIC_BG,
   SEMANTIC_TEXT,
-} from "@mms/fe-core/ui/semanticTone";
+} from "../ui/semanticTone.js";
 
 export interface AccentConfig {
   stripe: string;

@@ -1,20 +1,20 @@
 ---
 description: Authentication session cookies, JWT token scopes, tenant isolation context, RBAC matrices, and threat mitigations
 paths:
-  - "apps/backend/src/routes/common/auth.ts"
-  - "apps/backend/src/middleware/authenticate*.ts"
-  - "apps/backend/src/services/auth/**"
-  - "apps/backend/src/services/platform/**"
-  - "apps/backend/src/services/rbac*.ts"
-  - "apps/backend/src/lib/tenantContext.ts"
+  - "apps/api/src/routes/common/auth.ts"
+  - "apps/api/src/middleware/authenticate*.ts"
+  - "apps/api/src/services/auth/**"
+  - "apps/api/src/services/platform/**"
+  - "apps/api/src/services/rbac*.ts"
+  - "apps/api/src/lib/tenantContext.ts"
   - "packages/contracts/src/**/platformApiErrors.ts"
   - "packages/contracts/src/**/moduleAccessPolicy.ts"
-  - "apps/frontend/src/lib/contexts/AuthContext.tsx"
-  - "apps/frontend/src/platform/features/auth/lib/PlatformAuthContext.tsx"
-  - "apps/frontend/src/platform/features/auth/lib/platformAuthErrors.ts"
-  - "apps/frontend/src/platform/features/auth/**"
-  - "apps/frontend/src/tenant/hooks/usePermissions.ts"
-  - "apps/frontend/src/components/routing/**"
+  - "packages/fe-core/src/auth/AuthContext.tsx"
+  - "apps/platform-web/src/platform/features/auth/lib/PlatformAuthContext.tsx"
+  - "apps/platform-web/src/platform/features/auth/lib/platformAuthErrors.ts"
+  - "apps/platform-web/src/platform/features/auth/**"
+  - "apps/tenant-web/src/tenant/hooks/usePermissions.ts"
+  - "apps/tenant-web/src/components/routing/**"
 ---
 
 # MMS Auth & Security System

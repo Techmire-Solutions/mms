@@ -1,0 +1,113 @@
+import { useWorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { WorkViewModeToggle } from "@mms/fe-core/components/WorkViewModeToggle";
+import { PaymentLogHeader } from "./PaymentsListFilters";
+import type { ModuleColumnCustomizerProps } from "@mms/fe-core/components/ModuleColumnCustomizer";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import type { Payment } from "../lib/financeData";
+import { PaymentsListCards } from "./PaymentsListCards";
+import { PaymentsListDesktopTable } from "./PaymentsListDesktopTable";
+import { FinanceListLoadingSkeleton } from "./FinanceListLoadingSkeleton";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+export const PAYMENT_TRACKER_COLUMN_KEYS = [
+  "date",
+  "student",
+  "invoice",
+  "amount",
+  "method",
+  "receivedBy",
+  "note",
+] as const;
+
+export interface PaymentsListContentProps {
+  /** First page still loading: show rows, not the empty state. */
+  isLoading?: boolean;
+  payments: Payment[];
+  selectedIds: string[];
+  isColumnVisible: (key: string) => boolean;
+  visibleColCount: number;
+  allSelected: boolean;
+  canDelete: boolean;
+  showDeleted: boolean;
+  totalPaid: number;
+  methodConfig: Record<string, StatusBadgeConfigItem>;
+  columnCustomizer?: ModuleColumnCustomizerProps;
+  formatCurrency: (amount: number) => string;
+  getColumnWidth?: (key: string) => number | undefined;
+  onColumnResize?: (key: string, width: number) => void;
+  onRowClick?: (id: string) => void;
+  onTogglePayment: (paymentId: string, checked: boolean) => void;
+  onToggleAll: (checked: boolean) => void;
+  onRequestDelete: (paymentId: string) => void;
+  onRestore?: (paymentId: string) => void;
+}
+
+export function PaymentsListContent({
+  isLoading = false,
+  payments,
+  selectedIds,
+  isColumnVisible,
+  visibleColCount,
+  allSelected,
+  canDelete,
+  showDeleted,
+  totalPaid,
+  methodConfig,
+  columnCustomizer,
+  formatCurrency,
+  getColumnWidth,
+  onColumnResize,
+  onTogglePayment,
+  onToggleAll,
+  onRequestDelete,
+  onRestore,
+}: PaymentsListContentProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const { viewMode, setViewMode } = useWorkDirectoryViewMode();
+  if (isLoading) {
+    return <FinanceListLoadingSkeleton ariaLabel={t("finance.payments")} />;
+  }
+  const listProps = {
+    payments,
+    selectedIds,
+    isColumnVisible,
+    canDelete,
+    showDeleted,
+    methodConfig,
+    formatCurrency,
+    onTogglePayment,
+    onRequestDelete,
+    onRestore,
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 px-3 pt-3">
+        <PaymentLogHeader
+          totalPaid={totalPaid}
+          formatCurrency={formatCurrency}
+          columnCustomizer={columnCustomizer}
+        />
+        <WorkViewModeToggle viewMode={viewMode} onViewModeChange={setViewMode} />
+      </div>
+      {viewMode === "cards" ? (
+        <PaymentsListCards
+          {...listProps}
+          onToggleSelectAll={onToggleAll}
+          allSelected={allSelected}
+        />
+      ) : (
+        <div>
+          <PaymentsListDesktopTable
+            {...listProps}
+            visibleColCount={visibleColCount}
+            allSelected={allSelected}
+            getColumnWidth={getColumnWidth}
+            onColumnResize={onColumnResize}
+            onToggleAll={onToggleAll}
+          />
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,0 +1,231 @@
+import {
+  enrollmentFeeForClass,
+  remainingSeats,
+  type Enrollment,
+  type Session,
+  type Student,
+} from "@mms/contracts";
+import { enrollmentOperationsRepository as ops } from "../repository/enrollmentOperationsRepositoryAdapter.js";
+import { admissionsRepository as admissions } from "../repository/admissionsRepositoryAdapter.js";
+import type {
+  EndedEnrollmentStatus,
+  LiveEnrollmentRow,
+  OperationActor,
+} from "../repository/enrollmentOperationsRepository.js";
+import { broadcastCollection } from "@mms/be-core/realtime";
+import { invalidateMultiTierCache } from "@mms/be-core/cache";
+import { HttpDomainError, SeatCapacityError } from "@mms/be-core/http/errors";
+import { withTenant } from "@mms/db/context";
+import { recordEnrollmentAudit } from "./enrollmentAudit.js";
+
+export interface RolloverCandidate extends LiveEnrollmentRow {
+  student: Student | null;
+}
+
+export interface RolloverPlacement {
+  candidate: RolloverCandidate;
+  targetClassId: string;
+  targetSectionId: string | null;
+}
+
+/** A rollover whose target cannot seat every carried student (nothing is carried). */
+export class RolloverSeatError extends HttpDomainError {
+  constructor(readonly violations: readonly string[]) {
+    super(
+      409,
+      "rollover_blocked",
+      `Not enough seats in the target session: ${violations.join("; ")}`,
+    );
+  }
+}
+
+export interface RolloverCarryResult {
+  created: number;
+  /** Source enrollments that now have a target row (only these may be closed). */
+  carriedSourceIds: Set<string>;
+}
+
+/** Live enrollments of a session with their student records (eligibility, discounts). */
+export async function listRolloverCandidates(
+  tenant: string,
+  sessionId: string,
+): Promise<RolloverCandidate[]> {
+  const live = await ops.listOperableEnrollments(tenant, { sessionIds: [sessionId] });
+  const students = await admissions.findStudentsByIds(tenant, [
+    ...new Set(live.map((row: any) => row.studentId)),
+  ]);
+  const byId = new Map(students.map((student: any) => [String(student.id), student]));
+  return live.map((row: any) => ({ ...row, student: byId.get(String(row.studentId)) ?? null }));
+}
+
+/**
+ * Pending enrollments in the target session, each linked to the source enrollment it continues;
+ * fees are recomputed from the target class. Seat capacity is validated under a per-target advisory
+ * lock and the whole batch is rejected when any student does not fit (review finding R4).
+ * `idFor` yields a deterministic enrollment id so a retried run upserts instead of duplicating.
+ */
+export async function carryRolloverEnrollments(
+  tenant: string,
+  target: Session,
+  placements: readonly RolloverPlacement[],
+  options: { idFor: (sourceEnrollmentId: string) => string },
+): Promise<RolloverCarryResult> {
+  if (placements.length === 0) return { created: 0, carriedSourceIds: new Set() };
+  const classes = new Map(target.classes.map((cls: any) => [cls.id, cls]));
+  const result = await withTenant(tenant, async (tx) => {
+    await ops.lockRolloverCarryTx(tenant, target.id);
+    const used = new Map<string, number>();
+    for (const row of await ops.countLiveSeatsByClassTx(tenant, target.id)) {
+      used.set(`${row.classId}|${row.sectionId ?? ""}`, row.count);
+    }
+
+    const problems: string[] = [];
+    const records: Enrollment[] = [];
+    for (const { candidate, targetClassId, targetSectionId } of placements) {
+      const cls = classes.get(targetClassId);
+      if (!cls) {
+        problems.push(`${candidate.studentName}: target class is missing`);
+        continue;
+      }
+      const sections = (cls.sections ?? []).filter(
+        (section: any) => (section.status ?? "active") === "active",
+      );
+      let section = targetSectionId
+        ? sections.find((candidateSection: any) => candidateSection.id === targetSectionId)
+        : undefined;
+      if (!section && sections.length > 0) {
+        // Deterministic fallback that respects capacity instead of "first section wins".
+        section = sections.find((candidateSection: any) => {
+          const key = `${cls.id}|${candidateSection.id}`;
+          const cap = Math.max(0, candidateSection.capacity ?? 0);
+          return cap === 0 || (used.get(key) ?? 0) < cap;
+        });
+      }
+      const seatKey = `${cls.id}|${section?.id ?? ""}`;
+      const capacity = section ? Math.max(0, section.capacity ?? 0) : remainingSeats(cls);
+      if (sections.length > 0 && !section) {
+        problems.push(`${candidate.studentName}: no free seat in ${cls.name}`);
+        continue;
+      }
+      if (capacity !== null && capacity > 0) {
+        const occupied = (used.get(seatKey) ?? 0) + 1;
+        if (occupied > capacity) {
+          problems.push(
+            `${candidate.studentName}: ${cls.name}${section ? ` · ${section.name}` : ""} is full`,
+          );
+          continue;
+        }
+        used.set(seatKey, occupied);
+      }
+      records.push({
+        id: options.idFor(candidate.id),
+        studentId: candidate.studentId,
+        studentName: candidate.studentName,
+        sessionId: target.id,
+        sessionName: target.name,
+        classId: cls.id,
+        className: cls.name,
+        ...(section ? { sectionId: section.id } : {}),
+        enrolledDate: target.startDate,
+        startOn: target.startDate,
+        promotedFromEnrollmentId: candidate.id,
+        ...enrollmentFeeForClass(target.baseFee, cls, candidate.student ?? {}),
+        status: "pending",
+        invoiceId: null,
+        paymentStatus: "none",
+        notes: "",
+        timeline: [],
+      });
+    }
+    if (problems.length > 0) throw new RolloverSeatError(problems);
+    let inserted: string[];
+    try {
+      ({ inserted } = await admissions.bulkSaveEnrollments(tenant, records));
+      for (const record of records) {
+        if (!inserted.includes(record.id)) continue;
+        await recordEnrollmentAudit(tx, tenant, {
+          recordId: record.id,
+          actionType: "CREATE",
+          reasonCode: "rollover",
+          newState: {
+            studentId: record.studentId,
+            sessionId: record.sessionId,
+            classId: record.classId,
+            sectionId: record.sectionId ?? null,
+            promotedFromEnrollmentId: record.promotedFromEnrollmentId ?? null,
+            status: record.status,
+          },
+        });
+      }
+    } catch (error) {
+      // The advisory lock serializes rollovers against each other, not against a single
+      // enrollment that grabbed the last seat between the pre-check and this write.
+      if (error instanceof SeatCapacityError) throw new RolloverSeatError([error.message]);
+      throw error;
+    }
+    // Only rows that actually landed may close their source enrollment; a student another
+    // writer already enrolled in the target keeps the source open for a human decision.
+    const createdIds = new Set(inserted);
+    return {
+      created: inserted.length,
+      carriedSourceIds: new Set(
+        records
+          .filter((record) => createdIds.has(String(record.id)))
+          .map((record) => String(record.promotedFromEnrollmentId)),
+      ),
+    };
+  });
+  // Post-commit: clients must only be invalidated after the rollover is durable.
+  await invalidateMultiTierCache({ tenantId: tenant, domain: "sessions" });
+  await broadcastCollection("enrollments");
+  await broadcastCollection("sessions");
+  return result;
+}
+
+/** Closes a source enrollment with its rollover outcome on the session's last day (no billing). */
+export async function closeRolloverSourceEnrollment(
+  tenant: string,
+  input: {
+    enrollmentId: string;
+    studentId: string;
+    status: Extract<EndedEnrollmentStatus, "promoted" | "retained" | "graduated" | "left">;
+    lastDay: string;
+    actor: OperationActor;
+  },
+): Promise<void> {
+  await ops.applyEnrollmentWithdrawal(tenant, {
+    enrollmentId: input.enrollmentId,
+    studentId: input.studentId,
+    effectiveOn: input.lastDay,
+    reason: "Year-end rollover",
+    actor: input.actor,
+    status: input.status,
+  });
+}
+
+/**
+ * Batched year-end close of carried source enrollments (one transaction for the whole batch).
+ * Used by the rollover job to replace the per-student `closeRolloverSourceEnrollment` loop.
+ */
+export async function bulkCloseRolloverSourceEnrollments(
+  tenant: string,
+  inputs: ReadonlyArray<{
+    enrollmentId: string;
+    studentId: string;
+    status: Extract<EndedEnrollmentStatus, "promoted" | "retained" | "graduated" | "left">;
+    lastDay: string;
+  }>,
+  actor: OperationActor,
+): Promise<void> {
+  await ops.bulkApplyEnrollmentWithdrawal(
+    tenant,
+    inputs.map((input) => ({
+      enrollmentId: input.enrollmentId,
+      studentId: input.studentId,
+      status: input.status,
+      effectiveOn: input.lastDay,
+    })),
+    "Year-end rollover",
+    actor,
+  );
+}

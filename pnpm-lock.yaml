@@ -71,7 +71,7 @@ importers:
         specifier: npm:typescript@~6.0.3
         version: typescript@6.0.3
 
-  apps/backend:
+  apps/api:
     dependencies:
       '@aws-sdk/client-s3':
         specifier: ^3.1175.0
@@ -118,12 +118,54 @@ importers:
       '@mms/mod-accounting':
         specifier: workspace:*
         version: link:../../packages/modules/accounting
+      '@mms/mod-audit':
+        specifier: workspace:*
+        version: link:../../packages/modules/audit
+      '@mms/mod-billing':
+        specifier: workspace:*
+        version: link:../../packages/modules/billing
       '@mms/mod-contacts':
         specifier: workspace:*
         version: link:../../packages/modules/contacts
+      '@mms/mod-documents':
+        specifier: workspace:*
+        version: link:../../packages/modules/documents
+      '@mms/mod-enrollments':
+        specifier: workspace:*
+        version: link:../../packages/modules/enrollments
+      '@mms/mod-examinations':
+        specifier: workspace:*
+        version: link:../../packages/modules/examinations
+      '@mms/mod-faculty':
+        specifier: workspace:*
+        version: link:../../packages/modules/faculty
+      '@mms/mod-hasanat':
+        specifier: workspace:*
+        version: link:../../packages/modules/hasanat
       '@mms/mod-iam':
         specifier: workspace:*
         version: link:../../packages/modules/iam
+      '@mms/mod-messaging':
+        specifier: workspace:*
+        version: link:../../packages/modules/messaging
+      '@mms/mod-notifications':
+        specifier: workspace:*
+        version: link:../../packages/modules/notifications
+      '@mms/mod-obligations':
+        specifier: workspace:*
+        version: link:../../packages/modules/obligations
+      '@mms/mod-question-bank':
+        specifier: workspace:*
+        version: link:../../packages/modules/question-bank
+      '@mms/mod-sessions':
+        specifier: workspace:*
+        version: link:../../packages/modules/sessions
+      '@mms/mod-students':
+        specifier: workspace:*
+        version: link:../../packages/modules/students
+      '@mms/mod-workshops':
+        specifier: workspace:*
+        version: link:../../packages/modules/workshops
       '@ts-rest/core':
         specifier: ^3.52.1
         version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
@@ -213,7 +255,7 @@ importers:
         specifier: ^8.23.0
         version: 8.23.0
 
-  apps/frontend:
+  apps/platform-web:
     dependencies:
       '@hookform/resolvers':
         specifier: ^7.0.8
@@ -230,9 +272,262 @@ importers:
       '@mms/mod-accounting':
         specifier: workspace:*
         version: link:../../packages/modules/accounting
+      '@mms/mod-contacts':
+        specifier: workspace:*
+        version: link:../../packages/modules/contacts
+      '@mms/mod-faculty':
+        specifier: workspace:*
+        version: link:../../packages/modules/faculty
+      '@mms/mod-hasanat':
+        specifier: workspace:*
+        version: link:../../packages/modules/hasanat
       '@mms/mod-iam':
         specifier: workspace:*
         version: link:../../packages/modules/iam
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
+      '@photostructure/tz-lookup':
+        specifier: ^11.8.0
+        version: 11.8.0
+      '@radix-ui/react-alert-dialog':
+        specifier: ^1.2.1
+        version: 1.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-avatar':
+        specifier: ^1.3.1
+        version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-checkbox':
+        specifier: ^1.4.1
+        version: 1.4.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-dropdown-menu':
+        specifier: ^2.2.1
+        version: 2.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-label':
+        specifier: ^2.1.17
+        version: 2.1.17(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-popover':
+        specifier: ^1.3.1
+        version: 1.3.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-select':
+        specifier: ^2.4.1
+        version: 2.4.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-slider':
+        specifier: ^1.6.1
+        version: 1.6.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-slot':
+        specifier: ^1.5.0
+        version: 1.5.0(@types/react@19.3.0)(react@19.3.1)
+      '@radix-ui/react-switch':
+        specifier: ^1.4.1
+        version: 1.4.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-tabs':
+        specifier: ^1.2.1
+        version: 1.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@radix-ui/react-tooltip':
+        specifier: ^1.4.1
+        version: 1.4.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@sentry/react':
+        specifier: ^11.17.0
+        version: 11.17.0(react-router@7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1))(react@19.3.1)
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-virtual':
+        specifier: ^3.14.28
+        version: 3.14.28(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/react-query':
+        specifier: 'catalog:'
+        version: 3.52.1(@tanstack/react-query@5.108.4(@types/react@19.3.0)(react@19.3.1))(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(react@19.3.1)(zod@4.6.7)
+      class-variance-authority:
+        specifier: ^0.7.1
+        version: 0.7.1
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      html2canvas:
+        specifier: ^1.4.1
+        version: 1.4.1
+      jspdf:
+        specifier: ^4.2.1
+        version: 4.2.1
+      jspdf-autotable:
+        specifier: ^5.0.9
+        version: 5.0.9(jspdf@4.2.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      mermaid:
+        specifier: 12.3.0
+        version: 12.3.0
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-day-picker:
+        specifier: ^10.0.2
+        version: 10.0.2(@types/react@19.3.0)(react@19.3.1)
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      react-hook-form:
+        specifier: ^7.92.0
+        version: 7.92.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.11.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
+      tailwind-merge:
+        specifier: ^3.7.1
+        version: 3.7.1
+      victory-vendor:
+        specifier: 38.1.0
+        version: 38.1.0
+      xlsx:
+        specifier: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
+        version: https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+      zustand:
+        specifier: ^5.1.0
+        version: 5.1.0(@types/react@19.3.0)(immer@11.2.10)(react@19.3.1)(use-sync-external-store@1.7.0(react@19.3.1))
+    devDependencies:
+      '@eslint/js':
+        specifier: ^10.0.1
+        version: 10.0.1(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint-config
+      '@mms/tailwind-config':
+        specifier: workspace:*
+        version: link:../../tooling/tailwind-config
+      '@tailwindcss/postcss':
+        specifier: ^4.3.5
+        version: 4.3.5
+      '@tanstack/react-query-devtools':
+        specifier: ^5.108.4
+        version: 5.108.4(@tanstack/react-query@5.108.4(@types/react@19.3.0)(react@19.3.1))(@types/react@19.3.0)(react@19.3.1)
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      '@vitejs/plugin-react':
+        specifier: ^6.3.0
+        version: 6.3.0(oxc-transform-react@0.158.0)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+      '@vitest/coverage-v8':
+        specifier: 5.1.0
+        version: 5.1.0(vitest@5.1.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      eslint-plugin-jsx-a11y:
+        specifier: ^6.10.2
+        version: 6.10.2(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))
+      eslint-plugin-react:
+        specifier: ^7.37.5
+        version: 7.37.5(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))
+      eslint-plugin-react-hooks:
+        specifier: ^7.1.1
+        version: 7.1.1(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)
+      eslint-plugin-unused-imports:
+        specifier: ^4.4.1
+        version: 4.4.1(@typescript-eslint/eslint-plugin@8.74.0(@typescript-eslint/parser@8.74.0(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2))(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))
+      globals:
+        specifier: ^17.14.0
+        version: 17.14.0
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      oxc-transform-react:
+        specifier: 0.158.0
+        version: 0.158.0
+      postcss:
+        specifier: ^8.5.33
+        version: 8.5.33
+      rollup-plugin-visualizer:
+        specifier: ^7.1.3
+        version: 7.1.3(rolldown@1.2.19)(rollup@4.63.3)
+      tailwindcss:
+        specifier: ^4.3.5
+        version: 4.3.5
+      tw-animate-css:
+        specifier: ^1.4.0
+        version: 1.4.0
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      typescript-eslint:
+        specifier: ^8.74.0
+        version: 8.74.0(eslint@10.15.0(jiti@2.7.0)(supports-color@7.2.0))(supports-color@7.2.0)(typescript@7.0.2)
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vite-plugin-compression2:
+        specifier: ^2.5.4
+        version: 2.5.4(rollup@4.63.3)
+      vite-plugin-pwa:
+        specifier: ^2.0.0
+        version: 2.0.0(supports-color@7.2.0)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))(workbox-build@7.4.1(supports-color@7.2.0))(workbox-window@7.4.1)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  apps/tenant-web:
+    dependencies:
+      '@hookform/resolvers':
+        specifier: ^7.0.8
+        version: 7.0.8(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(zod@4.6.7)
+      '@jsquash/webp':
+        specifier: 1.5.0
+        version: 1.5.0
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../packages/fe-core
+      '@mms/mod-accounting':
+        specifier: workspace:*
+        version: link:../../packages/modules/accounting
+      '@mms/mod-billing':
+        specifier: workspace:*
+        version: link:../../packages/modules/billing
+      '@mms/mod-contacts':
+        specifier: workspace:*
+        version: link:../../packages/modules/contacts
+      '@mms/mod-enrollments':
+        specifier: workspace:*
+        version: link:../../packages/modules/enrollments
+      '@mms/mod-faculty':
+        specifier: workspace:*
+        version: link:../../packages/modules/faculty
+      '@mms/mod-hasanat':
+        specifier: workspace:*
+        version: link:../../packages/modules/hasanat
+      '@mms/mod-iam':
+        specifier: workspace:*
+        version: link:../../packages/modules/iam
+      '@mms/mod-messaging':
+        specifier: workspace:*
+        version: link:../../packages/modules/messaging
+      '@mms/mod-sessions':
+        specifier: workspace:*
+        version: link:../../packages/modules/sessions
+      '@mms/mod-students':
+        specifier: workspace:*
+        version: link:../../packages/modules/students
       '@mms/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -471,6 +766,9 @@ importers:
 
   packages/be-core:
     dependencies:
+      '@fastify/rate-limit':
+        specifier: ^11.3.0
+        version: 11.3.0
       '@mms/contracts':
         specifier: workspace:*
         version: link:../contracts
@@ -609,6 +907,9 @@ importers:
       '@mms/ui':
         specifier: workspace:*
         version: link:../ui
+      '@photostructure/tz-lookup':
+        specifier: ^11.8.0
+        version: 11.8.0
       '@radix-ui/react-tabs':
         specifier: ^1.2.1
         version: 1.2.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
@@ -774,7 +1075,7 @@ importers:
         specifier: 5.1.0
         version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
 
-  packages/modules/contacts:
+  packages/modules/audit:
     dependencies:
       '@mms/be-core':
         specifier: workspace:*
@@ -803,6 +1104,571 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/billing:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.11.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.23.1
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/contacts:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-virtual':
+        specifier: ^3.14.28
+        version: 3.14.28(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.11.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.23.1
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/documents:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/enrollments:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.11.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.23.1
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/examinations:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/faculty:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.23.1
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/hasanat:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       lucide-react:
         specifier: ^1.78.0
         version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
@@ -876,6 +1742,553 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/messaging:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-virtual':
+        specifier: ^3.14.28
+        version: 3.14.28(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.11.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.23.1
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/notifications:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/obligations:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/question-bank:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/sessions:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.11.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.23.1
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/students:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.11.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
+      zod:
+        specifier: 'catalog:'
+        version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/pg':
+        specifier: ^8.16.0
+        version: 8.23.1
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      pg:
+        specifier: ^8.23.1
+        version: 8.23.1
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@26.6.6)(@vitest/coverage-v8@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/workshops:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.7

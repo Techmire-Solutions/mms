@@ -41,7 +41,7 @@ description: Universal module architecture, page tabs (operational + required Re
 - **Access Control:** Gate editing and Save mutations with `canEditSetup`; render read-only fallback when view-only.
 
 ## 5. Background Jobs & Processing
-- **BullMQ Sandboxed Processing:** Long tasks (CSV import/export, bulk messaging, dedup scans, complex reports) offload to BullMQ worker process (`apps/backend/src/worker/index.ts`). Never run in the API request path.
+- **BullMQ Sandboxed Processing:** Long tasks (CSV import/export, bulk messaging, dedup scans, complex reports) offload to BullMQ worker process (`apps/api/src/worker/index.ts`). Never run in the API request path.
 - **Live Progress Tray:** Stream execution status via global `BackgroundJobsTray` (`running | completed | failed`, percentage progress, error counts, download artifacts).
 - **Worker Job Contracts:** Jobs require idempotency keys, bounded retries with exponential backoff, execution-time tenant/user verification, and concurrency isolation. Auto-retrying message broadcasts or charging payments is banned.
 - **Data Transfer Standard:** Module CSV imports and exports must use unified `@mms/contracts` transfer schemas (`createModuleTransferSchema`, `ModuleImportDialog`, `useModuleCsvImportActions`, `useModuleServerCsvExportActions`). Field Whitelist stripping of system metadata (`id`, `tenantId`, `createdAt`, etc.) and 1:1 bidirectional header symmetry are strictly required.
@@ -65,3 +65,9 @@ Align modules with **Contacts, Students, and Faculty**. Each area is owned by th
 
 ## 8. Work Directory Governance
 - **Work Directory Standards:** Enforce controller-owned selection (`useWorkSelection`), unified bulk bar (`ModuleUniversalBulkActionBar`), and single resolved `viewMode`. CI enforces zero regressions via `pnpm run check:work-directory`.
+
+## 9. Audience-separated module topology & composition shells
+- **Module structure:** each vertical module mirrors the `packages/modules/iam/src/` layout (substitute `<domain>` for `iam`) with audience separation — `shared/` (domain types, enums, pure policy/validation; imported by FE and BE), `backend/{tenant.router,platform.router,<domain>.service}.ts` (routes + service + ports/repository adapters; business logic only), `frontend/{components,tenant,platform}` (shared widgets + tenant views + platform views). There is no module root export; consumers always choose an audience subpath.
+- **Subpath exports:** the module `package.json` must expose `./shared`, `./backend/tenant`, `./backend/platform`, `./frontend/tenant`, `./frontend/platform` (plus `./frontend/components` when shared widgets exist). Wildcards map `*` → `*.tsx`; `.ts`-only files get explicit entries — a `.ts` vs `.tsx` mismatch silently breaks every consumer (`@mms/mod-*/…` "Cannot find module").
+- **Generic domains:** `question-bank`, `workshops`, and `tasks` are generic modules governed by `mms-module-page` / `mms-module-work` (no dedicated domain skill); treat them as standard single-ops modules unless they grow real domain complexity.
+- **Composition shells:** `apps/api` is a thin Fastify shell — it initializes `@mms/db`/`@mms/be-core`, keeps only bootstrap/plugins/infra routes, and mounts each module's tenant router under `/api/tenant/<domain>` (tenant auth + `tenantId`) and platform router under `/api/platform/<domain>` (`PLATFORM_ADMIN` + audit). `apps/tenant-web` and `apps/platform-web` import only `@mms/ui`, `@mms/fe-core`, `@mms/contracts`, and `@mms/mod-*/frontend/{tenant,platform}` (+ `/shared`); `apps/tenant-web` is the transitional combined app until the split lands. Business logic never lives in `apps/*`.

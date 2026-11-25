@@ -2,7 +2,7 @@ import type React from "react";
 import type { DensityMode } from "@mms/ui";
 import type { ModuleColumnRegistryEntry } from "@mms/contracts";
 import type { ModuleColumnCustomizerLabels } from "./ModuleColumnCustomizer";
-import type { WorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import type { WorkDirectoryViewMode } from "../tenant/index.js";
 import type { EntityDescriptor } from "./entityRegistryTypes";
 
 /** Trash/archive toggle config shared by every toolbar layer. */

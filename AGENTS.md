@@ -18,8 +18,9 @@ pnpm ci:local:full                                       # + i18n/build/bundle
 ## Layout
 
 ```
-apps/frontend/     React 19 + Vite 8 · TanStack Query v5 · Tailwind v4
-apps/backend/      Fastify 5 + Node.js 24 + PostgreSQL 16 + Drizzle · BullMQ worker
+apps/tenant-web/   React 19 + Vite 8 · TanStack Query v5 · Tailwind v4 (customer SaaS portal)
+apps/platform-web/ React 19 + Vite 8 · TanStack Query v5 · Tailwind v4 (operator console)
+apps/api/      Fastify 5 + Node.js 24 + PostgreSQL 16 + Drizzle · BullMQ worker
 packages/contracts/ @mms/contracts — Zod schemas, DTOs, pagination/filter contracts, error codes, domain enums (SSOT)
 packages/db/        @mms/db — Drizzle schema, DDL migrations, seed fixtures, soft-delete helpers, tenant-scoped client
 packages/be-core/   @mms/be-core — auth/session/RBAC guards, logger+correlation, Redis/BullMQ, realtime, transports
@@ -98,11 +99,11 @@ Owners: always-on `mms-agent-universal` §1 (**Reuse First**) · workflow and th
 
 Every module-owned route, UI entry point, and backend operation must declare and enforce its module and action-permission requirements. Frontend visibility is not a security boundary. Backend authorization must use authoritative tenant grants, module enablement, and user permissions. Reuse the centralized policy and guards. Explicitly classify non-module routes and add coverage checks so new routes or endpoints cannot silently bypass authorization.
 
-Owners: norm `mms-auth-security` §3 (**Module Access Gates**) · policy `@mms/contracts` `moduleAccessPolicy.ts` · backend `registerModuleAccess` + `MODULE_ROUTE_ACTION_RULES` · frontend `TENANT_APP_ROUTE_ACCESS` + `ModuleAccessRoute` · checks `apps/backend/src/__tests__/moduleAccessCoverage.test.ts` and `apps/frontend/src/lib/config/routeAccess.test.ts`.
+Owners: norm `mms-auth-security` §3 (**Module Access Gates**) · policy `@mms/contracts` `moduleAccessPolicy.ts` · backend `registerModuleAccess` + `MODULE_ROUTE_ACTION_RULES` · frontend `TENANT_APP_ROUTE_ACCESS` + `ModuleAccessRoute` · checks `apps/api/src/__tests__/moduleAccessCoverage.test.ts` and `apps/tenant-web/src/lib/config/routeAccess.test.ts`.
 
 **Rule → skill map:** every rule carries a **Workflow skills:** line, and the full ownership matrix lives in [.cursor/rules/README.md](.cursor/rules/README.md) (that file is the single owner of the topic→rule→skill index — do not restate it here).
 
-## Skills (50)
+## Skills (51)
 
 | Skill                     | Purpose                                                                                                                                                  |
 | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |

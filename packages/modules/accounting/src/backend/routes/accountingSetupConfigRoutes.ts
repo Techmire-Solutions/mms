@@ -10,11 +10,11 @@ import { canReadCollection } from "@mms/be-core/rbac";
 import {
   getAccountingFieldConfigService,
   updateAccountingFieldConfigService,
-} from "../services/accountingConfigService.js";
+} from "../services/index.js";
 import {
   getAccountingPreferencesService,
   updateAccountingPreferencesService,
-} from "../services/accountingPreferencesService.js";
+} from "../services/index.js";
 import { createCollectionAuditHelper } from "./createCollectionAuditHelper.js";
 
 const auditAccounting = createCollectionAuditHelper("accounting_accounts");

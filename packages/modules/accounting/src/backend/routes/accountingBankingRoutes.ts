@@ -18,7 +18,7 @@ import {
   loadBankStatements,
   matchBankStatementLine,
   upsertBankStatement,
-} from "../use-cases/accountingLedgerOpsUseCases.js";
+} from "../use-cases/index.js";
 
 const COLLECTION = ACCOUNTING_MODULE_MANIFEST.collectionKey;
 

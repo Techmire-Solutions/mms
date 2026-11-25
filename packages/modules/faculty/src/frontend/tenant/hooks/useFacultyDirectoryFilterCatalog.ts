@@ -1,0 +1,60 @@
+import { useMemo } from "react";
+import { isFacultyCatalogRowActive, type FacultyMember } from "@mms/contracts";
+import { useFacultyDepartments } from "./useFacultyDepartments";
+import { useFacultyDesignations } from "./useFacultyDesignations";
+import { useFacultyContractList } from "./useFacultyTsrQueries";
+
+/** Max page size accepted by faculty list API — used for supervisor filter roster. */
+const SUPERVISOR_LOOKUP_LIMIT = 100;
+
+/** Catalog + roster options for Work directory filters (department/designation names, supervisor ids). */
+export function useFacultyDirectoryFilterCatalog(enabled: boolean) {
+  const { data: departments = [] } = useFacultyDepartments();
+  const designationsQuery = useFacultyDesignations();
+  const rosterQuery = useFacultyContractList(
+    {
+      page: 1,
+      limit: SUPERVISOR_LOOKUP_LIMIT,
+      sortField: "name",
+      sortDir: "asc",
+      status: "active",
+    },
+    enabled,
+  );
+
+  const departmentFilterOptions = useMemo(
+    () =>
+      departments
+        .filter((item) => isFacultyCatalogRowActive(item))
+        .map((item) => ({ value: item.name, label: item.name }))
+        .sort((left, right) => left.label.localeCompare(right.label)),
+    [departments],
+  );
+
+  const designationFilterOptions = useMemo(
+    () =>
+      (designationsQuery.data ?? [])
+        .filter((item) => isFacultyCatalogRowActive(item))
+        .map((item) => ({ value: item.name, label: item.name }))
+        .sort((left, right) => left.label.localeCompare(right.label)),
+    [designationsQuery.data],
+  );
+
+  const supervisorFilterOptions = useMemo(() => {
+    const roster = (rosterQuery.data?.body?.faculty ?? []) as FacultyMember[];
+    return roster
+      .map((member: FacultyMember) => ({
+        value: String(member.id),
+        label: member.name?.trim() || String(member.employeeId || member.id),
+      }))
+      .sort((left: { label: string }, right: { label: string }) =>
+        left.label.localeCompare(right.label),
+      );
+  }, [rosterQuery.data]);
+
+  return {
+    departmentFilterOptions,
+    designationFilterOptions,
+    supervisorFilterOptions,
+  };
+}

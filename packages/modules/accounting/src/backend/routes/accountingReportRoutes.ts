@@ -10,11 +10,8 @@ import {
   type User,
 } from "@mms/contracts";
 import { canReadCollection } from "@mms/be-core/rbac";
-import { accountingUseCases } from "../use-cases/accountingUseCases.js";
-import {
-  loadAccountLedger,
-  loadReceivablesAging,
-} from "../use-cases/accountingReportEndpointsUseCases.js";
+import { accountingUseCases } from "../use-cases/index.js";
+import { loadAccountLedger, loadReceivablesAging } from "../use-cases/index.js";
 import { sendDatabaseError, sendForbidden, sendIfHttpDomainError } from "@mms/be-core/http/errors";
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
 import { sendValidated } from "@mms/be-core/http/routes";

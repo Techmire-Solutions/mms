@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-ENV_FILE="${1:-apps/backend/.env}"
+ENV_FILE="${1:-apps/api/.env}"
 # shellcheck source=../lib/deploy-ports.sh
 source "$ROOT_DIR/scripts/lib/deploy-ports.sh"
 # shellcheck source=../lib/read-env.sh
@@ -23,8 +23,8 @@ assert_production_backend_port "$PORT" "PM2 PORT" || exit 1
 
 mkdir -p "$ROOT_DIR/.logs"
 
-if [[ ! -f "$ROOT_DIR/apps/backend/dist/index.js" ]]; then
-  echo "ERROR: apps/backend/dist/index.js missing — run: pnpm build"
+if [[ ! -f "$ROOT_DIR/apps/api/dist/index.js" ]]; then
+  echo "ERROR: apps/api/dist/index.js missing — run: pnpm build"
   exit 1
 fi
 

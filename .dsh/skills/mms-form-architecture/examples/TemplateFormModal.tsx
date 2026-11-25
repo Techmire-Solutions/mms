@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import { z } from "zod";
 import type { AppTranslationKey } from "@mms/contracts";
-import { FormModal } from "@/components/app/FormModal";
-import { Field } from "@/components/app/FormPrimitives";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { Field } from "@mms/fe-core/components/FormPrimitives";
 import { Input } from "@mms/ui";
-import { useTranslation } from "@/hooks/useTranslation";
-import { translateValidationMessage } from "@/lib/forms/translateValidationMessage";
-import { useDirtySnapshot } from "@/lib/forms/useDirtySnapshot";
-import { useFormSubmission } from "@/lib/forms/useFormSubmission";
-import { useIdentityReset } from "@/lib/forms/useIdentityReset";
-import { mapZodFormErrors } from "@/lib/forms/mapZodFormErrors";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { translateValidationMessage } from "@mms/fe-core/forms/translateValidationMessage";
+import { useDirtySnapshot } from "@mms/fe-core/forms/useDirtySnapshot";
+import { useFormSubmission } from "@mms/fe-core/forms/useFormSubmission";
+import { useIdentityReset } from "@mms/fe-core/forms/useIdentityReset";
+import { mapZodFormErrors } from "@mms/fe-core/forms/mapZodFormErrors";
 
 /**
  * Standard Production Template for an MMS FormModal.

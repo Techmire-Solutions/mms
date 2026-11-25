@@ -3,15 +3,15 @@ import type { Contact, User } from "@mms/contracts";
 import { CONTACTS_MODULE_MANIFEST } from "@mms/contracts";
 import { sendDatabaseError } from "@mms/be-core/http/errors";
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
-import { countContactDuplicateMatches } from "../../use-cases/contactDuplicateScanUseCases.js";
-import { contactUseCases } from "../../use-cases/contactUseCases.js";
-import { prepareContactRecord } from "../../services/contactService.js";
+import { countContactDuplicateMatches } from "../../use-cases/index.js";
+import { contactUseCases } from "../../use-cases/index.js";
+import { prepareContactRecord } from "../../services/index.js";
 import {
   buildContactDuplicateCheckBodySchema,
   contactsDuplicatesQuerySchema,
   contactsDuplicateScanBodySchema,
 } from "@mms/contracts";
-import { loadContactFieldConfig } from "../../use-cases/contactConfigService.js";
+import { loadContactFieldConfig } from "../../use-cases/index.js";
 import { collectContactWriteExtraFieldKeys, sanitizeContactsForViewer } from "@mms/contracts";
 import {
   enqueueContactBackgroundJob,

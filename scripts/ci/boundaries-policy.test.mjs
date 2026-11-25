@@ -56,8 +56,8 @@ function assertDenied(messages, fromType, toType) {
 test("apps may not import another app", async () => {
   const messages = await boundaryMessages(
     nodeEslint,
-    'import app from "../../frontend/src/App.tsx";\nconsole.log(app);',
-    "apps/backend/src/probe.ts",
+    'import app from "../../tenant-web/src/App.tsx";\nconsole.log(app);',
+    "apps/api/src/probe.ts",
   );
   assertDenied(messages, "app", "app");
 });
@@ -65,7 +65,7 @@ test("apps may not import another app", async () => {
 test("modules may not import an app", async () => {
   const messages = await boundaryMessages(
     nodeEslint,
-    'import app from "../../../../../apps/backend/src/index.ts";\nconsole.log(app);',
+    'import app from "../../../../../apps/api/src/index.ts";\nconsole.log(app);',
     "packages/modules/iam/src/backend/probe.ts",
   );
   assertDenied(messages, "module-backend", "app");
@@ -93,7 +93,7 @@ test("apps may import contracts", async () => {
   const messages = await boundaryMessages(
     nodeEslint,
     'import contracts from "../../../packages/contracts/src/index.ts";\nconsole.log(contracts);',
-    "apps/backend/src/probe.ts",
+    "apps/api/src/probe.ts",
   );
   assert.deepEqual(messages, [], "app → contracts must stay allowed");
 });

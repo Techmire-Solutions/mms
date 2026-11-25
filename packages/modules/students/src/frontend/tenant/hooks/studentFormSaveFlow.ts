@@ -1,0 +1,222 @@
+import { notify } from "@mms/fe-core/notify";
+import type { Student, ValidationError, StudentDuplicateReason } from "@mms/contracts";
+import type { Contact } from "@mms/contracts";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import { getApiValidationMessage } from "@mms/fe-core/api/validationMessage";
+import { reportClientError } from "@mms/fe-core/reporting/clientErrorReporting";
+import { scrollAndFocusFirstError } from "@mms/fe-core/forms/formAutoScroll";
+import { mapApiFormError } from "@mms/fe-core/forms/serverFormErrors";
+import {
+  validateStudentDraft,
+  checkStudentFormDuplicate,
+  prepareStudentForSave,
+  DUPLICATE_ERROR_KEYS,
+  type StudentValidationContext,
+} from "./studentFormValidation";
+import { isGrNumberConflict, studentFieldErrorsFromApi } from "./studentFormApiErrors";
+
+interface StudentSaveFlowInput {
+  studentDraft: Partial<Student>;
+  student?: Partial<Student> | null;
+  linkedContact?: Contact | null;
+  linkedGenderRaw: string;
+  effectiveDob?: string;
+  updateContact?: { mutateAsync: (args: { id: string; contact: Contact }) => Promise<unknown> };
+  validationContext: Omit<StudentValidationContext, "linkedGenderRaw" | "linkedDob">;
+  blueprintVersion?: string | number | null;
+  formInstanceId: string;
+  t: TranslationFunction;
+  onSave: (student: Student) => void | Promise<void>;
+  onClose: () => void;
+  keepOpen?: boolean;
+  onBaselineReset?: (data: Partial<Student>) => void;
+  setValidationErrors: (errors: ValidationError[]) => void;
+  setSaving: (saving: boolean) => void;
+  /** Non-field failure banner; cleared at save start and set when fields carry no error. */
+  setFormError: (message: string | null) => void;
+  setPendingSaveData: (data: Partial<Student> | null) => void;
+  setTypedDuplicateReason: (reason: StudentDuplicateReason | null) => void;
+  setDuplicateConfirmOpen: (open: boolean) => void;
+}
+
+function focusStudentValidationField(formInstanceId: string, fieldId: string): void {
+  const readOnlyFocusIds = new Set(["gender", "contactRelationships"]);
+  // Contact-profile values (gender/phone/email) are read-only on the student form:
+  // focus the contact picker section that owns them.
+  const contactSectionFields = new Set(["contactId", "gender", "phone", "email"]);
+  const candidates = [
+    `sf-${formInstanceId}-${fieldId}`,
+    fieldId,
+    contactSectionFields.has(fieldId) ? "contactId" : "",
+    readOnlyFocusIds.has(fieldId) ? `sf-${formInstanceId}-guardians` : "",
+  ].filter(Boolean);
+
+  scrollAndFocusFirstError(candidates, { behavior: "smooth", block: "center" });
+}
+
+function notifyStudentSaveFailed(
+  t: TranslationFunction,
+  err: unknown,
+  scope: string,
+  fieldMessage?: string,
+): void {
+  // A field-level message is more actionable than the envelope message ("Invalid student").
+  const validationMessage = fieldMessage ?? getApiValidationMessage(err);
+  notify.error(
+    t("students.saveFailed"),
+    validationMessage ? { description: validationMessage } : undefined,
+  );
+  reportClientError(err, { scope });
+}
+
+export async function runStudentSaveFlow(input: StudentSaveFlowInput): Promise<boolean> {
+  input.setSaving(true);
+  try {
+    input.setValidationErrors([]);
+    input.setFormError(null);
+
+    const effectiveDob = input.effectiveDob ?? (input.linkedContact?.dob || "");
+
+    const zodErrors = validateStudentDraft(input.studentDraft, {
+      ...input.validationContext,
+      linkedGenderRaw: input.linkedGenderRaw,
+      linkedDob: effectiveDob,
+      linkedContact: input.linkedContact,
+    });
+    if (zodErrors) {
+      input.setValidationErrors(zodErrors);
+      const first = zodErrors[0];
+      if (first) {
+        focusStudentValidationField(input.formInstanceId, first.fieldId);
+      }
+      notify.error(input.t("common.formPleaseFixErrors"));
+      return false;
+    }
+
+    if (
+      effectiveDob &&
+      input.linkedContact &&
+      input.linkedContact.dob !== effectiveDob &&
+      input.updateContact
+    ) {
+      await input.updateContact.mutateAsync({
+        id: String(input.linkedContact.id),
+        contact: { ...input.linkedContact, dob: effectiveDob },
+      });
+    }
+
+    const duplicateReason = await checkStudentFormDuplicate({
+      studentId: input.student?.id ? String(input.student.id) : undefined,
+      contactId: String(input.studentDraft.contactId),
+      linkedContact: input.linkedContact,
+      grNumber:
+        typeof input.studentDraft.grNumber === "string" ? input.studentDraft.grNumber : undefined,
+    });
+
+    if (duplicateReason === "grNumber") {
+      input.setValidationErrors([
+        {
+          fieldId: "grNumber",
+          tabId: "registration",
+          message: input.t(DUPLICATE_ERROR_KEYS.grNumber),
+        },
+      ]);
+      focusStudentValidationField(input.formInstanceId, "grNumber");
+      notify.error(input.t(DUPLICATE_ERROR_KEYS.grNumber));
+      return false;
+    }
+
+    if (duplicateReason) {
+      input.setPendingSaveData(input.studentDraft);
+      input.setTypedDuplicateReason(duplicateReason);
+      input.setDuplicateConfirmOpen(true);
+      return false;
+    }
+
+    await commitStudentSave({
+      data: input.studentDraft,
+      student: input.student,
+      blueprintVersion: input.blueprintVersion,
+      onSave: input.onSave,
+    });
+    input.onBaselineReset?.(input.studentDraft);
+    if (!input.keepOpen) {
+      input.onClose();
+    }
+    return true;
+  } catch (err: unknown) {
+    if (isGrNumberConflict(err)) {
+      input.setValidationErrors([
+        {
+          fieldId: "grNumber",
+          tabId: "registration",
+          message: input.t(DUPLICATE_ERROR_KEYS.grNumber),
+        },
+      ]);
+      focusStudentValidationField(input.formInstanceId, "grNumber");
+      notify.error(input.t(DUPLICATE_ERROR_KEYS.grNumber));
+      return false;
+    }
+
+    const fieldErrors = studentFieldErrorsFromApi(err, input.validationContext.fields);
+    if (fieldErrors.length > 0) {
+      input.setValidationErrors(fieldErrors);
+      const first = fieldErrors[0];
+      if (first) focusStudentValidationField(input.formInstanceId, first.fieldId);
+    } else {
+      // Non-field failure: the banner is the actionable surface (the toast is easy to miss).
+      input.setFormError(mapApiFormError(err).message ?? input.t("students.saveFailed"));
+    }
+
+    notifyStudentSaveFailed(input.t, err, "students.form_save", fieldErrors[0]?.message);
+    return false;
+  } finally {
+    input.setSaving(false);
+  }
+}
+
+export async function confirmPendingStudentSave(input: {
+  pendingSaveData: Partial<Student> | null;
+  student?: Partial<Student> | null;
+  blueprintVersion?: string | number | null;
+  t: TranslationFunction;
+  onSave: (student: Student) => void | Promise<void>;
+  onClose: () => void;
+  setSaving: (saving: boolean) => void;
+  setPendingSaveData: (data: Partial<Student> | null) => void;
+  setDuplicateConfirmOpen: (open: boolean) => void;
+}): Promise<void> {
+  if (!input.pendingSaveData) return;
+  input.setSaving(true);
+  try {
+    await commitStudentSave({
+      data: input.pendingSaveData,
+      student: input.student,
+      blueprintVersion: input.blueprintVersion,
+      onSave: input.onSave,
+    });
+    input.setPendingSaveData(null);
+    input.setDuplicateConfirmOpen(false);
+    input.onClose();
+  } catch (err: unknown) {
+    notifyStudentSaveFailed(input.t, err, "students.form_save_confirm");
+  } finally {
+    input.setSaving(false);
+  }
+}
+
+async function commitStudentSave(input: {
+  data: Partial<Student>;
+  student?: Partial<Student> | null;
+  blueprintVersion?: string | number | null;
+  onSave: (student: Student) => void | Promise<void>;
+}): Promise<void> {
+  await input.onSave(
+    prepareStudentForSave({
+      data: input.data,
+      studentId: input.student?.id,
+      enrolledSessions: input.student?.enrolledSessions,
+      blueprintVersion: input.blueprintVersion,
+    }),
+  );
+}

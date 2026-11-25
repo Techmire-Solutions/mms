@@ -1,6 +1,6 @@
 ---
 name: mms-user-management
-description: Governs tenant-level user administration, staff invitations, role assignments, and active session controls. Use when modifying UsersPage, user invitation dialogs, tenant RBAC role assignments, or staff access controls. Do NOT use for platform superadmin apex console (use mms-platform-console), low-level session cookie/CSRF security hardening (use mms-backend-security), or person demographic contact linking (use mms-student-lifecycle).
+description: Tenant user admin (invitations, role assignments, session controls). Use when UsersPage/invites/RBAC. Do NOT use for platform apex (use mms-platform-console), session security (use mms-backend-security), or contact linking (use mms-student-lifecycle).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -21,7 +21,7 @@ metadata:
 ## 1. Domain Invariants & Security Boundaries
 
 - **Tenant Isolation**: Users managed here operate within the active tenant boundary. Superadmins or apex platform administrators are managed separately under the Platform Console (`mms-platform-console`).
-- **Self-Admin Lockout Protection**: An administrator cannot reset their own password or revoke their own permissions through administrative endpoints (`apps/backend/src/routes/tenant/users.ts`).
+- **Self-Admin Lockout Protection**: An administrator cannot reset their own password or revoke their own permissions through administrative endpoints (`apps/api/src/routes/tenant/users.ts`).
 - **Least Privilege RBAC**: Role changes must validate that the granting user possesses equivalent or higher administrative capabilities.
 - **Audit Logging**: Every invitation, role promotion/demotion, or credential reset logs an RFC 8785 tamper-evident audit event (`mms-audit-trail`).
 
@@ -29,12 +29,12 @@ metadata:
 
 | Concern | Path |
 |---------|------|
-| Users Page | `apps/frontend/src/tenant/features/users/UsersPage.tsx` |
-| Users Controller | `apps/frontend/src/tenant/features/users/hooks/useUsersPageController.ts` |
-| Users Work Tier | `apps/frontend/src/tenant/features/users/components/UsersWorkTier.tsx` |
-| Users Setup Tier | `apps/frontend/src/tenant/features/users/components/UsersSetupTier.tsx` |
-| Users Backend Routes | `apps/backend/src/routes/tenant/users.ts` |
-| Users Query Facade | `apps/frontend/src/tenant/hooks/collections/users.ts` |
+| Users Page | `apps/tenant-web/src/tenant/features/users/UsersPage.tsx` |
+| Users Controller | `apps/tenant-web/src/tenant/features/users/hooks/useUsersPageController.ts` |
+| Users Work Tier | `apps/tenant-web/src/tenant/features/users/components/UsersWorkTier.tsx` |
+| Users Setup Tier | `apps/tenant-web/src/tenant/features/users/components/UsersSetupTier.tsx` |
+| Users Backend Routes | `apps/api/src/routes/tenant/users.ts` |
+| Users Query Facade | `apps/tenant-web/src/tenant/hooks/collections/users.ts` |
 
 ## 3. Verification Checklist
 
@@ -43,7 +43,7 @@ metadata:
 - [ ] UsersPage respects canWrite permission for invite/add actions
 - [ ] Soft-delete trash mode (?view=trash) supports restore with 23505 conflict trap
 - [ ] Self-reset prevention enforced on /api/users/:id/reset-password
-- [ ] Verify: pnpm --filter mms-backend test src/__tests__/users.integration.test.ts
+- [ ] Verify: pnpm --filter mms-api test src/__tests__/users.integration.test.ts
 - [ ] Verify: pnpm typecheck
 ```
 

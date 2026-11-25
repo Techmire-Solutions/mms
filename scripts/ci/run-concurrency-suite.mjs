@@ -52,7 +52,7 @@ const ACCOUNTING_FILES = [
 ];
 
 const SUITES = [
-  { dir: path.join(REPO_ROOT, "apps/backend"), files: APP_FILES },
+  { dir: path.join(REPO_ROOT, "apps/api"), files: APP_FILES },
   { dir: path.join(REPO_ROOT, "packages/modules/accounting"), files: ACCOUNTING_FILES },
 ];
 

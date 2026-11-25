@@ -3,7 +3,7 @@ import type { User } from "@mms/contracts";
 import { contactsBulkTagBodySchema, isReservedSystemTagName } from "@mms/contracts";
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
 import { sendDatabaseError } from "@mms/be-core/http/errors";
-import { contactUseCases } from "../../use-cases/contactUseCases.js";
+import { contactUseCases } from "../../use-cases/index.js";
 import { contactAuditExportRoutes } from "./contactAuditExportRoutes.js";
 import { contactDuplicateRoutes } from "./contactDuplicateRoutes.js";
 import { contactSoftDeleteRoutes } from "./contactSoftDeleteRoutes.js";

@@ -1,0 +1,131 @@
+import {
+  useCallback,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
+import type { AppTranslationKey, Contact } from "@mms/contracts";
+import { todayISO } from "@mms/contracts";
+import { deleteAttachmentFile, uploadAttachmentFile } from "@mms/fe-core/lib/attachmentUpload";
+import { notify } from "@mms/fe-core/notify";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+export function useContactDetailAttachments({
+  contactState,
+  setContactState,
+  canPersistContact,
+  onUpdateContact,
+}: {
+  contactState: Contact;
+  setContactState: Dispatch<SetStateAction<Contact>>;
+  canPersistContact: boolean;
+  onUpdateContact?: (contact: Contact) => Promise<void>;
+}) {
+  const { t } = useTranslation();
+  const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [pendingAttachmentDelete, setPendingAttachmentDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const updateContactAttachments = useCallback(
+    async (
+      newAttachments: NonNullable<Contact["attachments"]>,
+      successMessageKey: AppTranslationKey,
+      failureMessageKey: AppTranslationKey,
+      optimistic = true,
+    ): Promise<boolean> => {
+      if (!canPersistContact || !onUpdateContact) return false;
+      const updatedContact: Contact = { ...contactState, attachments: newAttachments };
+      const previousState = contactState;
+      if (optimistic) setContactState(updatedContact);
+      try {
+        await onUpdateContact(updatedContact);
+        if (!optimistic) setContactState(updatedContact);
+        notify.success(t(successMessageKey));
+        return true;
+      } catch {
+        if (optimistic) setContactState(previousState);
+        notify.error(t(failureMessageKey));
+        return false;
+      }
+    },
+    [canPersistContact, contactState, onUpdateContact, setContactState, t],
+  );
+
+  const handleFiles = useCallback(
+    async (filesList: FileList | null) => {
+      if (!canPersistContact || !filesList || filesList.length === 0) return;
+      setIsUploading(true);
+      try {
+        const files = Array.from(filesList);
+        const results = await Promise.all(files.map((file) => uploadAttachmentFile(file)));
+        const newAttachments = [
+          ...(contactState.attachments || []),
+          ...results.map((res) => ({
+            id: crypto.randomUUID(),
+            name: res.name,
+            type: res.type,
+            size: res.size,
+            url: res.url,
+            date: todayISO(),
+          })),
+        ];
+        await updateContactAttachments(
+          newAttachments,
+          "contacts.detail.uploadSuccess",
+          "contacts.detail.uploadFailed",
+        );
+      } catch {
+        notify.error(t("contacts.detail.uploadFailed"));
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    [canPersistContact, contactState.attachments, t, updateContactAttachments],
+  );
+
+  const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
+    void handleFiles(e.target.files);
+  };
+
+  const confirmAttachmentDelete = async (): Promise<void> => {
+    if (!pendingAttachmentDelete || !canPersistContact) return;
+    const attachment = pendingAttachmentDelete;
+    const remainingAttachments = (contactState.attachments || []).filter(
+      (item) => item.id !== attachment.id,
+    );
+    const removed = await updateContactAttachments(
+      remainingAttachments,
+      "contacts.detail.deleteSuccess",
+      "contacts.saveFailed",
+      false,
+    );
+    if (!removed) return;
+    setPendingAttachmentDelete(null);
+    const removedUrl = (contactState.attachments || []).find(
+      (item) => item.id === attachment.id,
+    )?.url;
+    if (removedUrl) {
+      // The row is gone after the successful save; a failed unlink is healed by
+      // the ops orphan sweep, so it must not surface as a save error.
+      void deleteAttachmentFile(removedUrl).catch(() => {});
+    }
+  };
+
+  return {
+    isDragging,
+    setIsDragging,
+    isUploading,
+    pendingAttachmentDelete,
+    setPendingAttachmentDelete,
+    fileInputRef,
+    handleFiles,
+    handleFileChange,
+    confirmAttachmentDelete,
+  };
+}

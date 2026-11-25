@@ -73,7 +73,7 @@ import {
 ```
 
 Without these registrations the package still works (env-based config, its own
-redacted pino logger, no-op tracer, local 503 error). `apps/backend/src/db/database.ts`
+redacted pino logger, no-op tracer, local 503 error). `apps/api/src/db/database.ts`
 registers the validated server config, and `@mms/be-core/logger` /
 `@mms/be-core/telemetry` / `@mms/be-core/http/errors` register the pino logger, the
 tracer and the `HttpDomainError` 503 class.
@@ -85,7 +85,7 @@ tracer and the `HttpDomainError` 503 class.
 - `drizzle.config.ts` in this package is the single drizzle-kit config
   (`schema: ./src/schema.ts`, `out: ./migrations_drizzle`).
 - The legacy TypeScript **data backfills** intentionally stay in
-  `apps/backend/src/db/migrations/`: they drive repositories and platform services
+  `apps/api/src/db/migrations/`: they drive repositories and platform services
   that have not moved yet. The DDL runner and the CONCURRENTLY-only index
   maintenance live here (`@mms/db/migrations`).
 - Never `drizzle-kit push` (mms-data-layer §7).
@@ -94,11 +94,11 @@ tracer and the `HttpDomainError` 503 class.
 
 `pnpm test` covers the package-owned guarantees: the fail-closed tenant-scope
 guard, the audited `bypassTenantScope` lifecycle, and the migration runner.
-Real-Postgres DB and RLS suites live in `apps/backend/src/__tests__/{db-integration,rls}`
+Real-Postgres DB and RLS suites live in `apps/api/src/__tests__/{db-integration,rls}`
 and import the package entry points directly (`@mms/db/client`, `@mms/db/context`,
 `@mms/db/schema`, `@mms/db/migrations`) — never the app-local `db/dbInit` facade.
 They run in CI (`test-backend-db`, `test-backend-rls`) and locally via
-`pnpm --filter mms-backend test:db` / `test:rls` against a provisioned database.
+`pnpm --filter mms-api test:db` / `test:rls` against a provisioned database.
 
 ## Fixtures
 

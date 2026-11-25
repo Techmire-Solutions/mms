@@ -2,9 +2,9 @@ import React from "react";
 import { CompactSegmentedControl } from "@mms/ui";
 import { FormSelect } from "./FormSelect";
 import { SectionLabel } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import { cn } from "@mms/ui";
-import type { TranslationFunction } from "@mms/fe-core/i18n";
+import type { TranslationFunction } from "../i18n/index.js";
 
 export interface PageSizeOption {
   value: string;

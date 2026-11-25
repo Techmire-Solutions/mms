@@ -14,7 +14,7 @@ import {
 import { initServer, type RouterImplementation } from "@ts-rest/fastify";
 import type { ContractRouteArgs, ContractRouteResponse } from "@mms/be-core/http/routes";
 import { replyValidationError } from "@mms/be-core/http/routes";
-import { contactUseCases } from "../../use-cases/contactUseCases.js";
+import { contactUseCases } from "../../use-cases/index.js";
 import { canUseContactPicker } from "@mms/be-core/rbac";
 import { sanitizeForUser, sanitizeOneForUser } from "./contactRouteHelpers.js";
 

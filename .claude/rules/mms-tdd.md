@@ -1,12 +1,12 @@
 ---
 description: Test-first delivery — Red/Green/Refactor for backend domain layers, shared helpers, and bug fixes
 paths:
-  - "apps/backend/src/**/use-cases/**/*.ts"
-  - "apps/backend/src/**/services/**/*.ts"
-  - "apps/backend/src/**/repositories/**/*.ts"
-  - "apps/backend/src/**/repository/**/*.ts"
+  - "apps/api/src/**/use-cases/**/*.ts"
+  - "apps/api/src/**/services/**/*.ts"
+  - "apps/api/src/**/repositories/**/*.ts"
+  - "apps/api/src/**/repository/**/*.ts"
   - "packages/contracts/src/**/*.ts"
-  - "apps/frontend/src/tenant/features/**/hooks/**/*.ts"
+  - "apps/tenant-web/src/tenant/features/**/hooks/**/*.ts"
 ---
 
 # MMS Test-Driven Delivery
@@ -16,7 +16,7 @@ paths:
 Applies to business logic, use-case handlers, services, repositories, `@mms/contracts` pure helpers, tenant hooks, and every bug fix. UI component specs follow `mms-testing-observability.md` §2–§4.
 
 ## 1. Red → Green → Refactor
-1. **Red:** write the failing Vitest spec first (`*.test.ts` / `*.test.tsx`, colocated or under `apps/backend/src/__tests__/`) that states the expected behaviour.
+1. **Red:** write the failing Vitest spec first (`*.test.ts` / `*.test.tsx`, colocated or under `apps/api/src/__tests__/`) that states the expected behaviour.
 2. **Verify the failure:** run `pnpm --filter <workspace> test <path-to-test>` and record the command plus the exact failing assertion or stack in the PR body (`## Test plan`). Syntax or import failures are not a valid Red.
 3. **Green:** implement only what turns the assertion green; no speculative scope.
 4. **Refactor:** clean up without changing test assertions.

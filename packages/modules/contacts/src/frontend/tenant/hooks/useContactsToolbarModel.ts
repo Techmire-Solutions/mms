@@ -1,0 +1,79 @@
+import { useCallback, useMemo } from "react";
+import {
+  DEFAULT_COLUMN_REGISTRY,
+  resolveContactColumnSortField,
+  type ColumnRegistryEntry,
+} from "@mms/contracts";
+import { useContactConfig } from "@mms/mod-contacts/frontend/tenant/components/ContactConfigContext";
+import { useTranslation } from "@mms/fe-core/i18n";
+import type { ModuleColumnCustomizerLabels } from "@mms/fe-core/components/moduleColumnCustomizerTypes";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+
+export interface ContactsListFiltersSortOption {
+  field: string;
+  label: string;
+}
+
+export interface ContactsListFiltersModel {
+  t: TranslationFunction;
+  genders: string[];
+  sortOptions: ContactsListFiltersSortOption[];
+  columnRegistry: ColumnRegistryEntry[];
+  updateUserColumnLayout: (columns: ColumnRegistryEntry[]) => void;
+  handleResetColumnLayout: () => void;
+  columnCustomizerLabels: ModuleColumnCustomizerLabels;
+}
+
+export function useContactsToolbarModel(): ContactsListFiltersModel {
+  const { availableColumns, genders, systemSortOptions, columnRegistry, updateUserColumnLayout } =
+    useContactConfig();
+  const { t } = useTranslation();
+
+  const sortOptions = useMemo(() => {
+    // One option per server sort key (Lunar DOB and Date of Birth share `dob`); only
+    // keys the list endpoint can order are offered, so the menu never lists a no-op.
+    const combined: ContactsListFiltersSortOption[] = [];
+    for (const column of availableColumns) {
+      const field = resolveContactColumnSortField(column.id);
+      if (!field || combined.some((option) => option.field === field)) continue;
+      combined.push({ field, label: column.label });
+    }
+    systemSortOptions.forEach((systemSortOption) => {
+      if (
+        !combined.some((existingSortOption) => existingSortOption.field === systemSortOption.field)
+      ) {
+        combined.push(systemSortOption);
+      }
+    });
+
+    return combined;
+  }, [availableColumns, systemSortOptions]);
+
+  const handleResetColumnLayout = useCallback(() => {
+    updateUserColumnLayout(DEFAULT_COLUMN_REGISTRY);
+  }, [updateUserColumnLayout]);
+
+  const columnCustomizerLabels = useMemo(
+    (): ModuleColumnCustomizerLabels => ({
+      trigger: t("contacts.columns"),
+      title: t("contacts.columns"),
+      visibleAndOrder: t("contacts.visibleAndOrder"),
+      hidden: t("contacts.hidden"),
+      fixed: t("contacts.fixed"),
+      hideColumn: (label: string) => t("contacts.hideColumn", { label }),
+      reset: t("contacts.resetLayout"),
+      searchPlaceholder: t("contacts.searchColumnsPlaceholder"),
+    }),
+    [t],
+  );
+
+  return {
+    t,
+    genders,
+    sortOptions,
+    columnRegistry,
+    updateUserColumnLayout,
+    handleResetColumnLayout,
+    columnCustomizerLabels,
+  };
+}

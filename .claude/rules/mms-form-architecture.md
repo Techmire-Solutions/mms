@@ -1,23 +1,23 @@
 ---
 description: FormModal shell, Zod form validation, decimal currency formatting, and form lifecycle hooks
 paths:
-  - "apps/frontend/src/components/app/FormPrimitives.tsx"
-  - "apps/frontend/src/components/app/FormCardChrome.tsx"
-  - "apps/frontend/src/components/app/FormAddAnotherButton.tsx"
-  - "apps/frontend/src/components/app/FormListFieldCard.tsx"
-  - "apps/frontend/src/components/app/FormCollectionShell.tsx"
-  - "apps/frontend/src/components/app/FormSelectWithQuickCreate.tsx"
-  - "apps/frontend/src/components/app/FormModal.tsx"
-  - "apps/frontend/src/components/app/DatePicker.tsx"
-  - "apps/frontend/src/components/app/TimePicker.tsx"
-  - "apps/frontend/src/components/app/DateTimePicker.tsx"
-  - "apps/frontend/src/components/ui/formStyles.ts"
+  - "packages/fe-core/src/components/FormPrimitives.tsx"
+  - "packages/fe-core/src/components/FormCardChrome.tsx"
+  - "packages/ui/src/app/FormAddAnotherButton.tsx"
+  - "packages/fe-core/src/components/FormListFieldCard.tsx"
+  - "packages/ui/src/app/FormCollectionShell.tsx"
+  - "packages/fe-core/src/components/FormSelectWithQuickCreate.tsx"
+  - "packages/fe-core/src/components/FormModal.tsx"
+  - "packages/fe-core/src/components/DatePicker.tsx"
+  - "packages/ui/src/app/TimePicker.tsx"
+  - "packages/fe-core/src/components/DateTimePicker.tsx"
   - "packages/ui/src/theme/formStyles.ts"
-  - "apps/frontend/src/tenant/features/**/*Form*.tsx"
-  - "apps/frontend/src/tenant/features/**/hooks/use*Write*.ts"
-  - "apps/frontend/src/tenant/features/**/hooks/use*Form*.ts"
-  - "apps/frontend/src/platform/**/*Form*.tsx"
-  - "apps/frontend/src/platform/**/hooks/**"
+  - "packages/ui/src/theme/formStyles.ts"
+  - "apps/tenant-web/src/tenant/features/**/*Form*.tsx"
+  - "packages/modules/*/src/frontend/tenant/hooks/use*Write*.ts"
+  - "apps/tenant-web/src/tenant/features/**/hooks/use*Form*.ts"
+  - "apps/platform-web/src/platform/**/*Form*.tsx"
+  - "apps/platform-web/src/platform/**/hooks/**"
   - "packages/contracts/src/**/*Schema*.ts"
   - "packages/contracts/src/**/contactFormNormalize.ts"
   - "packages/contracts/src/**/contactItemNormalize.ts"
@@ -78,7 +78,7 @@ paths:
 ## 4. Write vs Read Zod Schemas
 - **Write DTO Hygiene:** Write schemas (POST/PUT) omit server-owned fields (`deletedAt`, `deletedBy`, `deletionReason`). Enforce `.strict()` on all write DTOs.
 - **Active FK Guarding:** Validators and forms assigning foreign keys (`contactId`, `sessionId`, `facultyId`) must verify referenced entities are active (`deleted_at IS NULL`) (`mms-data-layer.md` §6).
-- **Error Mapping & Hydration:** Map Zod issues via the single `mapZodFormErrors` implementation (`apps/frontend/src/lib/forms/mapZodFormErrors.ts`, imported as `@/lib/forms/mapZodFormErrors`) to `t()` keys (ban per-form issue switches). Map server field errors with `mapApiFormError` (`@/lib/forms/serverFormErrors`). Decimal strings for money, E.164 for phones. Hydrate edit defaults from Query cache to prevent empty flashes.
+- **Error Mapping & Hydration:** Map Zod issues via the single `mapZodFormErrors` implementation (`apps/tenant-web/src/lib/forms/mapZodFormErrors.ts`, imported as `@/lib/forms/mapZodFormErrors`) to `t()` keys (ban per-form issue switches). Map server field errors with `mapApiFormError` (`@/lib/forms/serverFormErrors`). Decimal strings for money, E.164 for phones. Hydrate edit defaults from Query cache to prevent empty flashes.
 - **Mutation & cache contract:** A form save goes through the owning query factory's mutation (`mutationOptions`) and uses `mutateAsync`; its `onSuccess` invalidates every affected list, detail, widget, lookup, and report root before the modal closes. Closing first and invalidating later is banned — it shows stale rows and can resurrect a deleted record in the directory.
 - **Read-Only Projections:** System-managed values (derived tags, computed status/provenance) render as locked read-only chrome, never as editable controls or lookup options. A draft may carry the read projection, but the write DTO strips it; editing the record must preserve the server-owned rows rather than dropping them.
 
@@ -100,6 +100,6 @@ paths:
 ## 8. Form Audit, Inventory & Ratchet
 - **Inventory is generated, never hand-written:** `pnpm run forms:inventory` writes `docs/forms-inventory.md` from the source tree (`scripts/check-form-architecture.mjs --inventory`). A stale snapshot fails `pnpm run check:forms`; every new form surface appears in the diff and needs an owner.
 - **The audit procedure is the workflow:** `/form-audit` (`.agent/workflows/form-audit.md`) runs inventory → lifecycle → collections → UI → i18n/a11y → domain sweeps → regression gate. `docs/forms-audit-2026-11-16.md` records findings with severity, fix, and test; a finding is closed only when its spec exists.
-- **Machine-enforced subset:** `pnpm run check:forms` (contract/lifecycle ratchet with `BASELINE` constants that may only decrease), plus `apps/frontend/src/lib/forms/formContractArchitecture.test.ts`, `formUiPrimitives.test.ts`, and `formCollectionKeys.test.ts` (raw controls, index keys, fire-and-forget saves, legacy store use). Adding an allowlist entry requires a written reason in the same change.
+- **Machine-enforced subset:** `pnpm run check:forms` (contract/lifecycle ratchet with `BASELINE` constants that may only decrease), plus `apps/tenant-web/src/lib/forms/formContractArchitecture.test.ts`, `formUiPrimitives.test.ts`, and `formCollectionKeys.test.ts` (raw controls, index keys, fire-and-forget saves, legacy store use). Adding an allowlist entry requires a written reason in the same change.
 - **Advisory subset:** copy quality, helper/footer consistency, and "does this form need a dirty guard" are review judgement, recorded in the audit doc rather than guessed by a regex.
 

@@ -72,8 +72,8 @@ const catalogZod = workspace.match(/^\s{2}zod:\s*"?([^"\n]+)"?/m)?.[1];
 const packages = [
   "package.json",
   "packages/contracts/package.json",
-  "apps/backend/package.json",
-  "apps/frontend/package.json",
+  "apps/api/package.json",
+  "apps/tenant-web/package.json",
 ];
 const tsVersions = new Set();
 for (const relative of packages) {
@@ -88,7 +88,7 @@ for (const relative of packages) {
 if (!catalogZod) findings.push("pnpm-workspace.yaml: no catalogued zod entry");
 if (tsVersions.size > 1) findings.push(`TypeScript versions drift: ${[...tsVersions].join(", ")}`);
 
-for (const relative of ["apps/backend/package.json", "apps/frontend/package.json"]) {
+for (const relative of ["apps/api/package.json", "apps/tenant-web/package.json"]) {
   const pkg = readJson(relative);
   const shared = pkg.dependencies?.["@mms/contracts"];
   if (shared !== "workspace:*") {

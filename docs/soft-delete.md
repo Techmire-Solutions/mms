@@ -520,7 +520,7 @@ All soft-delete route logic flows through three shared factory files. **Never ha
 
 ### 4.1 `registerResourceRoutes` — Per-Entity CRUD + Soft-Delete
 
-[`apps/backend/src/lib/crudResourceRoutes.ts`](../apps/backend/src/lib/crudResourceRoutes.ts)
+[`apps/backend/src/lib/crudResourceRoutes.ts`](../apps/api/src/lib/crudResourceRoutes.ts)
 
 Registers when the corresponding `Fn` is provided:
 
@@ -589,7 +589,7 @@ if (!deleted) {
 
 ### 4.2 `registerSoftDeletableBulkTrashRoutes` — Bulk Delete + Bulk Restore
 
-[`apps/backend/src/lib/crudBulkRouteFactories.ts`](../apps/backend/src/lib/crudBulkRouteFactories.ts)
+[`apps/backend/src/lib/crudBulkRouteFactories.ts`](../apps/api/src/lib/crudBulkRouteFactories.ts)
 
 Registers:
 
@@ -627,7 +627,7 @@ interface SoftDeletableBulkTrashRoutesOptions {
 
 ### 4.3 `handleBulkListGet` — Unified `includeDeleted` List Handler
 
-[`apps/backend/src/lib/crudBulkRouteHelpers.ts`](../apps/backend/src/lib/crudBulkRouteHelpers.ts)
+[`apps/backend/src/lib/crudBulkRouteHelpers.ts`](../apps/api/src/lib/crudBulkRouteHelpers.ts)
 
 Use `supportsIncludeDeleted: true` to enable trash-aware list loading with RBAC gating in a single consistent call:
 
@@ -651,8 +651,8 @@ Contacts, Students, and Faculty use dedicated route files for richer logic (uniq
 | Module | File |
 |---|---|
 | Contacts | [`contactSoftDeleteRoutes.ts`](../packages/modules/contacts/src/backend/routes/tenant/contactSoftDeleteRoutes.ts) |
-| Students | [`studentSoftDeleteRoutes.ts`](../apps/backend/src/routes/tenant/students/studentSoftDeleteRoutes.ts) |
-| Faculty | [`facultySoftDeleteRoutes.ts`](../apps/backend/src/routes/tenant/faculty/facultySoftDeleteRoutes.ts) |
+| Students | [`studentSoftDeleteRoutes.ts`](../packages/modules/students/src/backend/routes/studentSoftDeleteRoutes.ts) |
+| Faculty | [`facultySoftDeleteRoutes.ts`](../packages/modules/faculty/src/backend/routes/facultySoftDeleteRoutes.ts) |
 
 ### 4.5 Uniqueness-on-Restore Contract & Error 23505 Trap
 
@@ -818,7 +818,7 @@ The URL builder serializes `includeDeleted: true` → `?includeDeleted=true` and
 
 ### 7.2 `ModuleTrashToggle` — Shared UI Primitive
 
-[`apps/frontend/src/components/ui/ModuleTrashToggle.tsx`](../apps/frontend/src/components/app/ModuleTrashToggle.tsx)
+[`apps/frontend/src/components/ui/ModuleTrashToggle.tsx`](../packages/ui/src/app/ModuleTrashToggle.tsx)
 
 ```tsx
 <ModuleTrashToggle
@@ -842,7 +842,7 @@ Renders with `aria-pressed={showDeleted}` for screen-reader support. Mount insid
 
 ### 7.3 Bulk Actions — `BulkSelectionDeleteAction` / `BulkSelectionRestoreAction`
 
-[`apps/frontend/src/components/ui/BulkSelectionActions.tsx`](../apps/frontend/src/components/app/BulkSelectionActions.tsx)
+[`apps/frontend/src/components/ui/BulkSelectionActions.tsx`](../packages/ui/src/app/BulkSelectionActions.tsx)
 
 When `viewingDeleted = true` → show `BulkSelectionRestoreAction`, hide `BulkSelectionDeleteAction`.  
 When `viewingDeleted = false` → show `BulkSelectionDeleteAction`, hide `BulkSelectionRestoreAction`.

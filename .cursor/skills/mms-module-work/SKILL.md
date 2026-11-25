@@ -1,6 +1,6 @@
 ---
 name: mms-module-work
-description: Implements or reviews MMS module command centres and Work tabs — metrics, directories, drawers, bulk actions, soft-delete trash, column prefs. Use when changing PageHeader command centre, Work directory, trash/restore, bulk actions, detail drawers, filters, or mobile cards. Do NOT use for top-level 3-tier module shells (use mms-module-page), module preferences configuration (use mms-module-setup), or analytical report charts (use mms-reports-export).
+description: Implements Work tabs (metrics, directories, drawers, bulk actions, trash, filters, cards). Use when command centre/Work directory. Do NOT use for module shells (use mms-module-page), setup (use mms-module-setup), or report charts (use mms-reports-export).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -31,7 +31,7 @@ metadata:
 
 | Concern | Path / symbol |
 |---------|----------------|
-| Tables | `apps/frontend/src/components/common/data-table/DataTable.tsx`, `.../work/WorkBatchTable.tsx` |
+| Tables | `apps/tenant-web/src/components/common/data-table/DataTable.tsx`, `.../work/WorkBatchTable.tsx` |
 | Column layout | `useModuleColumnLayout` |
 | Cards | `DirectoryEntityCard`, `DirectoryCardFooterActions`, `DirectoryCardMetaGrid` |
 | Card actions | `useWorkCardAction` |
@@ -54,7 +54,7 @@ For the full list of 6 invariant ratchets enforced by CI, see [references/work-d
 ## 4. Verification
 
 ```bash
-pnpm --filter mms-frontend typecheck && pnpm --filter mms-frontend lint
+pnpm --filter mms-tenant-web typecheck && pnpm --filter mms-tenant-web lint
 # When directory chrome / WorkBatchTable consumers change:
 pnpm run check:work-directory
 ```

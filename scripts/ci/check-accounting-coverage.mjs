@@ -10,8 +10,8 @@
  * the measured baseline minus a two-point margin. Floors may only be raised.
  *
  * Usage:
- *   node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db
- *   node scripts/ci/check-accounting-coverage.mjs --coverage apps/backend/coverage-finance-db --update
+ *   node scripts/ci/check-accounting-coverage.mjs --coverage apps/api/coverage-finance-db
+ *   node scripts/ci/check-accounting-coverage.mjs --coverage apps/api/coverage-finance-db --update
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -40,14 +40,14 @@ function isAccountingFile(file) {
 }
 
 const coverageDirs = argValues("--coverage");
-const dirs = coverageDirs.length > 0 ? coverageDirs : ["apps/backend/coverage-finance-db"];
+const dirs = coverageDirs.length > 0 ? coverageDirs : ["apps/api/coverage-finance-db"];
 const update = process.argv.includes("--update");
 const data = {};
 for (const coverageDir of dirs) {
   const jsonPath = path.join(coverageDir, "coverage-final.json");
   if (!fs.existsSync(jsonPath)) {
     console.error(`✗ Accounting coverage report not found: ${jsonPath}`);
-    console.error("Run: pnpm --filter mms-backend run test:db:coverage:finance");
+    console.error("Run: pnpm --filter mms-api run test:db:coverage:finance");
     process.exit(1);
   }
   Object.assign(data, JSON.parse(fs.readFileSync(jsonPath, "utf8")));

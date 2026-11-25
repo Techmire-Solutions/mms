@@ -1,0 +1,82 @@
+import { tenantUsers, contacts, sessions } from "@mms/db/schema";
+
+export const preparedTenantUserColumns = {
+  id: tenantUsers.id,
+  workspaceSubdomain: tenantUsers.workspaceSubdomain,
+  loginEmail: tenantUsers.loginEmail,
+  passwordHash: tenantUsers.passwordHash,
+  name: tenantUsers.name,
+  role: tenantUsers.role,
+  contactId: tenantUsers.contactId,
+  emailVerifiedAt: tenantUsers.emailVerifiedAt,
+  pendingLoginEmail: tenantUsers.pendingLoginEmail,
+  mustChangePassword: tenantUsers.mustChangePassword,
+  createdAt: tenantUsers.createdAt,
+  updatedAt: tenantUsers.updatedAt,
+  deletedAt: tenantUsers.deletedAt,
+  deletedBy: tenantUsers.deletedBy,
+  deletionReason: tenantUsers.deletionReason,
+  restoredAt: tenantUsers.restoredAt,
+  restoredBy: tenantUsers.restoredBy,
+  deletedWithCascade: tenantUsers.deletedWithCascade,
+  profileJson: tenantUsers.profileJson,
+};
+
+export const preparedContactColumns = {
+  id: contacts.id,
+  workspaceSubdomain: contacts.workspaceSubdomain,
+  firstName: contacts.firstName,
+  lastName: contacts.lastName,
+  name: contacts.name,
+  gender: contacts.gender,
+  dob: contacts.dob,
+  cnic: contacts.cnic,
+  isSyed: contacts.isSyed,
+  avatar: contacts.avatar,
+  notes: contacts.notes,
+  whatsappStatus: contacts.whatsappStatus,
+  lastCheckedAt: contacts.lastCheckedAt,
+  aiSummary: contacts.aiSummary,
+  deletedAt: contacts.deletedAt,
+  deletedBy: contacts.deletedBy,
+  deletionReason: contacts.deletionReason,
+  restoredAt: contacts.restoredAt,
+  restoredBy: contacts.restoredBy,
+  deletedWithCascade: contacts.deletedWithCascade,
+  createdAt: contacts.createdAt,
+  updatedAt: contacts.updatedAt,
+  createdBy: contacts.createdBy,
+  updatedBy: contacts.updatedBy,
+};
+
+import { STUDENT_COLUMNS } from "./studentRepositoryColumns.js";
+import { sessionTypeSql } from "./academicCatalogNameSql.js";
+
+export const preparedStudentColumns = STUDENT_COLUMNS;
+
+export const preparedSessionColumns = {
+  id: sessions.id,
+  workspaceSubdomain: sessions.workspaceSubdomain,
+  name: sessions.name,
+  type: sessionTypeSql,
+  categoryId: sessions.categoryId,
+  programId: sessions.programId,
+  status: sessions.status,
+  startDate: sessions.startDate,
+  endDate: sessions.endDate,
+  baseFee: sessions.baseFee,
+  currency: sessions.currency,
+  description: sessions.description,
+  minAttendancePct: sessions.minAttendancePct,
+  requiresExamPass: sessions.requiresExamPass,
+  version: sessions.version,
+  overlapExempt: sessions.overlapExempt,
+  deletedAt: sessions.deletedAt,
+  deletedBy: sessions.deletedBy,
+  deletionReason: sessions.deletionReason,
+  restoredAt: sessions.restoredAt,
+  restoredBy: sessions.restoredBy,
+  deletedWithCascade: sessions.deletedWithCascade,
+  createdAt: sessions.createdAt,
+  updatedAt: sessions.updatedAt,
+};

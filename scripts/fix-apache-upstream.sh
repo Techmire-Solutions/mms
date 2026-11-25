@@ -16,7 +16,7 @@ source "$ROOT_DIR/scripts/lib/deploy-ports.sh"
 # shellcheck source=lib/read-env.sh
 source "$ROOT_DIR/scripts/lib/read-env.sh"
 
-ENV_FILE="${1:-apps/backend/.env}"
+ENV_FILE="${1:-apps/api/.env}"
 
 BACKEND_PORT="$(read_env_var PORT "$MMS_PROD_BACKEND_PORT" "$ENV_FILE")"
 APP_DOMAIN="$(read_env_var MMS_APP_DOMAIN '' "$ENV_FILE")"

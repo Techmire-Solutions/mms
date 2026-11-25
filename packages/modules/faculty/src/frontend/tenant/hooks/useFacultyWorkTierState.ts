@@ -1,0 +1,121 @@
+import { useMemo } from "react";
+import {
+  FACULTY_MODULE_MANIFEST,
+  type FacultyMember,
+  type FacultySortField,
+  type FacultyQuickFilter,
+} from "@mms/contracts";
+import { contractBody, isContractQueryError } from "@mms/fe-core/api/contractQuery";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import { useFacultyContractList } from "./useFacultyTsrQueries";
+import { buildFacultyDirectoryQuery } from "./facultyQueryShared";
+import type { useFacultyColumnLayout } from "./useFacultyColumnLayout";
+import { resolveFacultyExportColumns, useFacultyExportActions } from "./useFacultyExportActions";
+
+export interface UseFacultyWorkTierStateInput {
+  effectiveTab: string;
+  listPage: number;
+  debouncedSearch: string;
+  filterStatus: string[];
+  filterSpecialization: string;
+  filterGender: string;
+  filterDepartment: string;
+  filterDesignation: string;
+  filterReportingFacultyId: string;
+  quickFilter: FacultyQuickFilter;
+  sortField: FacultySortField;
+  sortDir: "asc" | "desc";
+  showDeleted: boolean;
+  columnLayout: ReturnType<typeof useFacultyColumnLayout>;
+  canExport: boolean;
+  hasActiveFilters: boolean;
+  selectedIds: string[];
+  t: TranslationFunction;
+}
+
+/** Shared stable empty list — keeps downstream `useMemo` identities steady while loading. */
+const EMPTY_FACULTY: FacultyMember[] = [];
+
+export function useFacultyWorkTierState({
+  effectiveTab,
+  listPage,
+  debouncedSearch,
+  filterStatus,
+  filterSpecialization,
+  filterGender,
+  filterDepartment,
+  filterDesignation,
+  filterReportingFacultyId,
+  quickFilter,
+  sortField,
+  sortDir,
+  showDeleted,
+  columnLayout,
+  canExport,
+  hasActiveFilters,
+  selectedIds,
+  t,
+}: UseFacultyWorkTierStateInput) {
+  const exportColumns = useMemo(
+    () => resolveFacultyExportColumns(columnLayout.columnRegistry, columnLayout.isColumnVisible, t),
+    [columnLayout.columnRegistry, columnLayout.isColumnVisible, t],
+  );
+
+  const { handleExportCSV, handleBulkExport } = useFacultyExportActions({
+    tableColumns: exportColumns,
+    canExport,
+    search: debouncedSearch,
+    filterStatus,
+    filterSpecialization,
+    filterGender,
+    filterDepartment,
+    filterDesignation,
+    filterReportingFacultyId,
+    quickFilter,
+    sortField,
+    sortDir,
+    viewingDeleted: showDeleted,
+    hasActiveFilters,
+    selectedIds,
+  });
+
+  const useServerWork = effectiveTab === "faculties";
+  const workPageQuery = useFacultyContractList(
+    {
+      page: listPage,
+      limit: FACULTY_MODULE_MANIFEST.defaultPageSize,
+      ...buildFacultyDirectoryQuery({
+        search: debouncedSearch,
+        filterStatus,
+        filterSpecialization,
+        filterGender,
+        filterDepartment,
+        filterDesignation,
+        filterReportingFacultyId,
+        quickFilter,
+        sortField,
+        sortDir,
+      }),
+      includeDeleted: showDeleted,
+    },
+    useServerWork,
+  );
+
+  const workFaculty = (workPageQuery.data?.body?.faculty ?? EMPTY_FACULTY) as FacultyMember[];
+  const shownCount = workPageQuery.data?.body?.total ?? workFaculty.length;
+  const isWorkError = isContractQueryError(workPageQuery);
+  const workPageData = contractBody<NonNullable<typeof workPageQuery.data>["body"]>(
+    workPageQuery.data ?? undefined,
+  );
+
+  return {
+    useServerWork,
+    workPageQuery,
+    workFaculty,
+    shownCount,
+    isWorkError,
+    workPageData,
+    handleExportCSV,
+    handleBulkExport,
+  };
+}

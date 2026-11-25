@@ -23,7 +23,7 @@ import {
 import { createModuleStringListLookupsService } from "@mms/be-core/data/module-string-lookups";
 import { getRequestTenant } from "@mms/be-core/http";
 import { slugifyLookupLabel } from "@mms/be-core/data/slugify-lookup-label";
-import { contactLookupsRepository } from "../repository/contactLookupsAdapter.js";
+import { contactLookupsRepository } from "../repository/index.js";
 import { broadcastCollection } from "@mms/be-core/realtime";
 
 type ContactStringLookupKind = Exclude<ContactLookupKind, "countryCodes">;

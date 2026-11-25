@@ -16,7 +16,7 @@ source "$ROOT_DIR/scripts/lib/deploy-ports.sh"
 # shellcheck source=../lib/read-env.sh
 source "$ROOT_DIR/scripts/lib/read-env.sh"
 
-ENV_FILE="${1:-apps/backend/.env}"
+ENV_FILE="${1:-apps/api/.env}"
 TEMPLATE="$ROOT_DIR/scripts/apache/mmsv2-vhost.conf.template"
 # 000- prefix: load before Moodle/default SSL vhosts when SNI matching fails.
 TARGET="/etc/apache2/sites-available/000-mmsv2.conf"

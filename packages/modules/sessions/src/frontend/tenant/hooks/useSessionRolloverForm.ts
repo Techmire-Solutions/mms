@@ -1,0 +1,122 @@
+import { useState } from "react";
+import {
+  addIsoDays,
+  defaultPromotionClassMap,
+  isoDayOffset,
+  sessionRolloverBodySchema,
+  type PromotionOutcome,
+  type PromotionPreviewRow,
+  type Session,
+  type SessionRolloverInput,
+} from "@mms/contracts";
+
+export type RolloverMode = SessionRolloverInput["mode"];
+export type RolloverCopyKey = keyof SessionRolloverInput["copy"];
+export type RolloverCopy = Record<RolloverCopyKey, boolean>;
+
+const DEFAULT_COPY: RolloverCopy = {
+  fees: true,
+  discounts: true,
+  scholarships: true,
+  workingDays: true,
+  staff: true,
+  calendar: false,
+  schedules: true,
+};
+
+/** Next session dates: starts the day after this one ends and lasts as long. */
+function nextDates(session: Session): { startDate: string; endDate: string } {
+  const end = session.endDate?.slice(0, 10);
+  if (!end) return { startDate: "", endDate: "" };
+  const startDate = addIsoDays(end, 1);
+  return { startDate, endDate: addIsoDays(startDate, isoDayOffset(session.startDate, end)) };
+}
+
+/** Wizard state for duplicating / promoting a session into a new draft. */
+export function useSessionRolloverForm(session: Session, initialMode: RolloverMode) {
+  const [mode, setMode] = useState<RolloverMode>(initialMode);
+  const [name, setName] = useState("");
+  const [dates, setDates] = useState(() => nextDates(session));
+  const [copy, setCopy] = useState<RolloverCopy>(DEFAULT_COPY);
+  const [classMap, setClassMap] = useState(() => defaultPromotionClassMap(session.classes));
+  const [outcomes, setOutcomes] = useState<Record<string, PromotionOutcome>>({});
+  const [preview, setPreview] = useState<PromotionPreviewRow[] | null>(null);
+
+  const body: SessionRolloverInput = {
+    mode,
+    target: { name: name.trim(), startDate: dates.startDate, endDate: dates.endDate },
+    copy,
+    classMap: mode === "promote" ? classMap : [],
+    outcomes:
+      mode === "promote"
+        ? Object.entries(outcomes).map(([enrollmentId, outcome]) => ({ enrollmentId, outcome }))
+        : [],
+  };
+  const datesValid = Boolean(dates.startDate && dates.endDate && dates.endDate >= dates.startDate);
+  // The same contract the rollover preview/start endpoints enforce.
+  const parsedBody = sessionRolloverBodySchema.safeParse(body);
+  const valid = parsedBody.success;
+  const validationError = parsedBody.success ? null : (parsedBody.error.issues[0]?.message ?? null);
+  // Dirty tracking covers everything the server sees, not only the target name.
+  const bodySignature = JSON.stringify(body);
+  // Lazy-init captures the mount-time signature (the previous value a ref would hold);
+  // render-phase ref writes are React-Compiler-forbidden.
+  const [initialBodySignature] = useState(() => bodySignature);
+  const isDirty = bodySignature !== initialBodySignature;
+
+  return {
+    mode,
+    setMode: (next: RolloverMode) => {
+      setMode(next);
+      setPreview(null);
+    },
+    name,
+    setName: (nextName: string) => {
+      setName(nextName);
+      setPreview(null);
+    },
+    dates,
+    setStartDate: (startDate: string) => {
+      setDates((current) => ({ ...current, startDate }));
+      // Eligibility/age checks depend on the new start date; force a fresh preview.
+      setPreview(null);
+    },
+    setEndDate: (endDate: string) => {
+      setDates((current) => ({ ...current, endDate }));
+      setPreview(null);
+    },
+    datesValid,
+    validationError,
+    copy,
+    toggleCopy: (key: RolloverCopyKey, checked: boolean) => {
+      setCopy((current) => ({ ...current, [key]: checked }));
+      setPreview(null);
+    },
+    classMap,
+    setNextClass: (sourceClassId: string, nextClassId: string | null) => {
+      setClassMap((current) =>
+        current.map((row: any) =>
+          row.sourceClassId === sourceClassId ? { ...row, nextClassId } : row,
+        ),
+      );
+      setPreview(null);
+    },
+    outcomes,
+    setOutcome: (enrollmentId: string, outcome: PromotionOutcome) => {
+      setOutcomes((current) => ({ ...current, [enrollmentId]: outcome }));
+      setPreview((rows) =>
+        rows
+          ? rows.map((row: any) => (row.enrollmentId === enrollmentId ? { ...row, outcome } : row))
+          : rows,
+      );
+    },
+    preview,
+    setPreview,
+    body,
+    bodySignature,
+    valid,
+    isDirty,
+  };
+}
+
+export type SessionRolloverForm = ReturnType<typeof useSessionRolloverForm>;

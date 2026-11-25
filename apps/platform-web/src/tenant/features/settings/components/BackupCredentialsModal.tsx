@@ -1,0 +1,137 @@
+import React, { useState } from "react";
+import { Lock, Mail } from "lucide-react";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { Label } from "@mms/ui";
+import { LeadingIconInput } from "@mms/ui";
+import { PasswordInput } from "@mms/fe-core/components/PasswordInput";
+import { SettingsCallout } from "@mms/fe-core/components/SettingsShell";
+import { mapApiFormError } from "@mms/fe-core/forms/serverFormErrors";
+
+export interface BackupCredentialsModalProps {
+  open: boolean;
+  mode: "export" | "decrypt";
+  adminEmail: string;
+  emailReadOnly?: boolean;
+  loading?: boolean;
+  onClose: () => void;
+  onSubmit: (password: string, email: string) => void | Promise<void>;
+}
+
+export default function BackupCredentialsModal({
+  open,
+  mode,
+  adminEmail,
+  emailReadOnly = false,
+  loading = false,
+  onClose,
+  onSubmit,
+}: BackupCredentialsModalProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const [email, setEmail] = useState(adminEmail);
+  const [password, setPassword] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Adjust state during render: opening the modal (or a new admin email) re-seeds the form.
+  const [prevSeed, setPrevSeed] = useState({ open, adminEmail });
+  if (prevSeed.open !== open || prevSeed.adminEmail !== adminEmail) {
+    setPrevSeed({ open, adminEmail });
+    if (open) {
+      setEmail(adminEmail);
+      setPassword("");
+    }
+  }
+
+  const submit = async (): Promise<void> => {
+    if (loading || submitting) return;
+    setFormError(null);
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setFormError(t("platform.validationEnterValidEmail"));
+      return;
+    }
+    if (!password.trim()) {
+      setFormError(t("common.fieldRequired", { field: t("backup.adminPasswordLabel") }));
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await onSubmit(password, email.trim());
+    } catch (error) {
+      setFormError(
+        mapApiFormError(error).message ??
+          (mode === "export" ? t("backup.createFailed") : t("backup.decryptFailed")),
+      );
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const title = mode === "export" ? t("backup.encryptExportTitle") : t("backup.decryptTitle");
+  const subtitle = mode === "export" ? t("backup.encryptExportDesc") : t("backup.decryptDesc");
+
+  return (
+    <FormModal
+      open={open}
+      onClose={onClose}
+      title={title}
+      subtitle={subtitle}
+      icon={Lock}
+      size="sm"
+      cancelLabel={t("backup.confirmCancel")}
+      saveLabel={
+        loading
+          ? mode === "export"
+            ? t("backup.creating")
+            : t("backup.decrypting")
+          : mode === "export"
+            ? t("backup.createButton")
+            : t("backup.decryptAction")
+      }
+      onSave={submit}
+      saving={loading || submitting}
+      error={formError ?? undefined}
+      saveDisabled={!password.trim() || !email.trim()}
+      formId="backup-credentials-form"
+    >
+      <form
+        id="backup-credentials-form"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (password.trim() && email.trim() && !loading) {
+            void submit();
+          }
+        }}
+        className="space-y-4"
+      >
+        <SettingsCallout>{t("backup.encryptNote")}</SettingsCallout>
+        <div className="space-y-2">
+          <Label htmlFor="backup-admin-email">{t("backup.adminEmailLabel")}</Label>
+          <LeadingIconInput
+            id="backup-admin-email"
+            name="backupAdminEmail"
+            type="email"
+            icon={Mail}
+            value={email}
+            readOnly={emailReadOnly}
+            onChange={(event) => setEmail(event.target.value)}
+            autoComplete="username"
+            disabled={loading || emailReadOnly}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="backup-admin-password">{t("backup.adminPasswordLabel")}</Label>
+          <PasswordInput
+            id="backup-admin-password"
+            name="backupAdminPassword"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            autoComplete="current-password"
+            disabled={loading}
+          />
+        </div>
+      </form>
+    </FormModal>
+  );
+}

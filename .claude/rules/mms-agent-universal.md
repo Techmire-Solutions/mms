@@ -7,10 +7,7 @@ description: Universal agent cognition, planning, DRY reuse, communication econo
 **Workflow skills:** orientation / sync → `antigravity-workspace` · PR review → `mms-code-review` · UI design → `ui-ux-pro-max` · modern web guidance → `modern-web-guidance`. Ownership matrix → `.cursor/rules/README.md`.
 
 ## 1. Cognition & Behaviour
-- **Plan-First Protocol:** For every request, systematically execute the three-phase lifecycle:
-  1. *Discovery & Plan:* Read and understand intent, search relevant codebase locations, inspect existing patterns/abstractions (`@mms/contracts`, hooks, UI primitives), and evaluate constraints (tenant RLS, strict TS, 300 LOC cap). For UI, query `ui-ux-pro-max` (`mms-ui-ux-design.md` §8) and consult `modern-web-guidance` (`AGENTS.md`) for HTML/CSS and client-side JS.
-  2. *Actionable Task List:* Formulate an explicit, structured task checklist (`- [ ]`) breaking the implementation into discrete, sequenced phases (e.g., Types/Schemas → Backend/API → Frontend/Hooks → Components → Verification).
-  3. *Iterative Execution & Verification:* Execute task-by-task against the checklist. Mark tasks in-flight (`- [/]`) and completed (`- [x]`). Run targeted verifications (typecheck, lint, or tests) after each phase before proceeding.
+- **Plan-First Protocol:** Follow the plan → task-list → verify lifecycle in `mms-core.md` §3; inspect existing patterns first and run targeted checks after each phase.
 - **Reuse First (DRY):** Search existing utilities and components (`@mms/contracts`, `@mms/ui`, `@/components/app`, `@/components/common`, `@/hooks`) before writing new code. Keep shared behaviour configurable; verify consumers (`mms-dry.md` §1–§2).
 - **Targeted Focus:** Edit in-scope files only. Terse, functional, idiomatic code without boilerplate or narrating comments.
 - **Surgical Edits:** Emit targeted patches with minimal context; never rewrite whole files unless creating new files.

@@ -35,7 +35,7 @@ Export the manifest from `packages/contracts/src/index.ts`.
 
 ## 2. Route Access Classification (`TenantRoutes.tsx`)
 
-Declare the module route under the `ModuleAccessRoute` boundary in `apps/frontend/src/tenant/routes/TenantRoutes.tsx`:
+Declare the module route under the `ModuleAccessRoute` boundary in `apps/tenant-web/src/tenant/routes/TenantRoutes.tsx`:
 
 ```tsx
 // Gated by ModuleAccessRoute
@@ -51,7 +51,7 @@ Declare the module route under the `ModuleAccessRoute` boundary in `apps/fronten
 </Route>
 ```
 
-Add the route path to `TENANT_APP_ROUTE_ACCESS` in `apps/frontend/src/lib/config/routeAccess.ts`:
+Add the route path to `TENANT_APP_ROUTE_ACCESS` in `apps/tenant-web/src/lib/config/routeAccess.ts`:
 
 ```ts
 "/my-module": {

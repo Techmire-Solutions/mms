@@ -2,9 +2,9 @@ import React from "react";
 import { LayoutGrid, Table } from "lucide-react";
 import { m } from "framer-motion";
 import { Button } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
-import { useReducedMotion } from "@mms/fe-core/tenant";
-import type { WorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { useTranslation } from "../i18n/index.js";
+import { useReducedMotion } from "../tenant/index.js";
+import type { WorkDirectoryViewMode } from "../tenant/index.js";
 import { cn } from "@mms/ui";
 
 export interface WorkViewModeToggleProps {

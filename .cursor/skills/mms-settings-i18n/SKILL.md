@@ -1,6 +1,6 @@
 ---
 name: mms-settings-i18n
-description: Governs application-wide settings panels (/settings), settings preview states, sidebar navigation registries, and localization/i18n standards (en/ar/ur/fa). Use when adding or modifying settings, sidebar navigation items, custom localizations, translation files, or RTL/LTR layout mirroring. Do NOT use for per-module setup preferences (use mms-module-setup), full encrypted backup/restore (use mms-backup-restore), or generic BiDi UI tokens (use mms-ui-ux-design).
+description: Global settings panels (/settings), sidebar nav, localization (en/ar/ur/fa), RTL. Use when settings/nav/translations. Do NOT use for module setup (use mms-module-setup), backup (use mms-backup-restore), or BiDi tokens (use mms-ui-ux-design).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -45,7 +45,7 @@ Keep user-authored field labels as data. Use semantic tokens and logical spacing
 - [ ] Zero t('key') || 'English' fallback idioms
 - [ ] Pure logical CSS properties (ps-, pe-, ms-, me-, start-, end-)
 - [ ] Date and currency formatted via formatDate and formatMoney
-- [ ] Run: pnpm typecheck && pnpm --filter mms-frontend lint && pnpm run check:i18n
+- [ ] Run: pnpm typecheck && pnpm --filter mms-tenant-web lint && pnpm run check:i18n
 ```
 
 ## Related skills

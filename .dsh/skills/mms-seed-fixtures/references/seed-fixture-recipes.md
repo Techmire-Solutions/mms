@@ -30,30 +30,30 @@ Because PostgreSQL tables enforce foreign key constraints, module tables must be
 ```
 
 ### Topological Execution Scripts
-- **Full Topological Reset:** `apps/backend/src/scripts/resetAllModulesTopological.ts`
-- **Selective Reset (Preserving Contacts):** `apps/backend/src/scripts/resetAllModulesExceptContacts.ts`
-- **Baseline Application Reset:** `apps/backend/src/scripts/reset-app-db.ts`
+- **Full Topological Reset:** `apps/api/src/scripts/resetAllModulesTopological.ts`
+- **Selective Reset (Preserving Contacts):** `apps/api/src/scripts/resetAllModulesExceptContacts.ts`
+- **Baseline Application Reset:** `apps/api/src/scripts/reset-app-db.ts`
 
 ---
 
 ## 2. Standard Fixture Runners
 
-MMS provides standard 20-row deterministic fixture scripts under `apps/backend/src/scripts/`:
+MMS provides standard 20-row deterministic fixture scripts under `apps/api/src/scripts/`:
 
 ```bash
 # 1. Reset all application tables topologically
-pnpm --filter mms-backend db:reset
+pnpm --filter mms-api db:reset
 
 # 2. Seed platform super user & workspace
-pnpm --filter mms-backend exec tsx src/scripts/seedSuperUser.ts
+pnpm --filter mms-api exec tsx src/scripts/seedSuperUser.ts
 
 # 3. Seed core module entities
-pnpm --filter mms-backend exec tsx src/scripts/seed-20-contacts.ts
-pnpm --filter mms-backend exec tsx src/scripts/seed-20-faculty.ts
-pnpm --filter mms-backend exec tsx src/scripts/seed-faculty-setup.ts
-pnpm --filter mms-backend exec tsx src/scripts/seed-20-students.ts
-pnpm --filter mms-backend exec tsx src/scripts/seed-20-sessions.ts
-pnpm --filter mms-backend exec tsx src/scripts/seed-20-invoices.ts
+pnpm --filter mms-api exec tsx src/scripts/seed-20-contacts.ts
+pnpm --filter mms-api exec tsx src/scripts/seed-20-faculty.ts
+pnpm --filter mms-api exec tsx src/scripts/seed-faculty-setup.ts
+pnpm --filter mms-api exec tsx src/scripts/seed-20-students.ts
+pnpm --filter mms-api exec tsx src/scripts/seed-20-sessions.ts
+pnpm --filter mms-api exec tsx src/scripts/seed-20-invoices.ts
 ```
 
 ---

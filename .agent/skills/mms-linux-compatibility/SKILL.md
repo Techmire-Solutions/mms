@@ -1,6 +1,6 @@
 ---
 name: mms-linux-compatibility
-description: Audits the repository for Linux/Ubuntu VPS portability — CRLF line endings, case-sensitive imports, execute bits, and path casing. Use when preparing a deploy or chasing an error that only reproduces on the server. Do NOT use for local workstation setup (use mms-dev-setup) or for Apache/domain routing and PM2 topology (use mms-ops-deploy).
+description: Audits for Linux/Ubuntu portability (CRLF, case-sensitive imports, execute bits, path casing). Use when preparing a deploy or chasing server-only errors. Do NOT use for local setup (use mms-dev-setup) or domain/PM2 routing (use mms-ops-deploy).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -42,7 +42,7 @@ Verify that all TypeScript import statements match the exact filename casing on 
 - Since Mac OS filesystems are case-insensitive by default, running typechecks locally using `pnpm typecheck` compiles strict casing.
 - Enforce casing check by building the shared package first and compiling the backend:
   ```bash
-  pnpm --filter @mms/contracts build && pnpm --filter mms-backend typecheck
+  pnpm --filter @mms/contracts build && pnpm --filter mms-api typecheck
   ```
 
 ## 3. Directory and Permissions Setup on Ubuntu VPS

@@ -71,7 +71,7 @@ if [ -n "$AVAIL_KB" ] && [ "$AVAIL_KB" -lt 10485760 ] 2>/dev/null; then
 fi
 
 # Pre-deploy PostgreSQL health check
-DB_URL="$(grep '^DATABASE_URL=' apps/backend/.env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"\r' || true)"
+DB_URL="$(grep '^DATABASE_URL=' apps/api/.env 2>/dev/null | head -1 | cut -d= -f2- | tr -d '"\r' || true)"
 check_pg_ready() {
   if [ -n "$DB_URL" ]; then
     pg_isready -d "$DB_URL" >/dev/null 2>&1

@@ -1,0 +1,107 @@
+import { formatMoney } from "@mms/contracts";
+import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import { runGridCsvExportJob } from "@mms/fe-core/backgroundJobs";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import { getJournalEntryLineTotals } from "@mms/mod-accounting/frontend/tenant";
+import type { QuickActionType } from "@mms/mod-accounting/frontend/tenant";
+
+export interface JournalEntryActionDeps {
+  entries: JournalEntry[];
+  showDeleted: boolean;
+  t: TranslationFunction;
+  onChange: (
+    updater: (prev: JournalEntry[]) => JournalEntry[],
+  ) => void | JournalEntry[] | Promise<void | JournalEntry[]>;
+  /** Loads one entry with its lines (the register rows carry headers only). */
+  fetchEntry: (id: string) => Promise<JournalEntry>;
+  onDelete?: (id: string) => void | Promise<void>;
+  onRestore?: (id: string) => void | Promise<void>;
+  onBulkDelete?: (ids: string[]) => void | Promise<void>;
+  onBulkRestore?: (ids: string[]) => void | Promise<void>;
+  setModal: (modal: "new" | "edit" | "view" | null) => void;
+  setSelected: (entry: JournalEntry | null) => void;
+  setSimpleModal: (
+    modal: {
+      prefillType: QuickActionType | null;
+      initialAmount?: string;
+      initialDescription?: string;
+    } | null,
+  ) => void;
+  setSelectedIds: (ids: string[] | ((prev: string[]) => string[])) => void;
+}
+
+export function createJournalSaveHandler(
+  deps: Pick<JournalEntryActionDeps, "onChange" | "setModal" | "setSelected" | "setSimpleModal">,
+) {
+  return async (entry: JournalEntry, stayOpen = false): Promise<JournalEntry> => {
+    const saved = await deps.onChange((prev) => {
+      if (prev.find((journalEntry) => journalEntry.id === entry.id)) {
+        return prev.map((journalEntry) => (journalEntry.id === entry.id ? entry : journalEntry));
+      }
+      return [...prev, entry];
+    });
+    if (!stayOpen) {
+      deps.setModal(null);
+      deps.setSelected(null);
+      deps.setSimpleModal(null);
+    }
+    return saved?.find((savedEntry) => savedEntry.id === entry.id) ?? entry;
+  };
+}
+
+export function createJournalPostHandler(
+  deps: Pick<JournalEntryActionDeps, "onChange" | "fetchEntry">,
+) {
+  return async (entry: JournalEntry) => {
+    // The register row has no lines (`includeLines=false`), so posting it directly
+    // sent an empty voucher and the server refused every draft. Post the stored
+    // entry with its lines, keeping the row's own metadata for the update.
+    const full = entry.lines.length > 0 ? entry : await deps.fetchEntry(entry.id);
+    await deps.onChange((prev) =>
+      prev.map((journalEntry) =>
+        journalEntry.id === entry.id
+          ? { ...full, status: "posted", ref: entry.ref || full.ref }
+          : journalEntry,
+      ),
+    );
+  };
+}
+
+export function exportJournalEntriesCsv(filtered: JournalEntry[], t: TranslationFunction): void {
+  const rows = filtered.map((journalEntry) => {
+    // Cent-exact totals (see getJournalEntryLineTotals): the CSV must carry
+    // valid money such as 0.3, never a float artefact 0.30000000000000004.
+    const { totalDebit, totalCredit } = getJournalEntryLineTotals(journalEntry);
+    return {
+      ref: journalEntry.ref,
+      date: journalEntry.date,
+      description: journalEntry.description,
+      tags: (journalEntry.tags || []).join(";"),
+      status: journalEntry.status,
+      debit: String(totalDebit),
+      credit: String(totalCredit),
+    };
+  });
+  runGridCsvExportJob({
+    moduleId: "accounting",
+    label: t("accounting.journal.exportCurrentPageLabel"),
+    filename: "journal_entries_current_page.csv",
+    columns: [
+      { header: t("accounting.columns.journal.ref"), key: "ref" },
+      { header: t("accounting.columns.journal.date"), key: "date" },
+      { header: t("accounting.columns.journal.description"), key: "description" },
+      { header: t("accounting.columns.journal.tags"), key: "tags" },
+      { header: t("accounting.columns.journal.status"), key: "status" },
+      { header: t("accounting.columns.journal.debit"), key: "debit" },
+      { header: t("accounting.columns.journal.credit"), key: "credit" },
+    ],
+    rows,
+  });
+}
+
+export function formatJournalAmount(
+  amount: number,
+  formatCurrency?: (amount: number) => string,
+): string {
+  return formatCurrency ? formatCurrency(amount) : formatMoney(amount);
+}

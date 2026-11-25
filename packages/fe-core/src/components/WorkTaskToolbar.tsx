@@ -4,7 +4,7 @@ import { Badge } from "@mms/ui";
 import { Button } from "@mms/ui";
 import { DatePicker } from "./DatePicker";
 import { cn } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import type { WorkTaskStatusOption, WorkTaskToolbarProps } from "./workTaskToolbarTypes";
 
 export type { WorkTaskStatusOption, WorkTaskToolbarProps };

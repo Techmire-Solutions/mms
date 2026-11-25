@@ -1,6 +1,6 @@
 ---
 name: mms-backup-restore
-description: Implements or audits workspace encrypted backup/export and wipe-restore — safety backup, validate-before-wipe, KDF/envelope, sync timeout rollback. Use when modifying BackupRestore UI, /api/db/backup or /api/db/sync, backup crypto, or restore safety gates. Do NOT use for raw PostgreSQL ops dumps (use mms-ops-deploy), general application settings/i18n (use mms-settings-i18n), or collection sync primary path (use mms-data-sync).
+description: Implements/audits encrypted backup/export and wipe-restore (safety backup, KDF/envelope, rollback). Use when BackupRestore UI or /api/db/backup|sync. Do NOT use for pg_dump (use mms-ops-deploy), settings/i18n (use mms-settings-i18n), or collection sync (use mms-data-sync).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -68,7 +68,7 @@ export async function executeWipeRestoreTransaction(tenantSubdomain: string, sna
 - [ ] Validate-before-wipe ensures zero partial-commit failures
 - [ ] Wipe transaction executes under SET LOCAL app.allow_hard_purge = 'true'
 - [ ] Audit trail preserved without truncation; RESTORE action appended
-- [ ] Run: pnpm typecheck && cd apps/backend && pnpm test
+- [ ] Run: pnpm typecheck && cd apps/api && pnpm test
 ```
 
 ## References

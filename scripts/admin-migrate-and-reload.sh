@@ -19,8 +19,8 @@ for arg in "$@"; do
   fi
 done
 
-echo "[admin-migrate-and-reload] Applying migrations via mms-backend db:migrate..."
-pnpm --filter mms-backend db:migrate
+echo "[admin-migrate-and-reload] Applying migrations via mms-api db:migrate..."
+pnpm --filter mms-api db:migrate
 
 if [ "$MIGRATE_ONLY" = true ]; then
   echo "[admin-migrate-and-reload] Migrations applied (--migrate-only specified; skipping PM2 reload)."

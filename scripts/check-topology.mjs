@@ -25,7 +25,7 @@ import path from "node:path";
 import { ROOT } from "./lib/repo-paths.mjs";
 
 /** Transitional app roots and the target roots that replace them (D6/D11). */
-export const TRANSITIONAL_APPS = Object.freeze(["backend", "frontend"]);
+export const TRANSITIONAL_APPS = Object.freeze(["frontend"]);
 export const TARGET_APPS = Object.freeze(["api", "tenant-web", "platform-web"]);
 
 /** Flat package directories under `packages/`. */

@@ -1,6 +1,6 @@
 ---
 name: mms-a11y-smoke
-description: Runs accessibility verification for MMS UI work — axe scans, focus-return checks, and touch-target floors on AppLayout, FormModal, Table, and interactive primitives. Use when a11y conformance must be PROVEN for a change (run the axe spec, triage serious/critical violations). Do NOT use for designing tokens or layout (use mms-ui-ux-design), building create/edit forms (use mms-form-architecture), or general component authoring (use mms-frontend).
+description: Runs accessibility verification (axe scans, focus-return, touch-target floors). Use when a11y conformance must be PROVEN. Do NOT use for tokens/layout (use mms-ui-ux-design), forms (use mms-form-architecture), or component authoring (use mms-frontend).
 license: Proprietary
 metadata:
   owner: mms-platform

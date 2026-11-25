@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Phase 12 release B gate: verify, then apply migration 0182 (the irreversible drop).
 #
-# Run on the production host, from the repository root, with apps/backend/.env in place:
+# Run on the production host, from the repository root, with apps/api/.env in place:
 #   bash scripts/admin-phase12-release-b.sh            # verify only, change nothing
 #   bash scripts/admin-phase12-release-b.sh --apply    # verify, then migrate and reload
 #
@@ -23,12 +23,12 @@ cd "$(dirname "$0")/.."
 step() { printf '\n[release-b] == %s ==\n' "$1"; }
 fail() { printf '\n[release-b] ABORTED: %s\n' "$1" >&2; exit 1; }
 
-[ -f apps/backend/.env ] || fail "apps/backend/.env not found - run this on the server, from the repo root."
+[ -f apps/api/.env ] || fail "apps/api/.env not found - run this on the server, from the repo root."
 
 step "1/3 pre-flight audit (release A applied, dates converted, indexes valid)"
 # audit:academic-contract exits non-zero when any blocking count is above 0, and its first check
 # fails outright if release A has not been applied.
-pnpm --filter mms-backend audit:academic-contract \
+pnpm --filter mms-api audit:academic-contract \
   || fail "pre-flight audit reported blocking rows - fix them and re-run. Nothing was changed."
 
 if [ "$APPLY" -ne 1 ]; then

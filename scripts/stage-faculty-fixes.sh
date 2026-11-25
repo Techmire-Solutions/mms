@@ -15,37 +15,37 @@ set -euo pipefail
 
 PATHS=(
   # --- backend production ---
-  apps/backend/src/db/repositories/facultyCatalogTrashRepository.ts
-  apps/backend/src/db/repositories/facultyDesignationAssignmentRepository.ts
-  apps/backend/src/db/repositories/facultyEmployDesignationRepository.ts
-  apps/backend/src/db/repositories/facultyEmployDesignationSync.ts
-  apps/backend/src/db/repositories/facultyEmploymentRepository.ts
-  apps/backend/src/db/repositories/facultyRepositoryColumns.ts
-  apps/backend/src/faculty/errors.ts
-  apps/backend/src/faculty/use-cases/facultyEmployeeIdGenerator.ts
-  apps/backend/src/faculty/use-cases/facultyEmployeeIdPreview.ts
-  apps/backend/src/faculty/use-cases/facultyEmployeeIdService.ts
-  apps/backend/src/faculty/use-cases/facultyOperationUseCases.ts
-  apps/backend/src/faculty/use-cases/facultyWriteUseCases.ts
-  apps/backend/src/faculty/use-cases/facultyHierarchyValidator.ts
-  apps/backend/src/lib/moduleRouteActionRules.ts
-  apps/backend/src/routes/tenant/faculty/facultyAssignmentRouteHandlers.ts
-  apps/backend/src/routes/tenant/faculty/facultyCatalogErrorResponse.ts
-  apps/backend/src/routes/tenant/faculty/facultyCatalogRouteAuth.ts
-  apps/backend/src/routes/tenant/faculty/facultyMutationRouteHandlers.ts
+  apps/api/src/db/repositories/facultyCatalogTrashRepository.ts
+  apps/api/src/db/repositories/facultyDesignationAssignmentRepository.ts
+  apps/api/src/db/repositories/facultyEmployDesignationRepository.ts
+  apps/api/src/db/repositories/facultyEmployDesignationSync.ts
+  apps/api/src/db/repositories/facultyEmploymentRepository.ts
+  apps/api/src/db/repositories/facultyRepositoryColumns.ts
+  apps/api/src/faculty/errors.ts
+  apps/api/src/faculty/use-cases/facultyEmployeeIdGenerator.ts
+  apps/api/src/faculty/use-cases/facultyEmployeeIdPreview.ts
+  apps/api/src/faculty/use-cases/facultyEmployeeIdService.ts
+  apps/api/src/faculty/use-cases/facultyOperationUseCases.ts
+  apps/api/src/faculty/use-cases/facultyWriteUseCases.ts
+  apps/api/src/faculty/use-cases/facultyHierarchyValidator.ts
+  apps/api/src/lib/moduleRouteActionRules.ts
+  apps/api/src/routes/tenant/faculty/facultyAssignmentRouteHandlers.ts
+  apps/api/src/routes/tenant/faculty/facultyCatalogErrorResponse.ts
+  apps/api/src/routes/tenant/faculty/facultyCatalogRouteAuth.ts
+  apps/api/src/routes/tenant/faculty/facultyMutationRouteHandlers.ts
 
   # --- backend tests ---
-  apps/backend/src/__tests__/facultyAssignmentRoutes.test.ts
-  apps/backend/src/__tests__/facultyAssignmentsCycle.test.ts
-  apps/backend/src/__tests__/facultyCatalogErrorMapping.test.ts
-  apps/backend/src/__tests__/facultyEmployeeIdPreview.test.ts
-  apps/backend/src/__tests__/facultyEmployeeIdService.test.ts
-  apps/backend/src/__tests__/facultyHierarchy.integration.test.ts
-  apps/backend/src/__tests__/facultyOperationUseCases.test.ts
-  apps/backend/src/__tests__/facultyReportingSoftStop.test.ts
-  apps/backend/src/__tests__/facultyUseCases.test.ts
-  apps/backend/src/__tests__/facultyWriteSsot.integration.test.ts
-  apps/backend/src/__tests__/moduleAccessCoverage.test.ts
+  apps/api/src/__tests__/facultyAssignmentRoutes.test.ts
+  apps/api/src/__tests__/facultyAssignmentsCycle.test.ts
+  apps/api/src/__tests__/facultyCatalogErrorMapping.test.ts
+  apps/api/src/__tests__/facultyEmployeeIdPreview.test.ts
+  apps/api/src/__tests__/facultyEmployeeIdService.test.ts
+  apps/api/src/__tests__/facultyHierarchy.integration.test.ts
+  apps/api/src/__tests__/facultyOperationUseCases.test.ts
+  apps/api/src/__tests__/facultyReportingSoftStop.test.ts
+  apps/api/src/__tests__/facultyUseCases.test.ts
+  apps/api/src/__tests__/facultyWriteSsot.integration.test.ts
+  apps/api/src/__tests__/moduleAccessCoverage.test.ts
 
   # --- shared package ---
   packages/contracts/src/contracts/faculty.contract.ts

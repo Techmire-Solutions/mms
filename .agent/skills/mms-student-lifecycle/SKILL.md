@@ -1,6 +1,6 @@
 ---
 name: mms-student-lifecycle
-description: Implements academic student lifecycle workflows — admissions, enrollments, attendance marking grids, examinations, grading formulas, and hasanat points. Use when modifying student, enrollment, attendance, examination, or hasanat features. Do NOT use for faculty staff appointments (use mms-faculty-domain), student fee invoicing (use mms-finance-accounting), or guardian SMS/WhatsApp broadcasts (use mms-messaging).
+description: Academic student workflows (admissions, enrollments, attendance grids, exams, grading, hasanat). Use when student/enrollment/attendance/exam features. Do NOT use for faculty (use mms-faculty-domain), fees (use mms-finance-accounting), or SMS (use mms-messaging).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -31,21 +31,21 @@ metadata:
 
 | Operational Domain | Frontend Feature | Backend Routes & Services |
 |---|---|---|
-| Students & Admissions | `apps/frontend/src/tenant/features/students/StudentsPage.tsx` | `apps/backend/src/students/`, `packages/modules/contacts/src/backend/systemTags/` |
-| Enrollments & Classes | `apps/frontend/src/tenant/features/enrollments/EnrollmentsPage.tsx` | `apps/backend/src/enrollments/` |
-| Attendance Tracking | `apps/frontend/src/tenant/features/attendance/AttendancePage.tsx` | `apps/backend/src/attendance/` |
-| Examinations & Grades | `apps/frontend/src/tenant/features/examinations/ExaminationsPage.tsx` | `apps/backend/src/examinations/` |
-| Hasanat & Merits | `apps/frontend/src/tenant/features/hasanat/HasanatCardsPage.tsx` | `apps/backend/src/hasanat/` |
+| Students & Admissions | `apps/tenant-web/src/tenant/features/students/StudentsPage.tsx` | `packages/modules/students/src/`, `packages/modules/contacts/src/backend/systemTags/` |
+| Enrollments & Classes | `apps/tenant-web/src/tenant/features/enrollments/EnrollmentsPage.tsx` | `packages/modules/enrollments/src/backend/` |
+| Attendance Tracking | `apps/tenant-web/src/tenant/features/attendance/AttendancePage.tsx` | `apps/api/src/attendance/` |
+| Examinations & Grades | `apps/tenant-web/src/tenant/features/examinations/ExaminationsPage.tsx` | `packages/modules/examinations/src/backend/` |
+| Hasanat & Merits | `apps/tenant-web/src/tenant/features/hasanat/HasanatCardsPage.tsx` | `packages/modules/hasanat/src/backend/` |
 
 ## 3. Verification
 
 ```bash
-pnpm --filter mms-backend test attendance
-pnpm --filter mms-backend test enrollments
-pnpm --filter mms-backend test examinations
-pnpm --filter mms-frontend test apps/frontend/src/tenant/features/students
-pnpm --filter mms-frontend test apps/frontend/src/tenant/features/attendance
-pnpm --filter mms-backend test:db contactsSystemTagsDb
+pnpm --filter mms-api test attendance
+pnpm --filter mms-api test enrollments
+pnpm --filter mms-api test examinations
+pnpm --filter mms-tenant-web test apps/tenant-web/src/tenant/features/students
+pnpm --filter mms-tenant-web test apps/tenant-web/src/tenant/features/attendance
+pnpm --filter mms-api test:db contactsSystemTagsDb
 ```
 
 ## References

@@ -1,0 +1,64 @@
+import { describe, expect, it } from "vitest";
+import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@mms/fe-core/query/dashboardQueryKeys";
+import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@mms/fe-core/query/dynamicWidgetAggregatesQueryKey";
+import {
+  HASANAT_DENOMS_QUERY_KEY,
+  HASANAT_METRICS_QUERY_KEY,
+  HASANAT_REDEMPTIONS_QUERY_KEY,
+  HASANAT_REPORT_AGGREGATES_QUERY_KEY,
+} from "./hasanatQueryKeys.js";
+import { HASANAT_PREFERENCES_QUERY_KEY as PREFS } from "./useHasanatSetupConfig.js";
+import {
+  invalidateHasanatQueries,
+  invalidateHasanatSetupQueries,
+  invalidateHasanatWorkQueries,
+} from "./invalidateHasanatQueries.js";
+
+/** The invalidator only needs `invalidateQueries`; capture the key prefixes it asks for. */
+function capture() {
+  const keys: unknown[][] = [];
+  const client = {
+    invalidateQueries: (args: { queryKey: readonly unknown[] }) => {
+      keys.push([...args.queryKey]);
+      return Promise.resolve();
+    },
+  } as never;
+  return { client, keys };
+}
+
+const includes = (keys: unknown[][], target: readonly unknown[]) =>
+  keys.some((key) => target.every((part, index) => key[index] === part));
+
+describe("hasanat query invalidation policy", () => {
+  it("work writes refresh cards, the ledger, metrics and dashboard widgets — not setup", () => {
+    const { client, keys } = capture();
+    invalidateHasanatWorkQueries(client);
+
+    expect(includes(keys, HASANAT_REDEMPTIONS_QUERY_KEY)).toBe(true);
+    expect(includes(keys, HASANAT_METRICS_QUERY_KEY)).toBe(true);
+    expect(includes(keys, HASANAT_REPORT_AGGREGATES_QUERY_KEY)).toBe(true);
+    expect(includes(keys, DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY)).toBe(true);
+    expect(includes(keys, DASHBOARD_SUMMARY_QUERY_KEY_ROOT)).toBe(true);
+    // Awarding points cannot change the tenant's setup preferences.
+    expect(includes(keys, PREFS)).toBe(false);
+  });
+
+  it("setup writes refresh the catalogue and preferences", () => {
+    const { client, keys } = capture();
+    invalidateHasanatSetupQueries(client);
+
+    expect(includes(keys, PREFS)).toBe(true);
+    expect(includes(keys, HASANAT_DENOMS_QUERY_KEY)).toBe(true);
+    expect(includes(keys, DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY)).toBe(true);
+    expect(includes(keys, HASANAT_REDEMPTIONS_QUERY_KEY)).toBe(false);
+  });
+
+  it("the live-push union still refreshes everything", () => {
+    const { client, keys } = capture();
+    invalidateHasanatQueries(client);
+
+    expect(includes(keys, HASANAT_REDEMPTIONS_QUERY_KEY)).toBe(true);
+    expect(includes(keys, PREFS)).toBe(true);
+    expect(includes(keys, DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY)).toBe(true);
+  });
+});

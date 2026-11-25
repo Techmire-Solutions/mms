@@ -40,7 +40,7 @@ test("PATHS exposes transitional and target roots under ROOT", () => {
 });
 
 test("toRel renders POSIX paths relative to ROOT", () => {
-  assert.equal(toRel(fromRoot("apps", "backend", "src")), "apps/backend/src");
+  assert.equal(toRel(fromRoot("apps", "api", "src")), "apps/api/src");
 });
 
 test("hasAnySourceFile is false for a missing or empty directory", () => {
@@ -118,8 +118,8 @@ test("assertAnyScanDir fails when no root is populated", () => {
 });
 
 test("EmptyScanError message names the gate and the fix", () => {
-  const error = new EmptyScanError("frontend structure", { empty: ["apps/frontend/src"] });
+  const error = new EmptyScanError("frontend structure", { empty: ["apps/tenant-web/src"] });
   assert.match(error.message, /Fail-closed scan for frontend structure/);
-  assert.match(error.message, /no source files: apps\/frontend\/src/);
+  assert.match(error.message, /no source files: apps\/tenant-web\/src/);
   assert.match(error.message, /repo-paths\.mjs/);
 });

@@ -2,7 +2,7 @@ import React, { useId } from "react";
 import { ChevronDown } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@mms/ui";
 import { FORM_INPUT_ERROR } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 import { cn } from "@mms/ui";
 import {
   EditableMultiSelectChipRow,

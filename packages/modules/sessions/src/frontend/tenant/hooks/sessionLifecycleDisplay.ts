@@ -1,0 +1,28 @@
+import { SESSION_LIFECYCLE_STATES, type SessionLifecycleState } from "@mms/contracts";
+import type { StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import { SEMANTIC_BADGE } from "@mms/fe-core/ui/semanticTone";
+
+const LIFECYCLE_TONE: Record<SessionLifecycleState, string> = {
+  draft: SEMANTIC_BADGE.muted,
+  open: SEMANTIC_BADGE.info,
+  in_progress: SEMANTIC_BADGE.success,
+  completed: SEMANTIC_BADGE.secondary,
+  cancelled: SEMANTIC_BADGE.destructive,
+  archived: SEMANTIC_BADGE.muted,
+};
+
+/** Lifecycle labels + badge tones (SSOT for session status display across directory, drawer and form). */
+export function sessionLifecycleDisplay(t: TranslationFunction): {
+  statusOptions: SessionLifecycleState[];
+  statusLabels: Record<SessionLifecycleState, string>;
+  statusConfig: Record<string, StatusBadgeConfigItem>;
+} {
+  const statusLabels = {} as Record<SessionLifecycleState, string>;
+  const statusConfig: Record<string, StatusBadgeConfigItem> = {};
+  for (const state of SESSION_LIFECYCLE_STATES) {
+    statusLabels[state] = t(`sessions.lifecycle.${state}`);
+    statusConfig[state] = { label: statusLabels[state], cls: LIFECYCLE_TONE[state] };
+  }
+  return { statusOptions: [...SESSION_LIFECYCLE_STATES], statusLabels, statusConfig };
+}

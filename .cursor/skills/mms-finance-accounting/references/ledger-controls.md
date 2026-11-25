@@ -23,7 +23,7 @@ posting route:
   posting, reversal of a posted voucher, and voucher-numbering configuration.
 
 The split is pinned by `scripts/ci/accounting-route-security.json` and the controller-authority
-invariant in `apps/backend/src/__tests__/accountingRouteSecurityMatrix.test.ts`.
+invariant in `apps/api/src/__tests__/accountingRouteSecurityMatrix.test.ts`.
 
 Review the draft → posted transition separately from create/edit. Drafts can be incomplete under the current contract; posted entries need valid single-sided lines, nonzero balanced totals, active tenant-owned accounts, and an eligible accounting date. Updating an account's type after use also changes report classification: require an explicit historical policy or prohibit that change.
 
@@ -35,7 +35,7 @@ For idempotency, prefer a stable source/event or client operation ID scoped to t
 
 ## Atomicity and concurrency
 
-Use one tenant transaction for source changes, journal header/lines, allocations, and transactional audit/outbox evidence. Acquire the relevant locks **before** reading the state used for validation, and hold them until commit. Row locks cover existing rows; absent IDs need a uniqueness/conditional-insert protocol or transaction advisory locks. MMS journal locks are in `apps/backend/src/db/repositories/accountingEntryLocks.ts`.
+Use one tenant transaction for source changes, journal header/lines, allocations, and transactional audit/outbox evidence. Acquire the relevant locks **before** reading the state used for validation, and hold them until commit. Row locks cover existing rows; absent IDs need a uniqueness/conditional-insert protocol or transaction advisory locks. MMS journal locks are in `apps/api/src/db/repositories/accountingEntryLocks.ts`.
 
 Use a consistent lock order for overlapping batches and ensure every competing writer participates. Avoid a stale repeatable-read snapshot after waiting for a lock; choose isolation deliberately. A serializable failure or deadlock needs a bounded retry of the whole transaction, with the same idempotency identity and no duplicated external side effects. Report a conflict after the retry budget, not an unbounded loop.
 

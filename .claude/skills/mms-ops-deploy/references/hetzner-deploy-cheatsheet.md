@@ -20,7 +20,7 @@ Internet (HTTPS 443)
        │
        ├─ Direct /api/ routes
        ├─ Real-time WebSocket: /api/ws
-       └─ Static Vite SPA serving: /var/www/mmsv2/apps/frontend/dist
+       └─ Static Vite SPA serving: /var/www/mmsv2/apps/tenant-web/dist
 ```
 
 ---

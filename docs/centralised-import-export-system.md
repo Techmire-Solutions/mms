@@ -49,16 +49,16 @@ Per-row failures are collected as `ImportRowError` and never throw the whole job
 
 | Concern | Path |
 | --- | --- |
-| Standard POST `/import` | [`lib/registerModuleCsvImportRoutes.ts`](../apps/backend/src/lib/registerModuleCsvImportRoutes.ts) |
-| Standard POST `/export/csv` | [`lib/registerModuleCsvExportRoutes.ts`](../apps/backend/src/lib/registerModuleCsvExportRoutes.ts) |
-| Import job runner | [`lib/registerModuleCsvImportJobRunner.ts`](../apps/backend/src/lib/registerModuleCsvImportJobRunner.ts) |
-| Export job runner | [`lib/registerModuleCsvExportJobRunner.ts`](../apps/backend/src/lib/registerModuleCsvExportJobRunner.ts) |
-| Generic service factories | [`lib/createModuleImportService.ts`](../apps/backend/src/lib/createModuleImportService.ts), [`lib/createModuleExportService.ts`](../apps/backend/src/lib/createModuleExportService.ts) |
-| Streaming CSV writer | [`lib/csvExportStreamFactory.ts`](../apps/backend/src/lib/csvExportStreamFactory.ts) |
-| Serializer resolution | [`lib/exportSerializerResolver.ts`](../apps/backend/src/lib/exportSerializerResolver.ts), [`lib/xlsxExportSerializer.ts`](../apps/backend/src/lib/xlsxExportSerializer.ts) |
+| Standard POST `/import` | [`lib/registerModuleCsvImportRoutes.ts`](../apps/api/src/lib/registerModuleCsvImportRoutes.ts) |
+| Standard POST `/export/csv` | [`lib/registerModuleCsvExportRoutes.ts`](../apps/api/src/lib/registerModuleCsvExportRoutes.ts) |
+| Import job runner | [`lib/registerModuleCsvImportJobRunner.ts`](../apps/api/src/lib/registerModuleCsvImportJobRunner.ts) |
+| Export job runner | [`lib/registerModuleCsvExportJobRunner.ts`](../apps/api/src/lib/registerModuleCsvExportJobRunner.ts) |
+| Generic service factories | [`lib/createModuleImportService.ts`](../apps/api/src/lib/createModuleImportService.ts), [`lib/createModuleExportService.ts`](../apps/api/src/lib/createModuleExportService.ts) |
+| Streaming CSV writer | [`lib/csvExportStreamFactory.ts`](../apps/api/src/lib/csvExportStreamFactory.ts) |
+| Serializer resolution | [`lib/exportSerializerResolver.ts`](../apps/api/src/lib/exportSerializerResolver.ts), [`lib/xlsxExportSerializer.ts`](../apps/api/src/lib/xlsxExportSerializer.ts) |
 | Contacts VCF connector | [`lib/registerContactsVcfExportJobRunner.ts`](../packages/modules/contacts/src/backend/jobs/registerContactsVcfExportJobRunner.ts) |
-| Worker orchestration | [`services/backgroundJobWorkerService.ts`](../apps/backend/src/services/backgroundJobWorkerService.ts), [`services/backgroundJobRunnerService.ts`](../apps/backend/src/services/backgroundJobRunnerService.ts) |
-| Export artifact store | [`services/exportArtifactService.ts`](../apps/backend/src/services/exportArtifactService.ts) |
+| Worker orchestration | [`services/backgroundJobWorkerService.ts`](../apps/api/src/services/backgroundJobWorkerService.ts), [`services/backgroundJobRunnerService.ts`](../apps/api/src/services/backgroundJobRunnerService.ts) |
+| Export artifact store | [`services/exportArtifactService.ts`](../apps/api/src/services/exportArtifactService.ts) |
 
 `registerModuleCsvImportRoutes(fastify, opts)` enforces, in one place for every module:
 
@@ -80,11 +80,11 @@ field visibility or soft-delete policy.
 
 | Component | Path | Role |
 | --- | --- | --- |
-| `ModuleImportDialog` | [`components/app/ModuleImportDialog.tsx`](../apps/frontend/src/components/app/ModuleImportDialog.tsx) | Generic import UI: template download, file drop, header/row/preflight errors, progress, completion |
-| `StandardModuleCsvImportDialog` | [`components/app/StandardModuleCsvImportDialog.tsx`](../apps/frontend/src/components/app/StandardModuleCsvImportDialog.tsx) | SSOT wiring to `useModuleCsvImportActions` |
-| `ExportToolbar` / `ExportToolbarCompact` | [`components/app/ExportToolbar.tsx`](../apps/frontend/src/components/app/ExportToolbar.tsx) | Column/format/scope selection; small exports inline, large via job |
-| `BackgroundJobsTray` | [`components/app/BackgroundJobsTray.tsx`](../apps/frontend/src/components/app/BackgroundJobsTray.tsx) | Live job progress + owned-artifact download links |
-| Actions | [`lib/backgroundJobs/`](../apps/frontend/src/lib/backgroundJobs/) | `useModuleCsvImportActions`, `useModuleServerCsvExportActions`, `useGenericModuleExport`, per-module `startServer*` |
+| `ModuleImportDialog` | [`components/app/ModuleImportDialog.tsx`](../packages/fe-core/src/components/ModuleImportDialog.tsx) | Generic import UI: template download, file drop, header/row/preflight errors, progress, completion |
+| `StandardModuleCsvImportDialog` | [`components/app/StandardModuleCsvImportDialog.tsx`](../packages/fe-core/src/components/StandardModuleCsvImportDialog.tsx) | SSOT wiring to `useModuleCsvImportActions` |
+| `ExportToolbar` / `ExportToolbarCompact` | [`components/app/ExportToolbar.tsx`](../packages/fe-core/src/components/ExportToolbar.tsx) | Column/format/scope selection; small exports inline, large via job |
+| `BackgroundJobsTray` | [`components/app/BackgroundJobsTray.tsx`](../packages/fe-core/src/components/BackgroundJobsTray.tsx) | Live job progress + owned-artifact download links |
+| Actions | [`lib/backgroundJobs/`](../apps/tenant-web/src/lib/backgroundJobs/) | `useModuleCsvImportActions`, `useModuleServerCsvExportActions`, `useGenericModuleExport`, per-module `startServer*` |
 
 ---
 

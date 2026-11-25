@@ -49,7 +49,7 @@ esac
 
 # Secrets must not be read into agent context by default.
 case "$command" in
-  *"cat .env"*|*"cat apps/backend/.env"*|*"cat .claude/settings.local.json"*)
+  *"cat .env"*|*"cat apps/api/.env"*|*"cat .claude/settings.local.json"*)
     block "reading a secrets file; use .env.example for shape or ask the user." ;;
 esac
 

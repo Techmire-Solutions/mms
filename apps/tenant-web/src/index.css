@@ -1,0 +1,1083 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@mms/tailwind-config/theme.css";
+
+@source "../index.html";
+@source "./**/*.{js,jsx,ts,tsx}";
+@source "../../../packages/ui/src/**/*.{js,jsx,ts,tsx}";
+@source "../../../packages/contracts/src/**/*.{js,jsx,ts,tsx}";
+
+@layer base {
+  *,
+  *::before,
+  *::after {
+    @apply border-border outline-ring/50;
+    box-sizing: border-box;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  /*
+   * Modern Web Guidance: adapt-scrollbar-to-contrast-preferences
+   * Enforces high-contrast thumb and track styling for users who prefer higher contrast interfaces.
+   */
+  @media (prefers-contrast: more) {
+    * {
+      scrollbar-color: hsl(var(--foreground)) hsl(var(--background));
+    }
+  }
+
+  html {
+    max-width: 100%;
+    overflow-x: hidden;
+    scrollbar-gutter: stable;
+    accent-color: hsl(var(--primary));
+    -webkit-tap-highlight-color: transparent;
+    /*
+     * WCAG 2.4.11 Focus Not Obscured: offset scroll so focused elements are not
+     * hidden behind the sticky 4rem top header. The 0.5rem extra gives breathing room.
+     */
+    scroll-padding-top: calc(var(--spacing-header, 4rem) + 0.5rem);
+    scroll-padding-bottom: 5.5rem;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans max-w-full overflow-x-clip;
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    /*
+     * Modern Web Guidance: visually-stable-font-fallbacks
+     * Normalizes the visual size of fallback fonts based on the primary font's aspect ratio,
+     * preventing Cumulative Layout Shift (CLS) when webfonts load or swap.
+     */
+    font-size-adjust: from-font;
+    /*
+     * Modern Web Guidance: typography
+     * "Use unitless numbers for line-height (e.g., 1.5) to ensure relative scaling."
+     * "Use overflow-wrap: break-word (or anywhere) to contain long URLs."
+     */
+    line-height: 1.5;
+    overflow-wrap: break-word;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    text-wrap: balance;
+    font-size-adjust: cap-height from-font;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  table,
+  .tabular-nums,
+  [data-tabular-nums] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Universal text-wrap default in raw tables and list view cells */
+  table th,
+  table td {
+    text-wrap: wrap;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  /*
+   * Truncation inside table cells is opt-in per node: the blanket override below
+   * keeps cells readable (no mid-column clipping), but single-token values such
+   * as email addresses wrapped at an arbitrary character (`mansoor@example.c` /
+   * `om`). A cell that opts into ellipsis carries `data-cell-truncate` and keeps
+   * the full value in `title` (2026-10-31 review, UX-07).
+   */
+  table td .truncate:not([data-cell-truncate]),
+  table td[class*="truncate"]:not([data-cell-truncate]),
+  table td.truncate,
+  table th .truncate:not([data-cell-truncate]),
+  table th[class*="truncate"]:not([data-cell-truncate]),
+  table th.truncate {
+    white-space: normal !important;
+    text-overflow: clip !important;
+    overflow: visible !important;
+    text-wrap: wrap !important;
+  }
+
+  table td [class*="line-clamp-"],
+  table td.line-clamp-1,
+  table td.line-clamp-2,
+  table td.line-clamp-3 {
+    -webkit-line-clamp: unset !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+  :lang(ur),
+  [lang="ur"] {
+    /* Nastaliq stacks letterforms vertically and has deep descenders; the
+       mms-ui-ux-design contract requires the looser 2.2 leading. */
+    line-height: 2.2;
+  }
+
+  :lang(ar),
+  [lang="ar"],
+  :lang(fa),
+  [lang="fa"] {
+    line-height: 1.55;
+  }
+
+  /*
+   * Arabic/Urdu/Persian caps tracking is neutralised in the unlayered rule at
+   * the end of this file: a `@layer base` rule loses to the `tracking-*`
+   * utilities, which is exactly the cascade this needs to beat.
+   */
+
+  /* Amiri is fetched only for ar/ur (lib/localeFonts.ts) — scope it to the
+     locales that actually load it instead of applying a serif globally. */
+  [lang="ar"],
+  [lang="ur"] {
+    --font-display: "Amiri", "Scheherazade New", "Traditional Arabic", serif;
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.25);
+    color: hsl(var(--foreground));
+  }
+
+  /*
+   * Modern Web Guidance: component-specific-light-dark-theme
+   * Force dark color-scheme on isolated code blocks or dark surfaces while
+   * explicitly pairing background and text tokens to prevent contrast issues.
+   */
+  pre.code-block,
+  .dark-surface {
+    color-scheme: dark;
+    background-color: hsl(var(--muted) / 0.5);
+    color: hsl(var(--foreground));
+  }
+
+  /*
+   * Modern Web Guidance: prevent-page-scroll-under-modal-dialog
+   * Pure CSS scroll containment for modals and dialogs without mutating body overflow.
+   */
+  dialog:modal {
+    overscroll-behavior: contain;
+  }
+
+  dialog::backdrop {
+    overflow: hidden;
+    overscroll-behavior: contain;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+  }
+
+  [data-overlay-backdrop] {
+    overflow: hidden;
+    overscroll-behavior: contain;
+  }
+
+  [role="dialog"][aria-modal="true"] {
+    overscroll-behavior: contain;
+  }
+
+  /*
+   * Modern Web Guidance: persistent-toast-notifications
+   * Discrete transition behavior for Top Layer popover overlays and toasts.
+   */
+  [popover] {
+    transition-behavior: allow-discrete;
+  }
+
+  /*
+   * Modern Web Guidance: switch
+   * Native HTML5 switch control styling with accent-color and focus-visible ring.
+   */
+  input[type="checkbox"][switch] {
+    accent-color: hsl(var(--primary));
+    cursor: pointer;
+    margin: 0;
+  }
+
+  input[type="checkbox"][switch]:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  /*
+   * Modern Web Guidance: slider & brand-consistent-forms
+   * Style native <input type="range"> with custom track, thumb, and fill while preserving
+   * native accessibility, touch/keyboard interactions, and BiDi layout direction.
+   */
+  input[type="range"] {
+    --slider-track-size: 0.375rem;
+    --slider-thumb-size: 1rem;
+    --slider-track-radius: 9999px;
+    --slider-thumb-radius: 9999px;
+    --slider-track-color: hsl(var(--muted));
+    --slider-fill-color: hsl(var(--primary));
+    --slider-thumb-color: hsl(var(--primary));
+    --slider-direction: to right;
+
+    /* Reverse gradient direction for right-to-left layouts */
+    &:dir(rtl) {
+      --slider-direction: to left;
+    }
+
+    accent-color: hsl(var(--primary));
+    appearance: none;
+    inline-size: 100%;
+    block-size: 2rem;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    cursor: pointer;
+  }
+
+  input[type="range"]:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 4px;
+  }
+
+  /* WebKit/Blink track and thumb */
+  input[type="range"]::-webkit-slider-runnable-track {
+    block-size: var(--slider-track-size);
+    border: 0;
+    border-radius: var(--slider-track-radius);
+    background-color: var(--slider-track-color);
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    inline-size: var(--slider-thumb-size);
+    block-size: var(--slider-thumb-size);
+    margin-block-start: calc((var(--slider-track-size) - var(--slider-thumb-size)) / 2);
+    border: 1px solid hsl(var(--background));
+    border-radius: var(--slider-thumb-radius);
+    background-color: var(--slider-thumb-color);
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 0.1),
+      0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+
+  /* Firefox track, progress, and thumb */
+  input[type="range"]::-moz-range-track {
+    block-size: var(--slider-track-size);
+    border: 0;
+    border-radius: var(--slider-track-radius);
+    background-color: var(--slider-track-color);
+  }
+
+  input[type="range"]::-moz-range-progress {
+    block-size: var(--slider-track-size);
+    border-radius: var(--slider-track-radius);
+    background-color: var(--slider-fill-color);
+  }
+
+  input[type="range"]::-moz-range-thumb {
+    inline-size: var(--slider-thumb-size);
+    block-size: var(--slider-thumb-size);
+    border: 1px solid hsl(var(--background));
+    border-radius: var(--slider-thumb-radius);
+    background-color: var(--slider-thumb-color);
+    box-shadow:
+      0 1px 3px 0 rgb(0 0 0 / 0.1),
+      0 1px 2px -1px rgb(0 0 0 / 0.1);
+  }
+
+  input[type="range"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /*
+   * Modern Web Guidance: autofill-highlight-inputs
+   * Theme browser-autofilled inputs to match application surface tokens cleanly.
+   */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill,
+  textarea:-webkit-autofill:hover,
+  textarea:-webkit-autofill:focus,
+  select:-webkit-autofill,
+  select:-webkit-autofill:hover,
+  select:-webkit-autofill:focus {
+    -webkit-text-fill-color: hsl(var(--foreground));
+    -webkit-box-shadow: 0 0 0px 1000px hsl(var(--background)) inset;
+    transition: background-color 5000s ease-in-out 0s;
+  }
+
+  /*
+   * Modern Web Guidance: brand-consistent-forms & branded-select-styling
+   * Form controls: suppress default OS select dropdown arrows across all engines
+   * (WebKit, Blink, Gecko, Trident) so custom select controls with Lucide SVG chevrons
+   * (e.g. FormSelect) never render duplicate/double chevrons side-by-side.
+   */
+  select,
+  select.appearance-none,
+  .appearance-none select,
+  select[class*="appearance-none"] {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+  select::-ms-expand,
+  select.appearance-none::-ms-expand,
+  .appearance-none select::-ms-expand,
+  select[class*="appearance-none"]::-ms-expand {
+    display: none;
+  }
+
+  #root {
+    max-width: 100%;
+    /* `clip` avoids creating a scroll container (unlike `hidden`), which would
+       break every `position: sticky` offset inside the app. */
+    overflow-x: clip;
+  }
+
+  img,
+  video,
+  svg {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Only opacity and transform are composited by the GPU. Animating
+     background-color or color causes non-composited animation penalties, so the
+     body-level color transition that used to live here was removed. */
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+
+    /*
+     * Modern Web Guidance: spinner
+     * Slow down loading spinner animations to 6s rather than stopping them entirely,
+     * ensuring users with motion sensitivities still receive active processing feedback.
+     */
+    .animate-spin,
+    .loading-spinner,
+    [data-loading-spinner] {
+      animation-duration: 6s !important;
+      animation-iteration-count: infinite !important;
+    }
+  }
+
+  /*
+   * Modern Web Guidance: spinner
+   * Native HTML5 <progress> styling as an accessible indeterminate spinner.
+   */
+  progress.loading-spinner:indeterminate {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    vertical-align: middle;
+  }
+
+  progress.loading-spinner:indeterminate::-webkit-progress-bar {
+    display: none;
+    background: none;
+  }
+
+  progress.loading-spinner:indeterminate::-webkit-progress-value {
+    display: none;
+    background: none;
+  }
+
+  progress.loading-spinner:indeterminate::-moz-progress-bar {
+    display: none;
+    background: none;
+  }
+}
+
+/* Shared sticky offset for surfaces pinned below the application header. */
+@utility top-header {
+  top: var(--spacing-header);
+}
+
+/*
+ * Modern Web Guidance: defer-rendering-heavy-content
+ * Skips off-screen layout and paint passes while preserving intrinsic size metrics.
+ */
+@utility content-visibility-deferred {
+  content-visibility: auto;
+  contain-intrinsic-size: auto none auto 220px;
+}
+
+/*
+ * Modern Web Guidance: form-fields-automatically-fit-contents
+ * Native field-sizing: content allowing form textareas/inputs to grow with their content.
+ */
+@utility field-sizing-content {
+  field-sizing: content;
+}
+
+/*
+ * Horizontal tab/chip strips: a visible thin scrollbar with room below the
+ * items and smooth wheel/keyboard scrolling.
+ * Pair with useDragScroll() for mouse drag + wheel support.
+ */
+@utility scroll-strip-x {
+  scrollbar-width: thin;
+  scrollbar-color: hsl(var(--muted-foreground) / 0.45) transparent;
+  padding-block-end: 0.25rem;
+  @media (prefers-reduced-motion: no-preference) {
+    scroll-behavior: smooth;
+  }
+}
+
+/*
+ * Modern Web Guidance: scrollability-affordance-hints
+ * Container scroll-state queries and directional affordance indicators.
+ */
+@utility scroll-state-container {
+  container-type: scroll-state;
+  position: relative;
+}
+
+.scroll-indicator-top,
+.scroll-indicator-bottom {
+  position: sticky;
+  inset-inline: 0;
+  height: 0.75rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease-in-out;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.scroll-indicator-top {
+  top: 0;
+  margin-bottom: -0.75rem;
+  background: linear-gradient(to bottom, hsl(var(--foreground) / 0.08), transparent);
+}
+
+.scroll-indicator-bottom {
+  bottom: 0;
+  margin-top: -0.75rem;
+  background: linear-gradient(to top, hsl(var(--foreground) / 0.08), transparent);
+}
+
+@container scroll-state(scrollable: top) {
+  .scroll-indicator-top {
+    opacity: 1;
+  }
+}
+
+@container scroll-state(scrollable: bottom) {
+  .scroll-indicator-bottom {
+    opacity: 1;
+  }
+}
+
+/*
+ * Modern Web Guidance: precise-text-alignment
+ * Trims font internal leading ("ghost space") to cap-height and alphabetic baseline
+ * so container padding exactly hugs text boundaries and aligns flush with adjacent icons.
+ */
+@utility text-box-trim-cap {
+  text-box: trim-both cap alphabetic;
+}
+
+/*
+ * Modern Web Guidance: faster-spa-view-transitions
+ * Skips layout and paint passes on retained inactive SPA views while preserving
+ * cached rendering states in memory for near-instant restoration on tab switch.
+ */
+@utility spa-view-hidden {
+  content-visibility: hidden;
+  position: absolute;
+  pointer-events: none;
+}
+
+@supports not (content-visibility: hidden) {
+  .spa-view-hidden {
+    display: none;
+  }
+}
+
+/*
+ * Modern Web Guidance: dark-mode & component-specific-light-dark-theme
+ * Dual-mode surface and border utilities utilizing native CSS light-dark().
+ */
+@utility surface-adaptive {
+  background-color: light-dark(hsl(var(--card)), hsl(var(--muted) / 0.4));
+  color: light-dark(hsl(var(--card-foreground)), hsl(var(--foreground)));
+}
+
+@utility border-adaptive {
+  border-color: light-dark(hsl(var(--border) / 0.8), hsl(var(--border) / 0.4));
+}
+
+/*
+ * Modern Web Guidance: position-aware-tooltips
+ * Enables anchored container queries and adaptive flip fallbacks for tooltips and popovers.
+ */
+@utility anchored-container {
+  container-type: anchored;
+  position-try-fallbacks: flip-block, flip-inline;
+}
+
+/*
+ * Modern Web Guidance: animate-element-entry-exit
+ * Declarative entry transition using @starting-style with reduced-motion fallback.
+ */
+@utility animate-fade-entry {
+  transition:
+    opacity 0.2s ease-out,
+    transform 0.2s ease-out;
+  @starting-style {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-entry {
+    transition-duration: 0.01ms !important;
+    transform: none !important;
+  }
+}
+
+@utility surface-base {
+  background-color: hsl(var(--surface-base));
+  border-width: 1px;
+  border-color: hsl(var(--foreground) / 0.08);
+}
+
+@utility surface-raised {
+  background-color: hsl(var(--surface-raised));
+  border-width: 1px;
+  border-color: hsl(var(--foreground) / 0.1);
+  box-shadow: 0 1px 2px 0 hsl(var(--foreground) / 0.04);
+}
+
+@utility surface-overlay {
+  background-color: hsl(var(--surface-overlay));
+  border-width: 1px;
+  border-color: hsl(var(--foreground) / 0.12);
+  box-shadow: 0 6px 20px -4px hsl(var(--foreground) / 0.08);
+}
+
+@utility surface-glass {
+  border-width: 1px;
+  border-color: hsl(var(--foreground) / 0.12);
+  background-color: hsl(var(--surface-overlay));
+  box-shadow: 0 6px 20px -4px hsl(var(--foreground) / 0.08);
+}
+
+@utility surface-elevated {
+  box-shadow: var(--shadow-surface);
+}
+
+@utility interactive-scale {
+  transition: transform var(--duration-fast, 150ms) ease-out;
+  &:hover {
+    transform: scale(1.005);
+  }
+  &:active {
+    transform: scale(0.995);
+  }
+}
+
+@utility auth-orb-primary {
+  display: none;
+}
+
+@utility auth-orb-secondary {
+  display: none;
+}
+
+@utility grid-autofit-sm {
+  grid-template-columns: repeat(auto-fit, minmax(4.5rem, 1fr));
+}
+
+@utility grid-autofit-md {
+  grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr));
+}
+
+@utility grid-autofill-icons {
+  grid-template-columns: repeat(auto-fill, minmax(2.75rem, 1fr));
+}
+
+@utility grid-row-code-3 {
+  grid-template-columns: 1fr 8rem auto;
+}
+
+@utility grid-row-matching-3 {
+  grid-template-columns: 1fr 1fr auto;
+}
+
+@utility grid-row-category-5 {
+  grid-template-columns: auto minmax(0, 1fr) 5rem 5rem auto;
+}
+
+@utility grid-cols-paper-builder-lg {
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, 0.85fr);
+}
+
+@utility grid-cols-paper-builder-xl {
+  grid-template-columns: minmax(0, 1fr) minmax(23.75rem, 0.8fr);
+}
+
+/* ─── Financial / ledger table structural utilities ───────────────────────────
+ *
+ * Use these instead of repeating raw Tailwind class strings in every table that
+ * shows monetary data (accounting, finance, cashbook, trial balance, etc.).
+ * Each maps to a single visual concept and can be updated in one place.
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+@utility table-header-cell {
+  padding-inline: 0.75rem;
+  padding-block: 0.5rem;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+}
+
+@utility table-amount-cell {
+  padding-inline: 0.75rem;
+  padding-block: 0.5rem;
+  text-align: end;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-weight: 700;
+}
+
+@utility table-footer-label {
+  padding-inline: 0.75rem;
+  padding-block: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: hsl(var(--muted-foreground));
+  text-transform: uppercase;
+}
+
+@utility row-debit {
+  background-color: var(--color-surface-debit-row);
+  &:hover {
+    background-color: var(--color-surface-debit-row);
+  }
+}
+
+@utility row-credit {
+  background-color: var(--color-surface-credit-row);
+  &:hover {
+    background-color: var(--color-surface-credit-row);
+  }
+}
+
+/*
+ * Modern Web Guidance: typography
+ * "Avoid long lines of text: Cap paragraph blocks to a maximum of 80 characters width."
+ * "Use overflow-wrap: break-word (or anywhere) to contain long URLs."
+ */
+@utility prose-readable {
+  max-width: 80ch;
+  overflow-wrap: break-word;
+}
+
+/*
+ * Modern Web Guidance: typography — Responsive Typography
+ * "DO combine viewport-relative and font-relative units in clamp() for font sizes
+ *  that scale with the viewport size while ensuring they stay within a desired range."
+ * "DON'T use vw alone for font-size without clamp(), as it can scale text too small
+ *  or too large on extreme screens."
+ */
+@utility fluid-heading {
+  font-size: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+/*
+ * Modern Web Guidance: scrollspy
+ * "MANDATORY: The container of markers must have scroll-target-group: auto"
+ * "Use the :target-current pseudo-class on your navigation links to apply styles
+ *  when their target section is visible in the scroll container."
+ * The escaped \:target-current class is applied by the IntersectionObserver fallback
+ * hook (useScrollspy.ts) for Firefox and Safari.
+ */
+@utility scrollspy-nav {
+  scroll-target-group: auto;
+}
+
+.scrollspy-nav a:target-current,
+.scrollspy-nav a.\:target-current {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  /* Without a height, WebKit renders horizontal scrollbars at 0px (tab strips looked unscrollable). */
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+.islamic-pattern {
+  background-image: radial-gradient(hsl(var(--foreground) / 0.02) 1px, transparent 1px);
+  background-size: 32px 32px;
+  background-position: 0 0;
+}
+
+.dark .islamic-pattern {
+  background-image: radial-gradient(hsl(var(--foreground) / 0.03) 1px, transparent 1px);
+}
+
+/*
+ * Print stylesheet.
+ *
+ * Everything hidden here is hidden for a REASON and by explicit opt-in — never
+ * by incidental utility class. An earlier version of this rule hid `.shadow-sm`
+ * and `.shadow-xl`, which made printed ID cards invisible: `.id-card-preview`
+ * carries `shadow-sm` (StudentIdCardModal.tsx / FacultyIdCardModal.tsx), so the
+ * whole card was `display:none` and the page came out blank. It also hid
+ * `[role="group"]`, which Radix uses for legitimate content (checkbox/radio
+ * groups, select groups). Do not re-add blanket selectors.
+ *
+ * Chrome that must not print is opted out with `.print-hidden`, `print:hidden`,
+ * or a `[data-print-hide]` attribute — see the overlay backdrop below.
+ *
+ * `button`/`input`/`select` stay hidden here: that is what suppresses action
+ * chrome in the twelve in-document `window.print()` flows, and none of them
+ * print real form controls. It is the incidental-utility selectors that were
+ * wrong, not the element ones.
+ *
+ * `header` is scoped to app chrome only. Content headers — the dashboard
+ * greeting, `WidgetCardHeader` panel titles, the stat-card icon/trend strip —
+ * are `<header>` elements too, and hiding every one of them printed the
+ * dashboard without a single title. Those opt out with `[data-print-header]`;
+ * the shell's own headers carry `role="banner"` and stay hidden.
+ */
+@media print {
+  aside,
+  header:not([data-print-header]),
+  .sidebar,
+  nav,
+  button,
+  input,
+  select,
+  .print-hidden,
+  .print\:hidden,
+  [data-print-hide],
+  [role="tablist"],
+  [role="toolbar"],
+  [role="search"] {
+    display: none !important;
+  }
+
+  /* Radix / React portals overlay to <body> outside #root. When an overlay dialog
+     is active, suppress the background application root (#root) so background tables,
+     pagination, and footers never bleed into the printed document. */
+  body:has([role="dialog"]) #root,
+  body[data-print-modal-active] #root {
+    display: none !important;
+  }
+
+  /* Radix portals overlays to <body>, OUTSIDE the app tree, so the rules above
+     never reach them. The backdrop is a full-viewport `bg-sidebar/90` scrim and
+     `print-color-adjust: exact` (below) would force it to print as a solid dark
+     page over any modal-hosted document (ID cards, receipts, templates). */
+  [data-overlay-backdrop] {
+    display: none !important;
+  }
+
+  /* Modal panels are fixed + viewport-clamped for on-screen use; unclamp them so
+     the full document prints instead of just the visible scroll area. */
+  [data-print-unclamp] {
+    position: static !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    background: white !important;
+  }
+
+  body,
+  html {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  tr,
+  .print-avoid-break {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  body,
+  html,
+  main,
+  #root,
+  .max-w-7xl,
+  .max-w-3xl {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+}
+
+/*
+ * Table row density system (P3-1) — applied via [data-density] on <table>.
+ * Modules pass `densityToggle` prop to ModuleWorkToolbar; the toolbar consumer
+ * sets data-density on the wrapping element. CSS picks it up here.
+ *
+ * Compact  : 2.75rem rows — information-dense, power-user mode.
+ * Default  : 3.25rem rows — baseline comfortable reading.
+ * Relaxed  : 4rem rows    — high-legibility / accessibility mode.
+ */
+[data-density="compact"] tr {
+  --row-h: 2.75rem;
+}
+[data-density="default"] tr {
+  --row-h: 3.25rem;
+}
+[data-density="relaxed"] tr {
+  --row-h: 4rem;
+}
+[data-density] tr td,
+[data-density] tr th {
+  block-size: var(--row-h, 3.25rem);
+}
+
+/*
+ * Modern Web Guidance: color (Forced Colors Mode) & adapt-scrollbar-to-contrast-preferences
+ * High contrast overrides preserving visible focus indicators and accessible scrollbars.
+ */
+@media (forced-colors: active) {
+  :focus-visible {
+    outline: 2px solid Highlight !important;
+    outline-offset: 2px !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  html,
+  body {
+    scrollbar-color: CanvasText Canvas;
+  }
+}
+
+/*
+ * Modern Web Guidance: branded-select-styling
+ * "The customizable select API offers a declarative, CSS-driven way to style <select>
+ *  elements to perfectly match your brand's design system."
+ * "Apply appearance: base-select to both the <select> element and the ::picker(select)
+ *  pseudo-element."
+ * Progressive enhancement only — applies exclusively in browsers that support
+ * appearance: base-select (Chrome 135+, Edge 135+, Safari 27). Existing Radix
+ * <SelectTrigger> is unaffected. Consumers opting in to a native <select> must add
+ * the .brand-select class (exported as selectBrandClass from @mms/ui).
+ */
+@supports (appearance: base-select) {
+  .brand-select,
+  .brand-select::picker(select) {
+    appearance: base-select;
+  }
+
+  .brand-select {
+    /* Inherit the design token surface so it matches FormField inputs */
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    border: 1px solid var(--color-input);
+    border-radius: var(--radius-md);
+    padding-inline: 0.75rem;
+    padding-block: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    width: 100%;
+    cursor: pointer;
+  }
+
+  @media (min-width: 40rem) {
+    .brand-select {
+      font-size: 0.875rem;
+    }
+  }
+
+  .brand-select::picker(select) {
+    background-color: var(--color-popover);
+    color: var(--color-popover-foreground);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    padding: 0.25rem;
+    box-shadow: var(--shadow-md);
+  }
+
+  .brand-select::picker-icon {
+    color: var(--color-muted-foreground);
+  }
+
+  .brand-select option::checkmark {
+    color: var(--color-primary);
+  }
+
+  .brand-select option {
+    padding-inline: 0.5rem;
+    padding-block: 0.375rem;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+  }
+
+  .brand-select option:hover {
+    background-color: var(--color-accent);
+    color: var(--color-accent-foreground);
+  }
+}
+
+/*
+ * Modern Web Guidance: scroll-progress-indicator
+ * "This code grows the #progress element on scroll using an anonymous scroll-timeline,
+ *  created by the scroll() function."
+ * "Purely decorative visual scroll progress bars MUST set aria-hidden="true""
+ * "Use the prefers-reduced-motion media query to disable or reduce your animations"
+ */
+@keyframes grow-scroll-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@utility scroll-progress-bar {
+  transform-origin: 0% 50%;
+  animation: grow-scroll-progress auto linear;
+  animation-timeline: scroll();
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-progress-bar {
+    animation: none;
+    transform: none;
+    display: none;
+  }
+}
+
+/*
+ * Modern Web Guidance: state-aware-sticky-headers
+ * "Set container-type: scroll-state on the position: sticky element"
+ * "Use the @container scroll-state(...) query to apply styles when the header is stuck."
+ * "You can also use logical properties like stuck: inset-block-start"
+ */
+@utility sticky-scroll-state {
+  position: sticky;
+  top: 0;
+  container-type: scroll-state;
+  container-name: table-header;
+  z-index: 20;
+}
+
+@container table-header scroll-state(stuck: inset-block-start) {
+  tr {
+    background-color: var(--color-background);
+    /* Shadow appears only once content scrolls beneath the sticky header. */
+    box-shadow:
+      0 1px 2px 0 rgb(0 0 0 / 0.06),
+      0 1px 3px 0 rgb(0 0 0 / 0.08);
+  }
+}
+
+/*
+ * Modern Web Guidance: visual-effects
+ * "Use mix-blend-mode and background-blend-mode for lighting overlays (limit scope with isolation: isolate)"
+ * "Many patterns can be created via CSS gradients + hard stops... more flexible and performant than SVGs"
+ */
+@utility surface-isolation {
+  isolation: isolate;
+}
+
+@utility pattern-stripes {
+  background: repeating-linear-gradient(
+    -45deg,
+    color-mix(in oklch, var(--color-foreground) 4%, transparent) 0 8px,
+    transparent 8px 16px
+  );
+}
+
+@utility pattern-dots {
+  background-image: radial-gradient(
+    color-mix(in oklch, var(--color-foreground) 10%, transparent) 1px,
+    transparent 1px
+  );
+  background-size: 16px 16px;
+}
+
+/*
+ * Modern Web Guidance: contrast-color
+ * "The contrast-color() CSS function resolves to black or white, maximizing the contrast ratio"
+ * "For browsers that support it, RCS (Relative Color Syntax) provides the most robust automated fallback"
+ */
+@utility text-contrast-auto {
+  @supports (color: oklch(from red l c h)) {
+    --threshold: 0.623;
+    --l: max(0, sign(var(--threshold) - l));
+    color: oklch(from var(--contrast-bg, currentColor) var(--l) 0 h);
+  }
+
+  @supports (color: contrast-color(red)) {
+    color: contrast-color(var(--contrast-bg, currentColor));
+  }
+}
+
+/*
+ * Modern Web Guidance: scroll-target-on-load
+ * "The CSS property scroll-initial-target offers a declarative, CSS-only way to bring
+ *  a specific descendant element into the visible area of its scroll container as soon
+ *  as that container is rendered."
+ */
+@utility scroll-initial-nearest {
+  scroll-initial-target: nearest;
+}
+
+/*
+ * RTL caps tracking — deliberately unlayered.
+ *
+ * Arabic, Urdu and Persian have no letter case, and wide tracking is a Latin
+ * display device that only inserts gaps into a cursive run. The shared `caps`
+ * chrome pairs `uppercase` with `tracking-wider`; the case transform is inert in
+ * these scripts and the tracking is the part that damages the type. Utilities
+ * live in Tailwind's `utilities` layer, which outranks `@layer base` regardless
+ * of specificity, so this reset must stay outside every layer to win.
+ * (2026-10-31 review, RTL typography follow-up.)
+ */
+:is([lang="ar"], [lang="ur"], [lang="fa"]) .uppercase {
+  letter-spacing: normal;
+}

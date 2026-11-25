@@ -438,8 +438,9 @@ const AGENT_SKILLS_PREFIX = ".agent/skills";
 const PACKAGE_NAMES = new Set([
   "@mms/contracts",
   "@mms/backend",
-  "mms-backend",
-  "mms-frontend",
+  "mms-api",
+  "mms-tenant-web",
+  "mms-platform-web",
   "e2e-tests",
 ]);
 const NODE_BUILTIN = /^node:/;
@@ -449,8 +450,9 @@ const NODE_BUILTIN = /^node:/;
  * package names, plugin names, env vars, cookies, hosts. Verified real.
  */
 const KNOWN_MMS_TOKENS = new Set([
-  "mms-backend",
-  "mms-frontend",
+  "mms-api",
+  "mms-tenant-web",
+  "mms-platform-web",
   "mms-shared",
   "mms-boundary",
   "mms-bidi",
@@ -471,7 +473,7 @@ function importResolves(specifier, containingFile) {
     return resolvesToFile(path.resolve(path.dirname(containingFile), specifier));
   }
   if (specifier.startsWith("@/")) {
-    return resolvesToFile(path.join(ROOT, "apps/frontend/src", specifier.slice(2)));
+    return resolvesToFile(path.join(ROOT, "apps/tenant-web/src", specifier.slice(2)));
   }
   return true; // bare package specifier — out of scope here
 }
@@ -1166,8 +1168,8 @@ const coverageRule = fs.readFileSync(
   "utf8",
 );
 const coverageRows = [
-  ["Frontend", "apps/frontend/vitest.config.ts"],
-  ["Backend", "apps/backend/vitest.config.ts"],
+  ["Frontend", "apps/tenant-web/vitest.config.ts"],
+  ["Backend", "apps/api/vitest.config.ts"],
   ["`@mms/contracts`", "packages/contracts/vitest.config.ts"],
 ];
 let coverageMismatch = 0;

@@ -33,7 +33,7 @@ description: PostgreSQL database, Drizzle schema, migrations, transactions, and 
 3. **Scoped Client Storage:** Queued/cached user data in `localStorage` uses a tenant + user key (`mms_{tenant}_…_u:{userId}` via `contactsOutboxStorageKeys` for the contacts outbox), is cleared by `clearUserScopedCachesOnLogout`, and is replayed single-flight. A global key for user-owned data leaks one account's payloads into the next session on a shared device.
 
 ## 4. TanStack Query v5 (Server-Authoritative REST)
-1. **Client Defaults:** Tiered stale-times, 24h gcTime, focus refetch off, reconnect on, retries bounded (exclude 401/403/404) in `apps/frontend/src/lib/queryClient.ts`.
+1. **Client Defaults:** Tiered stale-times, 24h gcTime, focus refetch off, reconnect on, retries bounded (exclude 401/403/404) in `packages/fe-core/src/query/queryClient.ts`.
 2. **Query Factories:** Stable tuple keys via colocated `queryOptions` / `mutationOptions` factories or `tsr` client.
 3. **Auth Gate & Signal:** `enabled: isAuthenticated`. Pass Query `signal` to `apiFetch` (mandatory).
 4. **Mutations & Cache:** Call-site `notify.*` + `t()` after `mutateAsync`. Await mutation before dialog close. Invalidate specific list/count tuple keys.

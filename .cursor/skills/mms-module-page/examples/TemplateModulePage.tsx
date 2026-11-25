@@ -1,9 +1,9 @@
 import React, { lazy, Suspense } from "react";
-import { ModulePageShell } from "@/components/app/ModulePageShell";
-import { ModuleTierMotion } from "@/components/app/ModuleTierMotion";
-import { useFilteredModuleTierTabs } from "@/hooks/useModuleTierTabs";
-import { usePersistedTabState } from "@/hooks/usePersistedTabState";
-import { useDirectoryTrashState } from "@/hooks/useDirectoryTrashState";
+import { ModulePageShell } from "@mms/fe-core/components/ModulePageShell";
+import { ModuleTierMotion } from "@mms/ui/app/ModuleTierMotion";
+import { useFilteredModuleTierTabs } from "@mms/fe-core/lib/useModuleTierTabs";
+import { usePersistedTabState } from "@mms/fe-core/lib/usePersistedTabState";
+import { useDirectoryTrashState } from "@mms/fe-core/lib/useDirectoryTrashState";
 
 interface TemplateModulePageProps {
   titleKey: string;

@@ -2,7 +2,7 @@ import type { BackgroundJobRecord } from "@mms/contracts";
 
 /**
  * Structural mirror of the backend's CSV-import runner context. The accounting
- * module cannot import `apps/backend` (boundaries), so the port restates the
+ * module cannot import `apps/api` (boundaries), so the port restates the
  * shape here and the backend adapter supplies a compatible object.
  */
 export interface AccountingCsvImportJobContext {

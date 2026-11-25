@@ -1,14 +1,14 @@
 ---
 description: Consolidated UI component primitives, design tokens, navigation tabs, notifications, accessibility (RTL / WCAG), and mobile-first responsiveness (§4)
 paths:
-  - "apps/frontend/src/components/**/*.tsx"
-  - "apps/frontend/src/tenant/features/**/*.tsx"
-  - "apps/frontend/src/platform/**/*.tsx"
-  - "apps/frontend/src/tenant/pages/**/*.tsx"
-  - "apps/frontend/src/tenant/components/**/*.tsx"
-  - "apps/frontend/src/index.css"
-  - "apps/frontend/src/tenant/hooks/useBranding.ts"
-  - "apps/frontend/src/lib/notify.ts"
+  - "apps/tenant-web/src/components/**/*.tsx"
+  - "apps/tenant-web/src/tenant/features/**/*.tsx"
+  - "apps/platform-web/src/platform/**/*.tsx"
+  - "apps/tenant-web/src/tenant/pages/**/*.tsx"
+  - "apps/tenant-web/src/tenant/components/**/*.tsx"
+  - "apps/tenant-web/src/index.css"
+  - "apps/tenant-web/src/tenant/hooks/useBranding.ts"
+  - "apps/tenant-web/src/lib/notify.ts"
 ---
 
 # MMS UI, UX & Design System

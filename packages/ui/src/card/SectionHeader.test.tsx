@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { SectionHeader } from "./SectionHeader";
 
-describe("SectionHeader Component (@shared/ui)", () => {
+describe("SectionHeader Component (@mms/ui)", () => {
   it("renders h2 heading by default with title and subtitle", () => {
     const html = renderToStaticMarkup(
       <SectionHeader

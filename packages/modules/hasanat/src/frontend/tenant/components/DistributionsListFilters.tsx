@@ -1,0 +1,109 @@
+import React from "react";
+import { FilterChips } from "@mms/fe-core/components/FilterChips";
+import { type ModuleColumnCustomizerProps } from "@mms/fe-core/components/ModuleColumnCustomizer";
+import { WorkTaskToolbar } from "@mms/fe-core/components/WorkTaskToolbar";
+import type { WorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
+import type { Distribution } from "../lib/hasanatData";
+import { HasanatFiltersMenuButton } from "./HasanatFiltersMenuButton.js";
+
+type DistributionStatus = Distribution["status"];
+
+export const HASANAT_WORK_SEARCH_INPUT_ID = "hasanat-work-search";
+
+interface DistributionsListFiltersProps {
+  viewMode: WorkDirectoryViewMode;
+  onViewModeChange: (mode: WorkDirectoryViewMode) => void;
+  search: string;
+  filterStatus: DistributionStatus[];
+  statusLabels: Record<DistributionStatus, string>;
+  canWrite: boolean;
+  canDelete?: boolean;
+  showDeleted: boolean;
+  onToggleDeleted?: () => void;
+  columnCustomizer?: ModuleColumnCustomizerProps;
+  onSearchChange: (value: string) => void;
+  onToggleStatus: (status: DistributionStatus) => void;
+  onClearStatuses: () => void;
+  onOpenModal: () => void;
+}
+
+export function DistributionsListFilters({
+  viewMode,
+  onViewModeChange,
+  search,
+  filterStatus,
+  statusLabels,
+  canWrite: _canWrite,
+  canDelete = false,
+  showDeleted,
+  onToggleDeleted,
+  columnCustomizer,
+  onSearchChange,
+  onToggleStatus,
+  onClearStatuses,
+  onOpenModal: _onOpenModal,
+}: DistributionsListFiltersProps): React.JSX.Element {
+  const { t } = useTranslation();
+
+  const filterChips =
+    filterStatus.length > 0 ? (
+      <FilterChips
+        chips={filterStatus.map((status) => ({
+          key: `status:${status}`,
+          label: statusLabels[status],
+          onRemove: () => onToggleStatus(status),
+        }))}
+        onClearAll={onClearStatuses}
+      />
+    ) : null;
+
+  return (
+    <WorkTaskToolbar
+      regionLabel={t("hasanat.tabs.distribute")}
+      search={search}
+      onSearchChange={onSearchChange}
+      searchPlaceholder={t("hasanat.searchDistributions")}
+      searchId={HASANAT_WORK_SEARCH_INPUT_ID}
+      hasActiveFilters={filterStatus.length > 0}
+      onClearFilters={onClearStatuses}
+      clearFiltersLabel={t("hasanat.clearFilters")}
+      filterChips={filterChips}
+      filterButton={
+        <HasanatFiltersMenuButton
+          filterStatus={filterStatus}
+          activeFilterCount={filterStatus.length}
+          statusLabels={statusLabels}
+          onToggleStatus={onToggleStatus}
+          onClearFilters={onClearStatuses}
+        />
+      }
+      primaryAction={undefined}
+      trashToggle={
+        canDelete && onToggleDeleted
+          ? {
+              canViewDeleted: canDelete,
+              viewingDeleted: showDeleted,
+              onToggle: onToggleDeleted,
+              activeLabel: t("hasanat.trash.showActive"),
+              deletedLabel: t("hasanat.trash.showDeleted"),
+            }
+          : undefined
+      }
+      viewModeToggle={{
+        viewMode,
+        onViewModeChange,
+      }}
+      columnCustomizer={
+        columnCustomizer
+          ? {
+              registry: columnCustomizer.columnRegistry,
+              onUpdate: columnCustomizer.updateUserColumnLayout,
+              onReset: columnCustomizer.onResetLayout,
+              labels: columnCustomizer.labels,
+            }
+          : undefined
+      }
+    />
+  );
+}

@@ -13,7 +13,7 @@
  * migration file**: Drizzle's migrator wraps every statement of a migration run
  * in a single transaction (`PgDialect.migrate` → `session.transaction(...)`), and
  * PostgreSQL rejects `CONCURRENTLY` inside a transaction block. It has to be run
- * out of band — `pnpm --filter mms-backend index:concurrent`.
+ * out of band — `pnpm --filter mms-api index:concurrent`.
  *
  * So the policy is a ratchet rather than a prohibition: the 164 indexes that
  * already exist stay as they are, and no NEW plain index may be added to a large
@@ -51,7 +51,7 @@ const LARGE_TABLES = [
   "audit_trail_events",
   // Rows = students x teaching days x classes, i.e. the highest-row-count academic table. Every
   // historical attendance index on a populated database was built out of band
-  // (scripts/date_columns_concurrent_indexes.sql, academic_contract_concurrent_indexes.sql,
+  // (packages/db/scripts/sql/date_columns_concurrent_indexes.sql, academic_contract_concurrent_indexes.sql,
   // class_integrity_concurrent_indexes.sql), so the ratchet has to cover it too — see
   // docs/attendance-schema-persistence-audit-2026-11-08.md (F8).
   "attendance",
@@ -138,7 +138,7 @@ if (total > BASELINE) {
     `${added} new plain CREATE INDEX statement(s) on large tables:\n  - ${recent.join("\n  - ")}\n\n` +
       "CREATE INDEX CONCURRENTLY cannot be used in a migration (Drizzle runs every\n" +
       "migration in one transaction). Create the index out of band instead:\n\n" +
-      "  pnpm --filter mms-backend index:concurrent \\\n" +
+      "  pnpm --filter mms-api index:concurrent \\\n" +
       "    --table <table> --columns <col1,col2> --name <index_name>\n\n" +
       "or raise BASELINE in scripts/check-migration-indexes.mjs with a justification.",
   );

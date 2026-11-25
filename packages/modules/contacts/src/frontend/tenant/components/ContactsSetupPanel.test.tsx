@@ -1,0 +1,35 @@
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { DEFAULT_CONTACT_PREFERENCES } from "@mms/contracts";
+import { ContactsSetupPanel } from "./ContactsSetupPanel.js";
+
+vi.mock("../hooks/useContactsSetupPanelState", () => ({
+  useContactsSetupPanelState: () => ({
+    saved: false,
+    prefs: DEFAULT_CONTACT_PREFERENCES,
+    isSaving: false,
+    isPrefsDirty: false,
+    updatePreference: vi.fn(),
+    handleSave: vi.fn(),
+  }),
+}));
+
+vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
+  ...((await importOriginal()) as Record<string, unknown>),
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
+vi.mock("./ContactsPreferencesSection.js", () => ({
+  ContactsPreferencesSection: () => <div data-testid="prefs-section">Preferences Section</div>,
+}));
+
+describe("ContactsSetupPanel Component", () => {
+  it("renders preferences section and save footer", () => {
+    const html = renderToStaticMarkup(<ContactsSetupPanel />);
+
+    expect(html).toContain("Preferences Section");
+    expect(html).toContain("contacts.setup.saveAndApply");
+  });
+});

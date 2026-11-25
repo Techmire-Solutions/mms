@@ -1,7 +1,7 @@
 # @mms/contracts
 
 The single source of truth for cross-package **types, DTOs, zod schemas, constants,
-pure helpers, i18n packs**, and the ts-rest contracts used by `apps/backend` and
+pure helpers, i18n packs**, and the ts-rest contracts used by `apps/api` and
 `apps/frontend`.
 
 ## Rules (see `docs/architecture.md` + `docs/adr/014`)

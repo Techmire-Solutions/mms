@@ -1,6 +1,6 @@
 ---
 name: mms-backend-api
-description: Adds or modifies Fastify routes, middleware (authenticateTenant), services, Zod validation, auth artifacts, and WhatsApp integration in the MMS backend. Use when creating API endpoints, db sync, students/contacts REST, error handling, or backend services. Do NOT use for database DDL/migrations (use mms-schema-migrate), session/CSRF security hardening (use mms-backend-security), or background worker queuing (use mms-background-jobs).
+description: Adds/modifies Fastify routes, middleware, services, Zod validation, auth artifacts, WhatsApp. Use when API endpoints, REST, error handling. Do NOT use for DDL (use mms-schema-migrate), session/CSRF (use mms-backend-security), or queues (use mms-background-jobs).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -21,18 +21,19 @@ metadata:
 
 | Concern | Path |
 |---------|------|
-| Resource CRUD | `apps/backend/src/lib/crudResourceRoutes.ts` (`registerResourceRoutes`) |
-| Bulk trash | `apps/backend/src/lib/crudBulkRouteFactories.ts` (`registerSoftDeletableBulkTrashRoutes`) |
-| Standard routes | `apps/backend/src/lib/crudStandardRoutes.ts` (`registerStandardTenantRoutes`) |
-| Zod parse | `apps/backend/src/lib/zodRequest.ts` (`parseRequest`) |
-| RLS tx | `apps/backend/src/db/tenant-context.ts` (`withTenant`) |
-| Auth | `apps/backend/src/middleware/authenticate.ts` (`authenticateTenant`) |
-| Module gates | `registerModuleAccess` + `MODULE_ROUTE_ACTION_RULES` + `apps/backend/src/__tests__/moduleAccessCoverage.test.ts` |
+| Resource CRUD | `apps/api/src/lib/crudResourceRoutes.ts` (`registerResourceRoutes`) |
+| Bulk trash | `apps/api/src/lib/crudBulkRouteFactories.ts` (`registerSoftDeletableBulkTrashRoutes`) |
+| Standard routes | `apps/api/src/lib/crudStandardRoutes.ts` (`registerStandardTenantRoutes`) |
+| Zod parse | `apps/api/src/lib/zodRequest.ts` (`parseRequest`) |
+| RLS tx | `apps/api/src/db/tenant-context.ts` (`withTenant`) |
+| Auth | `apps/api/src/middleware/authenticate.ts` (`authenticateTenant`) |
+| Module gates | `registerModuleAccess` + `MODULE_ROUTE_ACTION_RULES` + `apps/api/src/__tests__/moduleAccessCoverage.test.ts` |
 
 ## 1. Clean Architecture Layering
 
 - **Flow**: `routes/` (thin controller) → `use-cases/` (business rules) → `repositories/` (interface) → `db/` (Drizzle adapter).
 - **Decoupling**: Route handlers invoke the module composition root (`xxxUseCases`); direct database queries from route handlers are banned.
+- **Composition shell**: `apps/api` is the unified thin entry point — it initializes `@mms/db`/`@mms/be-core` and only keeps bootstrap/plugins/infra routes; domain business logic lives in `packages/modules/*/backend`, mounted as module routers under `/api/tenant/<domain>` (tenant auth + `tenantId`) and `/api/platform/<domain>` (`PLATFORM_ADMIN` + audit). New domain endpoints belong in a module, not in `apps/api/src/routes/**`.
 - **Explicit Projections**: Every query must provide an explicit, typed column projection (`db.select({ id: table.id }).from(table)`). Bare `.select()` and `SELECT *` are strictly banned (`check:db-projections`).
 - **Resource Management**: Use Node 24 `await using` for deterministic disposal of pooled client checkouts and stream handles.
 
@@ -59,12 +60,12 @@ metadata:
 
 ```bash
 # Run backend typecheck, tests, and linting
-cd apps/backend && pnpm typecheck && pnpm test && pnpm lint
+cd apps/api && pnpm typecheck && pnpm test && pnpm lint
 
 # Verify explicit column projections across all queries
 pnpm run check:db-projections
-pnpm --filter mms-backend test:db contactsSystemTagsDb
-pnpm --filter mms-backend test moduleAccessCoverage
+pnpm --filter mms-api test:db contactsSystemTagsDb
+pnpm --filter mms-api test moduleAccessCoverage
 ```
 
 ## Examples

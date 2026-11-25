@@ -1,7 +1,7 @@
 import type React from "react";
 import type { ModuleColumnKind } from "@mms/contracts";
 import type { TableCellAlign, TableCellVariant } from "@mms/ui";
-import type { WorkTableDensity } from "@mms/fe-core/hooks";
+import type { WorkTableDensity } from "../hooks/index.js";
 
 /**
  * Computes allSelected / someSelected from a list of items and a selection set.

@@ -54,8 +54,8 @@ package suites sequentially when debugging).
 
 ### 3.1 FIXED — Stored DOM XSS via unescaped print-window titles (High)
 
-**Where:** [`printHtmlDocument.ts`](../apps/frontend/src/lib/ui/printHtmlDocument.ts) (line 18) and
-[`printWindowHtml.ts`](../apps/frontend/src/lib/printWindowHtml.ts) (line 33).
+**Where:** [`printHtmlDocument.ts`](../apps/tenant-web/src/lib/ui/printHtmlDocument.ts) (line 18) and
+[`printWindowHtml.ts`](../packages/fe-core/src/print/printWindowHtml.ts) (line 33).
 
 Both helpers interpolated `title`/`windowTitle` directly into `<title>${title}</title>` inside a
 `document.write` document. Titles are built from tenant data:
@@ -72,13 +72,13 @@ read the non-HttpOnly `csrf_token` cookie and call the authenticated API as the 
 itself is HttpOnly). In practice a user with write access to a journal/obligation/student record
 can execute script in an administrator's session when that administrator prints the record —
 a privilege-escalation path, not just self-XSS. The same class was already solved correctly in
-[`paperBuilderUtils.ts`](../apps/frontend/src/tenant/features/question-bank/lib/paperBuilderUtils.ts)
+[`paperBuilderUtils.ts`](../apps/tenant-web/src/tenant/features/question-bank/lib/paperBuilderUtils.ts)
 (`escapeHtml(title)`), so this was an inconsistency rather than a missing capability.
 
 **Fix:** both helpers now run the title through
-[`escapeHtml`](../apps/frontend/src/lib/escapeHtml.ts) before interpolation. New tests:
-[`printHtmlDocument.test.ts`](../apps/frontend/src/lib/ui/printHtmlDocument.test.ts) and
-[`printWindowHtml.test.ts`](../apps/frontend/src/lib/printWindowHtml.test.ts) (4 tests, pass).
+[`escapeHtml`](../packages/fe-core/src/print/escapeHtml.ts) before interpolation. New tests:
+[`printHtmlDocument.test.ts`](../apps/tenant-web/src/lib/ui/printHtmlDocument.test.ts) and
+[`printWindowHtml.test.ts`](../apps/tenant-web/src/lib/printWindowHtml.test.ts) (4 tests, pass).
 
 ### 3.2 FIXED — Executable URL schemes accepted for social links (High)
 
@@ -88,8 +88,8 @@ a privilege-escalation path, not just self-XSS. The same class was already solve
 unknown platform fell back to returning the raw input. Callers use the result directly as a link
 target:
 
-- [`contactMetadataCollections.tsx`](../apps/frontend/src/tenant/features/contacts/components/contactMetadataCollections.tsx) renders `<a href={formatSocialPlatformUrl(...)} target="_blank">`.
-- [`ContactDetailSocialsSection.tsx`](../apps/frontend/src/tenant/features/contacts/components/detail/ContactDetailSocialsSection.tsx) passes it to `window.open(row.href, "_blank", "noopener,noreferrer")`.
+- [`contactMetadataCollections.tsx`](../packages/modules/contacts/src/frontend/tenant/components/contactMetadataCollections.tsx) renders `<a href={formatSocialPlatformUrl(...)} target="_blank">`.
+- [`ContactDetailSocialsSection.tsx`](../packages/modules/contacts/src/frontend/tenant/components/detail/ContactDetailSocialsSection.tsx) passes it to `window.open(row.href, "_blank", "noopener,noreferrer")`.
 
 A stored social URL of `javascript:alert(document.domain)` or `data:text/html,<script>…` therefore
 became a clickable script target in the app origin — another tenant-user → tenant-admin escalation

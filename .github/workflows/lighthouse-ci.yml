@@ -3,7 +3,8 @@ name: Lighthouse CI Performance & Budgets
 on:
   pull_request:
     paths:
-      - "apps/frontend/**"
+      - "apps/tenant-web/**"
+      - "apps/platform-web/**"
       - "packages/contracts/**"
       - "packages/ui/**"
       - "perf/**"
@@ -39,7 +40,7 @@ jobs:
 
       - name: Build Frontend for Production
         id: build-frontend
-        run: pnpm --filter mms-frontend build
+        run: pnpm --filter mms-tenant-web build
 
       - name: Run Lighthouse CI (Mobile - 3 runs)
         id: lhci-mobile

@@ -36,7 +36,7 @@ module.exports = {
     collect: {
       url: ["http://localhost:4173/"],
       numberOfRuns: 3,
-      startServerCommand: "pnpm --filter mms-frontend exec vite preview --port 4173 --strictPort",
+      startServerCommand: "pnpm --filter mms-tenant-web exec vite preview --port 4173 --strictPort",
       startServerReadyPattern: "http://localhost:4173",
       startServerReadyTimeout: 60000,
       settings: {

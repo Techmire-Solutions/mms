@@ -6,7 +6,7 @@
 #   curl -fsSL .../bootstrap-ubuntu-vps.sh | bash   # or clone repo first
 #   sudo bash scripts/production/bootstrap-ubuntu-vps.sh
 #
-# After this script: set apps/backend/.env, DNS, certbot, then apply-production-host-isolation.sh
+# After this script: set apps/api/.env, DNS, certbot, then apply-production-host-isolation.sh
 set -Eeuo pipefail
 
 # ANSI color codes
@@ -104,7 +104,7 @@ fi
 echo ""
 echo "══ Next steps (manual) ══"
 echo "1. Clone repo to ${DEPLOY_ROOT} (if not done)"
-echo "2. Create ${DEPLOY_ROOT}/apps/backend/.env with:"
+echo "2. Create ${DEPLOY_ROOT}/apps/api/.env with:"
 echo "     JWT_SECRET=<32+ chars>"
 echo "     DATABASE_URL=postgres://username:password@localhost:5432/mms"
 echo "     PORT=5002"
@@ -114,12 +114,12 @@ echo "3. DNS: A record for MMS_APP_DOMAIN + wildcard *.MMS_APP_DOMAIN → this s
 echo "4. TLS (wildcard required for tenant subdomains):"
 echo "     sudo certbot certonly --manual --preferred-challenges dns \\"
 echo "       -d your-platform.example.com -d '*.your-platform.example.com'"
-echo "     Then: bash scripts/apache/install-mms-vhost.sh apps/backend/.env"
+echo "     Then: bash scripts/apache/install-mms-vhost.sh apps/api/.env"
 echo "5. Build + PM2:"
 echo "     cd ${DEPLOY_ROOT} && pnpm install && pnpm build"
 echo "     bash scripts/production/setup-pm2-startup.sh"
 echo "6. Apache isolation:"
-echo "     bash scripts/apply-production-host-isolation.sh apps/backend/.env"
+echo "     bash scripts/apply-production-host-isolation.sh apps/api/.env"
 echo "7. Backups cron:"
 echo "     (crontab -l 2>/dev/null; echo \"0 3 * * * bash ${DEPLOY_ROOT}/scripts/production/backup-postgres.sh\") | crontab -"
 echo ""

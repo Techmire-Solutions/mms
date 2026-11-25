@@ -10,8 +10,8 @@
 
 import React, { useCallback } from "react";
 import type { DocumentTemplate } from "@mms/contracts";
-import { useTranslation } from "@mms/fe-core/i18n";
-import { notify } from "@mms/fe-core/notify";
+import { useTranslation } from "../i18n/index.js";
+import { notify } from "../notify.js";
 import {
   useDocumentTemplate,
   useSaveDocumentTemplate,

@@ -1,5 +1,5 @@
 import { HttpDomainError } from "@mms/be-core/http/errors";
-import { platformContactsRepository } from "../repository/platformContactsAdapter.js";
+import { platformContactsRepository } from "../repository/index.js";
 
 export interface PlatformContactsUseCases {
   list(input: {

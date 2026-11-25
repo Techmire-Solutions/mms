@@ -3,11 +3,11 @@
 Shared TypeScript compiler presets for the MMS monorepo. One source of truth for
 strictness; each surface keeps only its own emit/module/path deltas.
 
-| Preset       | Extends | Use for                                                                                                                                      |
-| ------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `base.json`  | —       | Everything below. Strictness only — no module/target/lib.                                                                                    |
-| `node.json`  | base    | `apps/backend`, `packages/db`, `packages/be-core`, `packages/contracts`, `e2e` (NodeNext + ES2022).                                          |
-| `react.json` | base    | `apps/frontend`, `packages/ui`, `packages/fe-core` (bundler + JSX + DOM, `noEmit`). `apps/tenant-web`/`apps/platform-web` will use it at P7. |
+| Preset       | Extends | Use for                                                                                                    |
+| ------------ | ------- | ---------------------------------------------------------------------------------------------------------- |
+| `base.json`  | —       | Everything below. Strictness only — no module/target/lib.                                                  |
+| `node.json`  | base    | `apps/api`, `packages/db`, `packages/be-core`, `packages/contracts`, `e2e` (NodeNext + ES2022).            |
+| `react.json` | base    | `apps/tenant-web`, `apps/platform-web`, `packages/ui`, `packages/fe-core` (bundler + JSX + DOM, `noEmit`). |
 
 ## Usage
 
@@ -15,7 +15,7 @@ Packages extend the preset by **relative path** so TypeScript never has to resol
 a package specifier for `extends`:
 
 ```jsonc
-// apps/backend/tsconfig.json
+// apps/api/tsconfig.json
 {
   "extends": "../../tooling/typescript-config/node.json",
   "compilerOptions": { "rootDir": "./src", "outDir": "./dist" },

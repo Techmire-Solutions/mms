@@ -4,7 +4,7 @@
  *
  * Defaults mirror the backend module gate: a GET is `read`, any other method is
  * `write`. The overrides below mirror
- * `apps/backend/src/lib/moduleRouteActionRulesFinance.ts` plus the setup-write
+ * `apps/api/src/lib/moduleRouteActionRulesFinance.ts` plus the setup-write
  * routes (settings.global.write) and the read-shaped POSTs (previews, reports).
  */
 

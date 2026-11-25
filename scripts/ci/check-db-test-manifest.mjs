@@ -10,7 +10,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const ROOTS = [
-  path.resolve(process.cwd(), "apps/backend/src/__tests__/db-integration"),
+  path.resolve(process.cwd(), "apps/api/src/__tests__/db-integration"),
   path.resolve(process.cwd(), "packages/modules/accounting/src/backend/__tests__/db-integration"),
 ];
 const BASELINE = {

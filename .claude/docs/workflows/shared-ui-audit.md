@@ -4,7 +4,7 @@ description: Audit frontend codebase for shared UI component compliance, elimina
 
 # Workflow: Shared UI Component Architecture & Governance Audit
 
-This workflow establishes and audits the Single Source of Truth (SSOT) policy for UI components across the Tenant Console (`apps/frontend/src/tenant/`) and Platform Console (`apps/frontend/src/platform/`).
+This workflow establishes and audits the Single Source of Truth (SSOT) policy for UI components across the Tenant Console (`apps/tenant-web/src/`) and Platform Console (`apps/platform-web/src/`).
 
 ## Phase 1: Context & Discovery
 
@@ -39,7 +39,7 @@ This workflow establishes and audits the Single Source of Truth (SSOT) policy fo
   - Keep components domain-agnostic (zero tenant/platform business logic).
   - Support cross-console variations via explicit props (`variant`, `tone`, `size`, `interactive`) or subcomponent composition.
   - Export from `packages/ui/src/index.ts`.
-- [ ] **Maintain facade purity in `apps/frontend/src/components/ui/`**:
+- [ ] **Maintain facade purity in `apps/tenant-web/src/components/ui/`**:
   - Primitives must only re-export from `@mms/ui`.
   - Zero local JSX component declarations in facade files.
 
@@ -50,8 +50,8 @@ Whenever deleting deprecated shims, duplicate component files, or dead code:
 - [ ] **Step 1: Pre-deletion verification gate**:
   ```bash
   pnpm typecheck
-  pnpm --filter mms-frontend lint
-  pnpm --filter mms-frontend build
+  pnpm --filter mms-tenant-web lint
+  pnpm --filter mms-tenant-web build
   ```
   Ensure the project builds cleanly before deleting files.
 - [ ] **Step 2: Safe deletion**:
@@ -60,8 +60,8 @@ Whenever deleting deprecated shims, duplicate component files, or dead code:
 - [ ] **Step 3: Post-deletion verification gate**:
   ```bash
   pnpm typecheck
-  pnpm --filter mms-frontend lint
-  pnpm --filter mms-frontend build
+  pnpm --filter mms-tenant-web lint
+  pnpm --filter mms-tenant-web build
   pnpm run check:shared-ui
   ```
   Confirm zero orphaned imports or broken build targets remain.
@@ -74,7 +74,7 @@ Whenever deleting deprecated shims, duplicate component files, or dead code:
   pnpm run check:shared-ui
   pnpm run check:frontend-structure
   pnpm run check:code-norms
-  pnpm --filter mms-frontend test
+  pnpm --filter mms-tenant-web test
   ```
 - [ ] **Sync Standards**: If rules or skills were modified during the audit, run:
   ```bash

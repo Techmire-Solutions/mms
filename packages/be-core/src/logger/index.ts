@@ -13,7 +13,7 @@ import { LOG_REDACTION_OPTIONS, setDbLogger } from "@mms/db";
 export const logger: Logger = pino({
   level: process.env.LOG_LEVEL || "info",
   base: {
-    service: "mms-backend",
+    service: "mms-api",
   },
   // Secrets must never reach durable log storage — see lib/logRedaction.ts.
   redact: LOG_REDACTION_OPTIONS,
@@ -22,3 +22,4 @@ export const logger: Logger = pino({
 
 // The data layer logs through this instance so worker/bootstrap/API logs share one format.
 setDbLogger(logger);
+export * from "./devLogging.js";

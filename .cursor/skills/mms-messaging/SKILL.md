@@ -1,6 +1,6 @@
 ---
 name: mms-messaging
-description: SMS/WhatsApp campaigns, MessageComposer, message templates, message logs, and /api/messaging REST. Use when modifying MessagingPage, MessageComposer, messaging templates/campaigns/logs, MessagingVariableTokensBar, or backend messaging routes/repositories. Do NOT use for printable document templates (use mms-document-templates), transactional audit events (use mms-audit-trail), or email background queuing (use mms-background-jobs).
+description: SMS/WhatsApp campaigns, MessageComposer, templates, logs, /api/messaging. Use when messaging features/routes/repos. Do NOT use for doc templates (use mms-document-templates), audit events (use mms-audit-trail), or email jobs (use mms-background-jobs).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -20,7 +20,7 @@ metadata:
 
 | Area | Path |
 |------|------|
-| Page | `apps/frontend/src/tenant/features/messaging/MessagingPage.tsx` |
+| Page | `apps/tenant-web/src/tenant/features/messaging/MessagingPage.tsx` |
 | Composer | `components/app/MessageComposer.tsx` + tokens bar |
 | Hooks | `useMessageTemplates`, `useMessageLogs`, `useMessagingMetrics`, `useMessagingMutations` |
 | Shared | `MESSAGING_MODULE_MANIFEST`, `messagingSchemas`, `MessagingRecipient` |
@@ -69,7 +69,7 @@ Unknown tokens exit non-zero — the backend rejects them at send time, so catch
 
 ## Done
 
-`pnpm typecheck` · FE lint · `apps/backend/src/__tests__/messaging.integration.test.ts` when the REST surface changed — `mms-completion-review.mdc`.
+`pnpm typecheck` · FE lint · `apps/api/src/__tests__/messaging.integration.test.ts` when the REST surface changed — `mms-completion-review.mdc`.
 
 ## Related skills
 

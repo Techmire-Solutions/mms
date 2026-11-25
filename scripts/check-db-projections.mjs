@@ -26,7 +26,7 @@ import { changedFiles } from "./lib/changed-files.mjs";
 import { findWildcardProjections } from "./lib/db-projections-core.mjs";
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const APP_SRC = path.join(rootDir, "apps", "backend", "src");
+const APP_SRC = path.join(rootDir, "apps", "api", "src");
 /**
  * Kernel moved into `@mms/db` or `@mms/be-core` must stay under the same projection
  * ban (P1b): moving code into a package must not let it escape a gate.
@@ -35,14 +35,14 @@ const DB_PKG_SRC = path.join(rootDir, "packages", "db", "src");
 const BE_CORE_SRC = path.join(rootDir, "packages", "be-core", "src");
 const SOURCE_ROOTS = [APP_SRC, DB_PKG_SRC, BE_CORE_SRC];
 
-/** Measured 2026-09-19. Zero wildcard projections across apps/backend. */
+/** Measured 2026-09-19. Zero wildcard projections across apps/api. */
 const BASELINE = 0;
 
 const isBackendSource = (rel) =>
   rel.endsWith(".ts") &&
   !/\.(test|spec)\.ts$/.test(rel) &&
   !rel.includes("/__tests__/") &&
-  !rel.startsWith("apps/backend/src/db/migrations/");
+  !rel.startsWith("apps/api/src/db/migrations/");
 
 /** Recursively collects non-test TypeScript sources. */
 function collectSourceFiles(dir) {
@@ -73,7 +73,7 @@ const sources = process.argv.includes("--changed")
   ? changedFiles()
       .filter(
         (rel) =>
-          (rel.startsWith("apps/backend/src/") || rel.startsWith("packages/db/src/")) &&
+          (rel.startsWith("apps/api/src/") || rel.startsWith("packages/db/src/")) &&
           isBackendSource(rel),
       )
       .map((rel) => path.join(rootDir, rel))

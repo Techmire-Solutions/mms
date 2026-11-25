@@ -1,0 +1,78 @@
+import type React from "react";
+import { formatDirectoryPageCountLabel } from "@mms/fe-core/tenant/formatDirectoryPageCountLabel";
+import { useReducedMotion } from "@mms/fe-core/tenant";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ModuleDirectoryCards } from "@mms/fe-core/components/ModuleDirectoryCards";
+import { useStudentEntityDescriptor } from "../hooks/useStudentEntityDescriptor";
+import type { StudentsListCardsProps } from "../lib/studentsListTypes";
+
+export type { StudentsListCardsProps };
+
+import { StudentCard } from "./StudentCard";
+export type { StudentCardComponentProps } from "./StudentCard";
+
+export function StudentsListCards({
+  paginatedStudents,
+  selectedIds,
+  allSelected,
+  someSelected,
+  viewingDeleted,
+  canWrite,
+  canDelete,
+  canWriteMessaging = false,
+  statusBadgeConfig,
+  isColumnVisible,
+  columnRegistry,
+  onSelectAll,
+  onSelectOne,
+  onViewStudent,
+  onEdit,
+  onDelete,
+  onRestore,
+  onOpenComposer,
+}: StudentsListCardsProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const reducedMotion = useReducedMotion();
+  const descriptor = useStudentEntityDescriptor();
+  const pageCountLabel = formatDirectoryPageCountLabel(paginatedStudents.length, t, {
+    singular: "students.form.student",
+    plural: "students.table.students",
+  });
+
+  return (
+    <ModuleDirectoryCards
+      items={paginatedStudents}
+      selectedIds={selectedIds}
+      onSelectAll={onSelectAll}
+      allSelected={allSelected}
+      someSelected={someSelected}
+      selectAllLabel={t("students.table.selectAll")}
+      deselectAllLabel={t("common.deselect")}
+      selectedCountLabel={t("students.selectedCount", { count: selectedIds.length })}
+      pageCountLabel={pageCountLabel}
+      checkboxIdPrefix="students"
+      renderItem={(studentCard) => (
+        <StudentCard
+          key={studentCard.id}
+          student={studentCard}
+          selectedIds={selectedIds}
+          viewingDeleted={viewingDeleted}
+          canWrite={canWrite}
+          canDelete={canDelete}
+          canWriteMessaging={canWriteMessaging}
+          statusBadgeConfig={statusBadgeConfig}
+          isColumnVisible={isColumnVisible}
+          columnRegistry={columnRegistry}
+          descriptor={descriptor}
+          reducedMotion={reducedMotion}
+          onSelectOne={onSelectOne}
+          onViewStudent={onViewStudent}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onRestore={onRestore}
+          onOpenComposer={onOpenComposer}
+        />
+      )}
+    />
+  );
+}

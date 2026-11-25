@@ -11,7 +11,7 @@ import { canPostAccounting } from "@mms/be-core/rbac";
 import { sendForbidden, sendIfHttpDomainError, sendDatabaseError } from "@mms/be-core/http/errors";
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
 import { sendValidated } from "@mms/be-core/http/routes";
-import { processSpecializedEntryUseCase } from "../use-cases/processSpecializedEntryUseCase.js";
+import { processSpecializedEntryUseCase } from "../use-cases/index.js";
 
 /**
  * General Entries quick-action endpoint (Fee, Salary) — a single request

@@ -4,7 +4,7 @@ Quick operational reference for diagnosing queues, active jobs, and worker healt
 
 ## 1. Queue Identifiers
 
-Declared in `apps/backend/src/worker/queues/index.ts`:
+Declared in `apps/api/src/worker/queues/index.ts`:
 
 | Queue Constant | Redis Key Prefix | Typical Payload | Idempotent Replay? |
 |---|---|---|---|

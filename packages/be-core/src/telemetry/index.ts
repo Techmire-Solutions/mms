@@ -64,7 +64,7 @@ export class TelemetryTracer {
   private serviceName: string;
   private isEnabled: boolean;
 
-  constructor(serviceName = "mms-backend") {
+  constructor(serviceName = "mms-api") {
     this.serviceName = serviceName;
     this.isEnabled =
       process.env.ENABLE_OTEL_TRACING === "true" || process.env.NODE_ENV === "production";
@@ -138,7 +138,8 @@ export class TelemetryTracer {
   }
 }
 
-export const tracer = new TelemetryTracer(process.env.OTEL_SERVICE_NAME || "mms-backend");
+export const tracer = new TelemetryTracer(process.env.OTEL_SERVICE_NAME || "mms-api");
 
 // `@mms/db` emits `drizzle.transaction` spans through this tracer.
 setDbTracer(tracer);
+export * from "./metrics.js";

@@ -1,6 +1,6 @@
 import React from "react";
 import { SearchBar as SharedSearchBar, type SearchBarProps as SharedSearchBarProps } from "@mms/ui";
-import { useTranslation } from "@mms/fe-core/i18n";
+import { useTranslation } from "../i18n/index.js";
 
 export type SearchBarProps = SharedSearchBarProps;
 

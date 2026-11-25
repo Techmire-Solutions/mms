@@ -7,7 +7,7 @@
 set -euo pipefail
 
 ROOT_DIR="${MMS_DEPLOY_ROOT:-/var/www/mmsv2}"
-ENV_FILE="${MMS_DEPLOY_ENV:-apps/backend/.env}"
+ENV_FILE="${MMS_DEPLOY_ENV:-apps/api/.env}"
 RELEASES_DIR="${ROOT_DIR}/.deploy-releases"
 
 cd "$ROOT_DIR" || { echo "FATAL: cannot cd to ${ROOT_DIR}"; exit 1; }
@@ -79,7 +79,7 @@ if [ -f "${TARBALL}.sha256" ]; then
 fi
 
 echo "Extracting ${TARBALL} → ${ROOT_DIR}"
-rm -rf "${ROOT_DIR}/apps/frontend/dist" "${ROOT_DIR}/apps/backend/dist"
+rm -rf "${ROOT_DIR}/apps/tenant-web/dist" "${ROOT_DIR}/apps/platform-web/dist" "${ROOT_DIR}/apps/api/dist"
 tar xzf "$TARBALL" -C "$ROOT_DIR"
 
 # Restore the env that belonged to this release. Without this, a rollback

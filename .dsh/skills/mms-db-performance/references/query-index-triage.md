@@ -8,7 +8,7 @@ Standard DDL migrations run inside transactions where `CREATE INDEX` acquires an
 - **Never run blocking index builds** on tables with existing operational traffic (`mms-performance.md` §1).
 - Use `CREATE INDEX CONCURRENTLY` executed outside migration transactions via:
   ```bash
-  pnpm --filter mms-backend exec tsx src/scripts/create-index-concurrently.ts --file src/scripts/perf_concurrent_indexes_and_stats.sql
+  pnpm --filter mms-api exec tsx src/scripts/create-index-concurrently.ts --file src/scripts/perf_concurrent_indexes_and_stats.sql
   ```
 
 ## 2. Three-Tier Soft-Delete Index Strategy

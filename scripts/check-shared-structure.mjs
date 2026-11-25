@@ -31,7 +31,7 @@ const EXPORTED_SUBPATHS = new Set([
   "translations/ur",
   "translations/fa",
 ]);
-const CONSUMER_DIRS = ["apps/backend/src", "apps/frontend/src", "e2e"];
+const CONSUMER_DIRS = ["apps/api/src", "apps/tenant-web/src", "apps/platform-web/src", "e2e"];
 
 // Fail closed: a renamed consumer root must fail the gate, not silently stop
 // checking deep-import violations (docs/monorepo-migration-plan.md §2.7).

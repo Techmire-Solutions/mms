@@ -1,0 +1,99 @@
+import type React from "react";
+import { AlertCircle } from "lucide-react";
+import { Button } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { Field, FieldErrorMessage } from "@mms/ui";
+import { FORM_ERROR_BOX } from "@mms/ui";
+import { Alert } from "@mms/ui";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+
+export interface GoogleContactsSetupHintProps {
+  t: TranslationFunction;
+}
+
+export function GoogleContactsSetupHint({ t }: GoogleContactsSetupHintProps): React.JSX.Element {
+  return (
+    <Alert
+      icon={AlertCircle}
+      density="compact"
+      role="status"
+      className="gap-3 p-3 text-warning"
+      title={t("contacts.sync.oauthSetupTitle")}
+      description={t("contacts.sync.oauthSetupDesc")}
+    />
+  );
+}
+
+export interface GoogleContactsSetupFormProps {
+  clientId: string;
+  clientSecret: string;
+  error: string;
+  onClientIdChange: (value: string) => void;
+  onClientSecretChange: (value: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+  t: TranslationFunction;
+}
+
+export function GoogleContactsSetupForm({
+  clientId,
+  clientSecret,
+  error,
+  onClientIdChange,
+  onClientSecretChange,
+  onSave,
+  onCancel,
+  t,
+}: GoogleContactsSetupFormProps): React.JSX.Element {
+  return (
+    <div className="space-y-3 p-3 rounded-xl bg-muted/30 border border-border">
+      <h4 className="text-xs font-bold text-foreground uppercase tracking-wide">
+        {t("contacts.sync.oauthHeader")}
+      </h4>
+      <Field id="clientId" label={t("contacts.sync.clientIdLabel")}>
+        <Input
+          id="clientId"
+          value={clientId}
+          onChange={(event) => onClientIdChange(event.target.value)}
+          placeholder={t("contacts.sync.clientIdPlaceholder")}
+        />
+      </Field>
+      <Field id="clientSecret" label={t("contacts.sync.clientSecretLabel")}>
+        <Input
+          id="clientSecret"
+          type="password"
+          value={clientSecret}
+          onChange={(event) => onClientSecretChange(event.target.value)}
+          placeholder={t("contacts.sync.clientSecretPlaceholder")}
+          // Not a login password: stop password managers from injecting the
+          // user's account password into the OAuth client-secret field.
+          autoComplete="new-password"
+          autoCapitalize="none"
+          spellCheck={false}
+        />
+      </Field>
+      <FieldErrorMessage message={error || undefined} className={FORM_ERROR_BOX} />
+      <div className="flex gap-2">
+        <Button
+          type="button"
+          variant="default"
+          size="sm"
+          onClick={onSave}
+          disabled={!clientId.trim() || !clientSecret.trim()}
+          className="px-4 font-bold shadow-none"
+        >
+          {t("contacts.sync.saveCredentials")}
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onCancel}
+          className="px-4 font-medium shadow-none"
+        >
+          {t("common.cancel")}
+        </Button>
+      </div>
+    </div>
+  );
+}

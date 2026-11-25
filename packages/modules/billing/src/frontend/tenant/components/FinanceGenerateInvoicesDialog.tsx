@@ -1,0 +1,164 @@
+import {
+  translateApiMessage,
+  translateValidationMessage,
+} from "@mms/fe-core/forms/translateValidationMessage";
+import React, { useMemo, useState } from "react";
+import { CalendarRange } from "lucide-react";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Field } from "@mms/fe-core/components/FormPrimitives";
+import { FORM_INPUT } from "@mms/ui";
+import { Input } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { notify } from "@mms/fe-core/notify";
+import { billingPeriodFromDate, generateInvoicesBodySchema, todayISO } from "@mms/contracts";
+import { useSessionsCollection } from "../host/sessionsCollection";
+import { useFinanceInvoiceGeneration } from "../hooks/useFinanceInvoiceGeneration";
+import { useSubmitGuard } from "@mms/fe-core/forms/useSubmitGuard";
+import { useIdentityReset } from "@mms/fe-core/forms/useIdentityReset";
+import { useDirtySnapshot } from "@mms/fe-core/forms/useDirtySnapshot";
+import { mapApiFormError } from "@mms/fe-core/forms/serverFormErrors";
+
+export function FinanceGenerateInvoicesDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}): React.JSX.Element {
+  const { t } = useTranslation();
+  const sessions = useSessionsCollection({ enabled: open });
+  const generate = useFinanceInvoiceGeneration();
+  const guard = useSubmitGuard();
+  const defaultPeriod = billingPeriodFromDate(todayISO());
+  const [period, setPeriod] = useState(defaultPeriod);
+  const [sessionId, setSessionId] = useState("");
+  const [classId, setClassId] = useState("");
+  const [formError, setFormError] = useState<string | null>(null);
+  const identity = `${open}:new`;
+  // Reopening starts from the current period and no filters, so the dirty baseline
+  // is the same value the reset produces.
+  useIdentityReset(identity, () => {
+    setPeriod(defaultPeriod);
+    setSessionId("");
+    setClassId("");
+    setFormError(null);
+  });
+  const { isDirty } = useDirtySnapshot({ period, sessionId, classId }, identity, {
+    period: defaultPeriod,
+    sessionId: "",
+    classId: "",
+  });
+
+  const classes = useMemo(
+    () => sessions.find((session: any) => session.id === sessionId)?.classes ?? [],
+    [sessionId, sessions],
+  );
+
+  const handleGenerate = (): Promise<void> =>
+    guard(async () => {
+      setFormError(null);
+      const parsed = generateInvoicesBodySchema.safeParse({
+        billingPeriod: period,
+        ...(sessionId ? { sessionId } : {}),
+        ...(classId ? { classId } : {}),
+      });
+      if (!parsed.success) {
+        setFormError(translateValidationMessage(parsed.error.issues[0]?.message, t));
+        return;
+      }
+      try {
+        const result = await generate.mutateAsync(parsed.data);
+        if (result.created === 0) {
+          notify.info(t("finance.generate.none", { skipped: result.skipped }));
+        } else if (result.unposted > 0) {
+          // The invoice exists but has no ledger entry: posting rules are missing or
+          // the posting was refused. Say so instead of reporting plain success.
+          notify.warning(
+            t("finance.generate.unposted", {
+              count: result.created,
+              unposted: result.unposted,
+            }),
+          );
+        } else {
+          notify.success(
+            t("finance.generate.success", { count: result.created, skipped: result.skipped }),
+          );
+        }
+        onClose();
+      } catch (error) {
+        setFormError(
+          mapApiFormError(error, (message) => translateApiMessage(message, t)).message ??
+            t("finance.generate.failed"),
+        );
+      }
+    });
+
+  return (
+    <FormModal
+      open={open}
+      onClose={onClose}
+      title={t("finance.generate.title")}
+      subtitle={t("finance.generate.hint")}
+      icon={CalendarRange}
+      cancelLabel={t("common.cancel")}
+      saveLabel={t("finance.generate.submit")}
+      onSave={handleGenerate}
+      saving={generate.isPending}
+      isDirty={isDirty}
+      discardUnsavedTitle={t("settings.unsavedChanges")}
+      discardUnsavedDescription={t("common.discardUnsavedDescription")}
+      error={formError ?? undefined}
+      saveDisabled={!period || generate.isPending}
+      formId="generate-invoices-form"
+    >
+      <form
+        id="generate-invoices-form"
+        noValidate
+        onSubmit={(event) => {
+          event.preventDefault();
+          if (period && !generate.isPending) void handleGenerate();
+        }}
+        className="space-y-4"
+      >
+        <Field id="generate-invoice-period" label={t("finance.generate.period")}>
+          <Input
+            id="generate-invoice-period"
+            name="period"
+            className={FORM_INPUT}
+            type="month"
+            value={period}
+            onChange={(event) => setPeriod(event.target.value)}
+          />
+        </Field>
+        <Field id="generate-invoice-session" label={t("finance.generate.session")}>
+          <FormSelect
+            id="generate-invoice-session"
+            name="sessionId"
+            value={sessionId}
+            onChange={(value) => {
+              setSessionId(value);
+              setClassId("");
+            }}
+            options={[
+              { value: "", label: t("finance.generate.allSessions") },
+              ...sessions.map((session: any) => ({ value: session.id, label: session.name })),
+            ]}
+          />
+        </Field>
+        <Field id="generate-invoice-class" label={t("finance.generate.class")}>
+          <FormSelect
+            id="generate-invoice-class"
+            name="classId"
+            value={classId}
+            onChange={setClassId}
+            options={[
+              { value: "", label: t("finance.generate.allClasses") },
+              ...classes.map((item: any) => ({ value: item.id, label: item.name })),
+            ]}
+          />
+        </Field>
+      </form>
+    </FormModal>
+  );
+}

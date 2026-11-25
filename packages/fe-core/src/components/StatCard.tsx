@@ -5,9 +5,9 @@ import { cn } from "@mms/ui";
 import { Card } from "@mms/ui";
 import { SectionLabel } from "@mms/ui";
 import { formatNumber } from "@mms/contracts";
-import { useReducedMotion } from "@mms/fe-core/tenant";
+import { useReducedMotion } from "../tenant/index.js";
 import { resolveAccent, type AccentColor } from "./statCardAccent";
-import { CARD_STRIPE_INSET } from "@mms/fe-core/ui/semanticTone";
+import { CARD_STRIPE_INSET } from "../ui/semanticTone.js";
 import { StatCardTrend } from "./StatCardTrend";
 import { StatCardSparkline } from "@mms/ui/app/StatCardSparkline";
 

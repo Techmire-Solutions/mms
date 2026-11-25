@@ -1,6 +1,6 @@
 ---
 name: mms-backend-security
-description: Finds and fixes MMS backend auth weaknesses — tenant isolation, RBAC gaps, cookie/CSRF/Origin handling, rate limits, and session flows. Use when hardening or auditing a security mechanism (correctness of the control itself). Do NOT use for general route implementation (use mms-backend-api), for reviewing an unrelated change set (use mms-code-review), or for encrypted backup crypto (use mms-backup-restore).
+description: Finds/fixes backend auth weaknesses (tenant isolation, RBAC, cookie/CSRF/Origin, rate limits, sessions). Use when hardening/auditing a control. Do NOT use for route impl (use mms-backend-api), unrelated review (use mms-code-review), or backup crypto (use mms-backup-restore).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -63,9 +63,9 @@ Token persistence: `authArtifactService`. Cookie names below are authoritative.
 Execute the backend security test matrix when modifying auth or route handlers:
 
 ```bash
-cd apps/backend && pnpm test -- src/__tests__/app.security.test.ts src/__tests__/auth.integration.test.ts src/__tests__/rbacService.test.ts
+cd apps/api && pnpm test -- src/__tests__/app.security.test.ts src/__tests__/auth.integration.test.ts src/__tests__/rbacService.test.ts
 # Cross-module reads + upload gates
-cd apps/backend && pnpm test -- src/__tests__/messagingRecipientsService.test.ts src/__tests__/uploadsHardening.test.ts
+cd apps/api && pnpm test -- src/__tests__/messagingRecipientsService.test.ts src/__tests__/uploadsHardening.test.ts
 ```
 
 ## Related skills

@@ -1,0 +1,297 @@
+import { and, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
+import { type Session } from "@mms/contracts";
+import { enrollments, sessions, sessionClasses, type SessionReadRow } from "@mms/db/schema";
+import { withTenant, withTenantRead, type TenantTransaction } from "@mms/db/context";
+import { hydrateSessionsList, hydrateSessionsListSummary } from "./sessionRepositoryHydrate.js";
+import { getPreparedSessionById } from "../../deps.js";
+import { attachClassSectionsTx } from "./sessionSectionsHydrate.js";
+import { attachSessionWorkingDaysTx } from "./sessionWorkingDays.js";
+import { sessionTypeSql } from "@mms/db";
+import { toDbDate } from "@mms/be-core/http";
+
+async function attachSessionChildrenTx(
+  tx: TenantTransaction,
+  subdomain: string,
+  list: Session[],
+): Promise<Session[]> {
+  return attachSessionWorkingDaysTx(
+    tx,
+    subdomain,
+    await attachClassSectionsTx(tx, subdomain, list),
+  );
+}
+
+export const sessionSelectColumns = {
+  id: sessions.id,
+  workspaceSubdomain: sessions.workspaceSubdomain,
+  name: sessions.name,
+  type: sessionTypeSql,
+  categoryId: sessions.categoryId,
+  programId: sessions.programId,
+  status: sessions.status,
+  startDate: sessions.startDate,
+  endDate: sessions.endDate,
+  baseFee: sessions.baseFee,
+  currency: sessions.currency,
+  description: sessions.description,
+  minAttendancePct: sessions.minAttendancePct,
+  requiresExamPass: sessions.requiresExamPass,
+  version: sessions.version,
+  overlapExempt: sessions.overlapExempt,
+  deletedAt: sessions.deletedAt,
+  deletedBy: sessions.deletedBy,
+  deletionReason: sessions.deletionReason,
+  restoredAt: sessions.restoredAt,
+  restoredBy: sessions.restoredBy,
+  deletedWithCascade: sessions.deletedWithCascade,
+  createdAt: sessions.createdAt,
+  updatedAt: sessions.updatedAt,
+} as const;
+
+export async function listSessionsByWorkspace(
+  tenant: string,
+  options?: { limit?: number; offset?: number },
+): Promise<Session[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const baseQuery = tx
+      .select(sessionSelectColumns)
+      .from(sessions)
+      .where(and(eq(sessions.workspaceSubdomain, subdomain), isNull(sessions.deletedAt)))
+      .orderBy(sessions.startDate);
+    if (options?.offset) {
+      baseQuery.offset(Math.max(0, options.offset));
+    }
+    // Always bounded: callers that omitted a limit used to run an unbounded dump (background import
+    // name resolution, legacy `loadSessions`). Default to the same ceiling the explicit path uses.
+    const limit = options?.limit ? Math.min(Math.max(1, options.limit), 5000) : 5000;
+    const rows = await baseQuery.limit(limit);
+    return attachSessionChildrenTx(tx, subdomain, await hydrateSessionsList(tx, subdomain, rows));
+  });
+}
+
+export async function findSessionById(tenant: string, id: string): Promise<Session | null> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return null;
+    let rows: SessionReadRow[];
+    if (
+      process.env.MMS_USE_PREPARED_STATEMENTS !== "false" &&
+      typeof (tx as { execute?: unknown }).execute === "function"
+    ) {
+      try {
+        const stmt = getPreparedSessionById(tx);
+        rows = await stmt.execute({ subdomain, id });
+      } catch {
+        rows = await tx
+          .select(sessionSelectColumns)
+          .from(sessions)
+          .where(and(eq(sessions.workspaceSubdomain, subdomain), eq(sessions.id, id)));
+      }
+    } else {
+      rows = await tx
+        .select(sessionSelectColumns)
+        .from(sessions)
+        .where(and(eq(sessions.workspaceSubdomain, subdomain), eq(sessions.id, id)));
+    }
+    const row = rows[0];
+    if (!row) return null;
+    const [result] = await attachSessionChildrenTx(
+      tx,
+      subdomain,
+      await hydrateSessionsList(tx, subdomain, rows),
+    );
+    return result ?? null;
+  });
+}
+
+/**
+ * `findSessionById` on the PRIMARY. Rollover control flow must never depend on a lagging replica:
+ * a retry that cannot see the just-written target would create a second session (review finding R2).
+ */
+export async function findSessionByIdPrimary(tenant: string, id: string): Promise<Session | null> {
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenant(subdomain, async (tx) => {
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return null;
+    const rows = await tx
+      .select(sessionSelectColumns)
+      .from(sessions)
+      .where(and(eq(sessions.workspaceSubdomain, subdomain), eq(sessions.id, id)));
+    if (rows.length === 0) return null;
+    const [result] = await attachSessionChildrenTx(
+      tx,
+      subdomain,
+      await hydrateSessionsList(tx, subdomain, rows),
+    );
+    return result ?? null;
+  });
+}
+
+export async function findSessionsByIds(tenant: string, ids: string[]): Promise<Session[]> {
+  if (ids.length === 0) return [];
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return [];
+    const rows = await tx
+      .select(sessionSelectColumns)
+      .from(sessions)
+      .where(and(eq(sessions.workspaceSubdomain, subdomain), inArray(sessions.id, ids)));
+    return attachSessionChildrenTx(tx, subdomain, await hydrateSessionsList(tx, subdomain, rows));
+  });
+}
+
+/** Stored lifecycle status per id for a bulk transition (one query, no per-id transaction). */
+export async function findSessionStatusesByIds(
+  tenant: string,
+  ids: string[],
+): Promise<Map<string, string>> {
+  if (ids.length === 0) return new Map();
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select({ id: sessions.id, status: sessions.status })
+      .from(sessions)
+      .where(and(eq(sessions.workspaceSubdomain, subdomain), inArray(sessions.id, ids)));
+    return new Map(rows.map((row: any) => [row.id, row.status]));
+  });
+}
+
+export interface OverlappingSessionSummary {
+  id: string;
+  name: string;
+  startDate: string | null;
+  endDate: string | null;
+  status: string;
+}
+
+/**
+ * Live sessions of the tenant whose inclusive range intersects `[startDate, endDate]`.
+ * Backs the friendly 409 in the use-cases; the authoritative guarantee is the
+ * `sessions_no_overlap_excl` exclusion constraint (migration 0206).
+ */
+export async function findOverlappingSessions(
+  tenant: string,
+  input: { startDate?: string | null; endDate?: string | null; excludeId?: string },
+): Promise<OverlappingSessionSummary[]> {
+  const subdomain = tenant.trim().toLowerCase();
+  const start = toDbDate(input.startDate);
+  const end = toDbDate(input.endDate);
+  if (!start || !end) return [];
+  return withTenantRead(subdomain, async (tx) => {
+    const conditions = [
+      eq(sessions.workspaceSubdomain, subdomain),
+      isNull(sessions.deletedAt),
+      eq(sessions.overlapExempt, false),
+      inArray(sessions.status, ["draft", "open", "in_progress"]),
+      isNotNull(sessions.startDate),
+      isNotNull(sessions.endDate),
+      sql`daterange(${sessions.startDate}, ${sessions.endDate}, '[]') && daterange(${start}::date, ${end}::date, '[]')`,
+    ];
+    if (input.excludeId) conditions.push(ne(sessions.id, input.excludeId));
+    return tx
+      .select({
+        id: sessions.id,
+        name: sessions.name,
+        startDate: sessions.startDate,
+        endDate: sessions.endDate,
+        status: sessions.status,
+      })
+      .from(sessions)
+      .where(and(...conditions));
+  });
+}
+
+export async function findSessionsSummaryByIds(tenant: string, ids: string[]): Promise<Session[]> {
+  if (ids.length === 0) return [];
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select(sessionSelectColumns)
+      .from(sessions)
+      .where(and(eq(sessions.workspaceSubdomain, subdomain), inArray(sessions.id, ids)));
+    return attachSessionChildrenTx(
+      tx,
+      subdomain,
+      await hydrateSessionsListSummary(tx, subdomain, rows),
+    );
+  });
+}
+
+/**
+ * Work-list summary hydration: session metadata, faculty and per-class counts, working days.
+ * Unlike `findSessionsSummaryByIds` this skips `attachClassSectionsTx`, keeping the list payload
+ * small for `view=summary` (sections are only needed by the detail/edit surfaces).
+ */
+export async function findSessionsPageSummariesByIds(
+  tenant: string,
+  ids: string[],
+): Promise<Session[]> {
+  if (ids.length === 0) return [];
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    const rows = await tx
+      .select(sessionSelectColumns)
+      .from(sessions)
+      .where(and(eq(sessions.workspaceSubdomain, subdomain), inArray(sessions.id, ids)));
+    const hydrated = await hydrateSessionsListSummary(tx, subdomain, rows);
+    return attachSessionWorkingDaysTx(tx, subdomain, hydrated);
+  });
+}
+
+/** Session classes by id (archived when their session is archived). Session ids are not accepted. */
+export async function findClassesByIds(
+  tenant: string,
+  ids: string[],
+): Promise<{ id: string; deletedAt?: unknown }[]> {
+  if (ids.length === 0) return [];
+  const subdomain = tenant.trim().toLowerCase();
+  return withTenantRead(subdomain, async (tx) => {
+    if (!tx || typeof (tx as { select?: unknown }).select !== "function") return [];
+    return tx
+      .select({ id: sessionClasses.id, deletedAt: sessions.deletedAt })
+      .from(sessionClasses)
+      .innerJoin(
+        sessions,
+        and(
+          eq(sessions.workspaceSubdomain, sessionClasses.workspaceSubdomain),
+          eq(sessions.id, sessionClasses.sessionId),
+        ),
+      )
+      .where(
+        and(eq(sessionClasses.workspaceSubdomain, subdomain), inArray(sessionClasses.id, ids)),
+      );
+  });
+}
+
+export async function findClassById(
+  tenant: string,
+  id: string,
+): Promise<{ id: string; deletedAt?: unknown } | null> {
+  const [result] = await findClassesByIds(tenant, [id]);
+  return result ?? null;
+}
+
+/**
+ * True when the session still has non-archived enrollments. Enrollments carry
+ * their fee without a currency (it is implied by the session at billing time),
+ * so changing the session currency would reinterpret every enrolled fee.
+ */
+export async function sessionHasEnrollments(tenant: string, sessionId: string): Promise<boolean> {
+  const subdomain = tenant.trim().toLowerCase();
+  const cleanId = sessionId?.trim();
+  if (!cleanId) return false;
+  return withTenantRead(subdomain, async (tx) => {
+    const [row] = await tx
+      .select({ id: enrollments.id })
+      .from(enrollments)
+      .where(
+        and(
+          eq(enrollments.workspaceSubdomain, subdomain),
+          eq(enrollments.sessionId, cleanId),
+          isNull(enrollments.deletedAt),
+        ),
+      )
+      .limit(1);
+    return Boolean(row);
+  });
+}

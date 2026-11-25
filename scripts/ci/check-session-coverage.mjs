@@ -6,7 +6,7 @@
  * enforces a scoped floor for the Sessions storage/use-case/route slice. Floors are the measured
  * baseline minus a two-point margin and may only be raised (see run --ratchet to print values).
  *
- * Usage: node scripts/ci/check-session-coverage.mjs --coverage apps/backend/coverage-sessions-db
+ * Usage: node scripts/ci/check-session-coverage.mjs --coverage apps/api/coverage-sessions-db
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -18,7 +18,7 @@ function argValue(flag) {
   return index >= 0 ? process.argv[index + 1] : undefined;
 }
 
-const coverageDir = argValue("--coverage") ?? "apps/backend/coverage-sessions-db";
+const coverageDir = argValue("--coverage") ?? "apps/api/coverage-sessions-db";
 const jsonPath = path.join(coverageDir, "coverage-final.json");
 if (!fs.existsSync(jsonPath)) {
   console.error(`✗ Sessions coverage report not found: ${jsonPath}`);

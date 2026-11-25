@@ -43,12 +43,12 @@ Backup archives in MMS are encrypted client-side using industry-standard authent
 
 ## 2. Safety Pre-Wipe Validation Protocol
 
-Before any database wipe or restore sequence begins, the system executes four mandatory safety gates (`apps/backend/src/services/dbSyncRestoreService.ts`):
+Before any database wipe or restore sequence begins, the system executes four mandatory safety gates (`apps/api/src/services/dbSyncRestoreService.ts`):
 
 1. **Safety Backup:** The server generates and persists a temporary snapshot (`safety_backup_<timestamp>.enc`) of current workspace state.
 2. **Envelope Schema Validation:** `backupValidationUtils.ts` validates that the uploaded file matches `mms-backup-envelope-v1` schema and passes checksum integrity.
 3. **Decryption Probe:** A test decrypt verifies the supplied passphrase decrypts the payload without GCM tag mismatch before any database tables are modified.
-4. **Restore Mutex Lock:** `apps/backend/src/lib/restoreLock.ts` acquires an exclusive lock preventing concurrent tenant operations or API requests during the restore sequence.
+4. **Restore Mutex Lock:** `apps/api/src/lib/restoreLock.ts` acquires an exclusive lock preventing concurrent tenant operations or API requests during the restore sequence.
 
 ---
 
@@ -67,5 +67,5 @@ Before any database wipe or restore sequence begins, the system executes four ma
 pnpm --filter @mms/contracts test packages/contracts/src/backup/backupCrypto.test.ts
 
 # Test backend restore service
-pnpm --filter mms-backend test apps/backend/src/__tests__/backupAssetService.test.ts
+pnpm --filter mms-api test apps/api/src/__tests__/backupAssetService.test.ts
 ```

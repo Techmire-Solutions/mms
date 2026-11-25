@@ -38,13 +38,13 @@ The Task module was introduced in migration `0134_organization_positions_and_tas
 | Dimension | Severity | Issue | Impact | Primary File |
 | :--- | :--- | :--- | :--- | :--- |
 | **Indexes & Query Paths** | **HIGH** | Missing composite index on `(workspace_subdomain, created_at DESC)` and `(workspace_subdomain, status, due_at)` | Every default work-list query triggers a table scan and memory/disk sort (`Sort` / `Top-N Sort`). | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L50-L69) |
-| **Indexes & Query Paths** | **HIGH** | In-memory ID array passing (`inArray(tasks.id, ids)`) during assignee filtering | Loads unbounded task IDs into Node.js heap memory, resulting in oversized SQL `IN (...)` parameters. | [`tasksRepository.ts`](../apps/backend/src/db/repositories/tasksRepository.ts#L104-L123) |
+| **Indexes & Query Paths** | **HIGH** | In-memory ID array passing (`inArray(tasks.id, ids)`) during assignee filtering | Loads unbounded task IDs into Node.js heap memory, resulting in oversized SQL `IN (...)` parameters. | [`tasksRepository.ts`](../apps/api/src/db/repositories/tasksRepository.ts#L104-L123) |
 | **Indexes & Query Paths** | **MEDIUM** | Missing polymorphic columns (`entity_type`, `entity_id`) or junction table | Tasks cannot be associated with Students, Admissions, or Finance records. | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L23-L46) |
 | **Hierarchy & Ordering** | **HIGH** | No `sort_order` or fractional rank (LexoRank) column for Kanban board positioning | Kanban board columns cannot maintain custom user ordering without `O(N)` updates. | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L23-L46) |
 | **Hierarchy & Ordering** | **MEDIUM** | No lightweight checklist table; missing task dependency tracking (`task_dependencies`) | Simple checklist items bloat the main tasks table; blocker relationships cannot be queried. | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L23-L46) |
-| **Concurrency & Integrity** | **CRITICAL** | Global Advisory Lock (`lockFacultyHierarchy`) on all task mutations | Serializes all task edits and status changes tenant-wide, blocking unrelated concurrent users. | [`tasksWriteRepository.ts`](../apps/backend/src/db/repositories/tasksWriteRepository.ts#L32) |
-| **Concurrency & Integrity** | **HIGH** | Opt-in Timestamp OCC instead of mandatory integer versioning (`occ_version`) | Bypassed when header is omitted; microsecond timestamp truncation causes lost updates. | [`tasksWriteRepository.ts`](../apps/backend/src/db/repositories/tasksWriteRepository.ts#L140-L161) |
-| **Concurrency & Integrity** | **HIGH** | Soft delete does not cascade to `task_assignees` | Deleting a task leaves orphaned active assignee rows with `deleted_at IS NULL`. | [`tasksTrashRepository.ts`](../apps/backend/src/db/repositories/tasksTrashRepository.ts#L30-L35) |
+| **Concurrency & Integrity** | **CRITICAL** | Global Advisory Lock (`lockFacultyHierarchy`) on all task mutations | Serializes all task edits and status changes tenant-wide, blocking unrelated concurrent users. | [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L32) |
+| **Concurrency & Integrity** | **HIGH** | Opt-in Timestamp OCC instead of mandatory integer versioning (`occ_version`) | Bypassed when header is omitted; microsecond timestamp truncation causes lost updates. | [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L140-L161) |
+| **Concurrency & Integrity** | **HIGH** | Soft delete does not cascade to `task_assignees` | Deleting a task leaves orphaned active assignee rows with `deleted_at IS NULL`. | [`tasksTrashRepository.ts`](../apps/api/src/db/repositories/tasksTrashRepository.ts#L30-L35) |
 | **Drizzle Anti-Patterns** | **MEDIUM** | Omission of Drizzle ORM Relations definitions | Missing `relations(tasks, ...)` forces verbose manual joins and prevents Relational Queries. | [`schema/relations/`](../packages/db/src/schema/relations) |
 
 ---
@@ -56,7 +56,7 @@ The Task module was introduced in migration `0134_organization_positions_and_tas
 The primary view accessed by staff and administrators is "My Tasks" (`useTasksWorkTabFilters.ts`), querying tasks assigned to the current user with open statuses (`todo`, `in_progress`, `in_review`, `blocked`), ordered chronologically.
 
 #### The In-Memory Subquery Anti-Pattern
-In [`tasksRepository.ts`](../apps/backend/src/db/repositories/tasksRepository.ts#L104-L123):
+In [`tasksRepository.ts`](../apps/api/src/db/repositories/tasksRepository.ts#L104-L123):
 ```ts
 if (query.assignedToFacultyId || query.assignedToUserId) {
   const assigneeConditions = [
@@ -178,7 +178,7 @@ foreignKey({
 ```
 
 #### Hierarchy Cycle Detection
-In [`tasksWriteRepository.ts`](../apps/backend/src/db/repositories/tasksWriteRepository.ts#L34-L52), `validateParent` uses a recursive CTE:
+In [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L34-L52), `validateParent` uses a recursive CTE:
 ```sql
 WITH RECURSIVE chain AS (
   SELECT id, parent_task_id AS parent_id, ARRAY[id] AS path, FALSE AS cycle, 0 AS depth
@@ -283,7 +283,7 @@ CREATE INDEX tasks_kanban_idx ON tasks (workspace_subdomain, status, kanban_posi
 
 ### 3.1 Advisory Lock Concurrency Bottleneck
 
-In [`tasksWriteRepository.ts`](../apps/backend/src/db/repositories/tasksWriteRepository.ts#L32), [`tasksTrashRepository.ts`](../apps/backend/src/db/repositories/tasksTrashRepository.ts#L16), and [`tasksBulkRepository.ts`](../apps/backend/src/db/repositories/tasksBulkRepository.ts#L44):
+In [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L32), [`tasksTrashRepository.ts`](../apps/api/src/db/repositories/tasksTrashRepository.ts#L16), and [`tasksBulkRepository.ts`](../apps/api/src/db/repositories/tasksBulkRepository.ts#L44):
 ```ts
 await lockFacultyHierarchy(tx, tenant);
 ```
@@ -304,7 +304,7 @@ Remove `lockFacultyHierarchy` from normal task CRUD operations. If delegation va
 
 ### 3.2 Optimistic Concurrency Control (OCC) Flaws
 
-Current OCC implementation in [`tasksWriteRepository.ts`](../apps/backend/src/db/repositories/tasksWriteRepository.ts#L112-L161):
+Current OCC implementation in [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L112-L161):
 ```ts
 const versionToken = expectedUpdatedAt?.trim();
 const expectedDate = versionToken ? new Date(versionToken) : null;
@@ -351,7 +351,7 @@ if (updatedRows.length === 0 && expectedDate) {
 ### 3.3 Soft-Delete Cascade Gaps & Assignee Thrashing
 
 #### Gap 1: Dangling Active Assignees on Task Deletion
-In [`tasksTrashRepository.ts`](../apps/backend/src/db/repositories/tasksTrashRepository.ts#L30-L35):
+In [`tasksTrashRepository.ts`](../apps/api/src/db/repositories/tasksTrashRepository.ts#L30-L35):
 ```ts
 const [changed] = await tx
   .update(tasks)
@@ -370,7 +370,7 @@ When a task is soft-deleted, its `task_assignees` rows are **not touched**.
 - As a consequence, `task_assignees` retains active rows (`deleted_at IS NULL`) pointing to a soft-deleted task. Queries aggregating user assignments or metrics must explicitly filter out tasks where `tasks.deletedAt IS NOT NULL`.
 
 #### Gap 2: Destructive Assignee Synchronization
-In [`tasksAssigneesRepository.ts`](../apps/backend/src/db/repositories/tasksAssigneesRepository.ts#L101-L123):
+In [`tasksAssigneesRepository.ts`](../apps/api/src/db/repositories/tasksAssigneesRepository.ts#L101-L123):
 ```ts
 export async function syncTaskAssignees(tx, subdomain, taskId, assignees, actorUserId) {
   await tx
@@ -555,7 +555,7 @@ END $$;
    - Update [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts) to declare the new columns and composite indexes in Drizzle syntax.
    - Create `packages/db/src/schema/relations/taskRelations.ts` and export it in `relations/index.ts`.
 2. **Repository Query Optimization**:
-   - In [`tasksRepository.ts`](../apps/backend/src/db/repositories/tasksRepository.ts), replace the 2-step `inArray(tasks.id, ids)` assignee fetch with a single SQL `EXISTS` subquery.
-   - In [`tasksWriteRepository.ts`](../apps/backend/src/db/repositories/tasksWriteRepository.ts), remove `lockFacultyHierarchy` from `createTask` and `updateTask` to eliminate tenant-wide transaction serialization.
+   - In [`tasksRepository.ts`](../apps/api/src/db/repositories/tasksRepository.ts), replace the 2-step `inArray(tasks.id, ids)` assignee fetch with a single SQL `EXISTS` subquery.
+   - In [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts), remove `lockFacultyHierarchy` from `createTask` and `updateTask` to eliminate tenant-wide transaction serialization.
    - Implement integer version OCC (`WHERE version = expectedVersion`, incrementing `version = version + 1`).
-   - In [`tasksAssigneesRepository.ts`](../apps/backend/src/db/repositories/tasksAssigneesRepository.ts), replace the delete-all/re-insert pattern with set-diff reconciliation to protect historical assignment timestamps and prevent table bloat.
+   - In [`tasksAssigneesRepository.ts`](../apps/api/src/db/repositories/tasksAssigneesRepository.ts), replace the delete-all/re-insert pattern with set-diff reconciliation to protect historical assignment timestamps and prevent table bloat.

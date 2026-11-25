@@ -16,8 +16,8 @@ marks.
 controller, report card, certificate, marks row), the eligibility SQL and gate, the contract and
 legacy route factories, the module-access and RBAC maps, and the bulk/soft-delete routers. Verified
 against PostgreSQL with two real-DB suites
-([`examinationIntegrityDb`](../apps/backend/src/__tests__/db-integration/examinationIntegrityDb.integration.test.ts),
-[`examinationSubsystemsDb`](../apps/backend/src/__tests__/db-integration/examinationSubsystemsDb.integration.test.ts)).
+([`examinationIntegrityDb`](../apps/api/src/__tests__/db-integration/examinationIntegrityDb.integration.test.ts),
+[`examinationSubsystemsDb`](../apps/api/src/__tests__/db-integration/examinationSubsystemsDb.integration.test.ts)).
 
 **Overall finding:** the individual screens were each internally consistent, but **the same result
 was scored four different ways**, eligibility used **three different roster definitions**, a re-sit

@@ -4,7 +4,7 @@ Defines platform apex administrative capabilities, distinct from tenant workspac
 
 ## 1. Platform Permission Keys
 
-Defined in `@mms/contracts` and configured in `apps/frontend/src/platform/features/users/lib/platformPermissionConfig.ts`:
+Defined in `@mms/contracts` and configured in `apps/platform-web/src/platform/features/users/lib/platformPermissionConfig.ts`:
 
 | Permission Key | Scope | Typical Admin Action |
 |---|---|---|
@@ -30,7 +30,7 @@ if (can('workspaces')) {
 
 ## 3. Backend Fastify Route Gating
 
-In platform route modules (`apps/backend/src/routes/platform/`):
+In platform route modules (`apps/api/src/routes/platform/`):
 ```typescript
 import { authenticatePlatform } from '../../middleware/authenticatePlatform.js';
 

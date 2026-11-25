@@ -1,6 +1,6 @@
 ---
 name: mms-data-import
-description: Governs bulk CSV and tabular data import workflows — file ingestion, column mapping, dry-run validation, batch upserts, and BullMQ worker execution. Use when adding or modifying CSV import dialogs, module POST /import endpoints, or batch data onboarding pipelines. Do NOT use for database-level wipe-restore backups (use mms-backup-restore), single-record form modal creation (use mms-form-architecture), or analytical reports export (use mms-reports-export).
+description: Governs bulk CSV/tabular import (ingestion, mapping, dry-run, batch upserts, worker). Use when CSV dialogs, /import endpoints, batch onboarding. Do NOT use for backup wipe-restore (use mms-backup-restore), form creation (use mms-form-architecture), or report export (use mms-reports-export).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -20,7 +20,7 @@ metadata:
 
 ## 1. Domain Invariants & Standards
 
-- **Standard Route Helper**: Every module POST `/import` route must be registered using `registerModuleCsvImportRoutes` (`apps/backend/src/lib/registerModuleCsvImportRoutes.ts`), which enforces body limits, tenant isolation, idempotency keys, and audit event capture.
+- **Standard Route Helper**: Every module POST `/import` route must be registered using `registerModuleCsvImportRoutes` (`apps/api/src/lib/registerModuleCsvImportRoutes.ts`), which enforces body limits, tenant isolation, idempotency keys, and audit event capture.
 - **Transfer Schema SSOT**: Define each importable module's columns once via `createModuleTransferSchema` (`packages/contracts/src/dataTransfer/core/moduleTransferSchema.ts`, registered through `moduleTransferRegistry`). The single `fields` array derives the import mappings, template columns, and export columns together, enforcing the field whitelist (system metadata keys stripped) and 1:1 header symmetry with the exporter — the same SSOT the export side consumes (`mms-reports.md` §3).
 - **Dry-Run Validation**: Import dialogs must provide a dry-run preview stage verifying required headers, parsing types, and highlighting row errors before final queuing.
 - **Idempotency & Queuing**: Large imports (> 50 rows) are dispatched as asynchronous BullMQ background jobs with status tracking and artifact error logs (`mms-background-jobs`).
@@ -34,10 +34,10 @@ metadata:
 | Concern | Path |
 |---------|------|
 | Transfer Schema SSOT | `packages/contracts/src/dataTransfer/core/moduleTransferSchema.ts` |
-| Backend Import Helper | `apps/backend/src/lib/registerModuleCsvImportRoutes.ts` |
-| Import Integration Tests | `apps/backend/src/__tests__/moduleCsvImport.test.ts` |
-| Background Worker Service | `apps/backend/src/services/backgroundJobWorkerService.ts` |
-| Users Import Dialog | `apps/frontend/src/tenant/features/users/components/UsersCsvImportDialog.tsx` |
+| Backend Import Helper | `apps/api/src/lib/registerModuleCsvImportRoutes.ts` |
+| Import Integration Tests | `apps/api/src/__tests__/moduleCsvImport.test.ts` |
+| Background Worker Service | `apps/api/src/services/backgroundJobWorkerService.ts` |
+| Users Import Dialog | `apps/tenant-web/src/tenant/features/users/components/UsersCsvImportDialog.tsx` |
 
 ## 3. Verification Checklist
 
@@ -47,7 +47,7 @@ metadata:
 - [ ] Idempotency key supported to prevent duplicate queue submissions
 - [ ] RFC 8785 audit event logged on import job dispatch
 - [ ] Client import dialog provides downloadable CSV template and column mapping
-- [ ] Verify: pnpm --filter mms-backend test src/__tests__/moduleCsvImport.test.ts
+- [ ] Verify: pnpm --filter mms-api test src/__tests__/moduleCsvImport.test.ts
 - [ ] Verify: pnpm typecheck
 ```
 

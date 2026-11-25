@@ -1,0 +1,119 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { DocumentTemplate, User } from "@mms/contracts";
+
+const mocks = vi.hoisted(() => ({
+  withTenant: vi.fn(async (_tenant: string, cb: () => Promise<unknown>) => cb()),
+  withTenantRead: vi.fn(async (_tenant: string, cb: () => Promise<unknown>) => cb()),
+  getTemplate: vi.fn(),
+  saveTemplate: vi.fn(),
+  deleteTemplate: vi.fn(),
+  broadcastCollection: vi.fn(async () => undefined),
+  broadcastTenantUpdate: vi.fn(),
+  recordModernAuditEvent: vi.fn(async () => undefined),
+}));
+
+vi.mock("@mms/db/context", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/db/context")>()),
+
+  withTenant: mocks.withTenant,
+  withTenantRead: mocks.withTenantRead,
+}));
+
+vi.mock("../repository/documentsRepositoryAdapter.js", () => ({
+  documentsRepositoryAdapter: {
+    getTemplate: mocks.getTemplate,
+    saveTemplate: mocks.saveTemplate,
+    deleteTemplate: mocks.deleteTemplate,
+    listTemplates: vi.fn(),
+  },
+}));
+
+vi.mock("@mms/be-core/realtime", () => ({
+  broadcastCollection: mocks.broadcastCollection,
+  broadcastTenantUpdate: mocks.broadcastTenantUpdate,
+}));
+
+vi.mock("@mms/be-core/audit", () => ({
+  recordModernAuditEvent: mocks.recordModernAuditEvent,
+}));
+
+import {
+  deleteDocumentTemplateUseCase,
+  getDocumentTemplateUseCase,
+  saveDocumentTemplateUseCase,
+} from "../use-cases/documentTemplatesUseCases.js";
+
+const user = { id: "u-1", role: "admin" } as User;
+const template: DocumentTemplate = { pageSize: "A6", elements: [] };
+
+describe("document template use cases", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.getTemplate.mockResolvedValue({
+      template,
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    mocks.saveTemplate.mockResolvedValue({
+      template,
+      updatedAt: new Date("2026-01-01T00:00:00.000Z"),
+    });
+    mocks.deleteTemplate.mockResolvedValue(true);
+  });
+
+  it("reads inside a tenant-scoped transaction", async () => {
+    await getDocumentTemplateUseCase("demo", "invoice");
+    expect(mocks.withTenantRead).toHaveBeenCalledWith("demo", expect.any(Function));
+    expect(mocks.getTemplate).toHaveBeenCalledWith("demo", "invoice");
+  });
+
+  it("writes and audits inside one tenant transaction, then broadcasts", async () => {
+    const order: string[] = [];
+    mocks.withTenant.mockImplementationOnce(async (_tenant: string, cb: () => Promise<unknown>) => {
+      order.push("tx:start");
+      const result = await cb();
+      order.push("tx:commit");
+      return result;
+    });
+    mocks.saveTemplate.mockImplementationOnce(async () => {
+      order.push("save");
+      return { template, updatedAt: new Date("2026-01-01T00:00:00.000Z") };
+    });
+    mocks.recordModernAuditEvent.mockImplementationOnce(async () => {
+      order.push("audit");
+    });
+    mocks.broadcastCollection.mockImplementationOnce(async () => {
+      order.push("broadcast");
+    });
+
+    await saveDocumentTemplateUseCase("demo", "invoice", template, user, null);
+
+    expect(mocks.withTenant).toHaveBeenCalledWith("demo", expect.any(Function));
+    expect(mocks.saveTemplate).toHaveBeenCalledWith("demo", "invoice", template, null);
+    expect(order).toEqual(["tx:start", "save", "audit", "tx:commit", "broadcast"]);
+  });
+
+  it("rejects a stale save with 409 and writes no audit or broadcast", async () => {
+    mocks.saveTemplate.mockResolvedValueOnce(null);
+    const expected = new Date("2026-01-01T00:00:00.000Z").toISOString();
+
+    await expect(
+      saveDocumentTemplateUseCase("demo", "invoice", template, user, expected),
+    ).rejects.toMatchObject({ statusCode: 409, type: "conflict" });
+
+    expect(mocks.saveTemplate).toHaveBeenCalledWith(
+      "demo",
+      "invoice",
+      template,
+      new Date(expected),
+    );
+    expect(mocks.recordModernAuditEvent).not.toHaveBeenCalled();
+    expect(mocks.broadcastCollection).not.toHaveBeenCalled();
+  });
+
+  it("does not append an audit row or broadcast when the delete removes nothing", async () => {
+    mocks.deleteTemplate.mockResolvedValueOnce(false);
+    await expect(deleteDocumentTemplateUseCase("demo", "invoice", user)).resolves.toBe(false);
+    expect(mocks.recordModernAuditEvent).not.toHaveBeenCalled();
+    expect(mocks.broadcastCollection).not.toHaveBeenCalled();
+  });
+});

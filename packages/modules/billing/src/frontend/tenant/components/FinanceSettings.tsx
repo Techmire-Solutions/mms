@@ -1,0 +1,66 @@
+import React, { useEffect } from "react";
+import { DollarSign } from "lucide-react";
+import { SectionCard } from "@mms/ui";
+import { ModuleSetupSaveFooter } from "@mms/fe-core/components/ModuleSetupSaveFooter";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
+import { FinancePreferencesSection } from "./FinancePreferencesSection";
+import { FinanceInvoiceNumberingSection } from "./FinanceInvoiceNumberingSection";
+import { FinanceFeeStructuresSection } from "./FinanceFeeStructuresSection";
+import { useFinanceSetupPanelState } from "../hooks/useFinanceSetupPanelState";
+import { ModuleSetupContent } from "@mms/ui/app/ModuleSetupContent";
+
+export interface FinanceSettingsProps {
+  /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */
+  onPrefsDirtyChange?: (isDirty: boolean) => void;
+}
+
+export const FinanceSettings = function FinanceSettings({
+  onPrefsDirtyChange,
+}: FinanceSettingsProps = {}): React.JSX.Element {
+  const { t } = useTranslation();
+  const { settings, settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useFinanceSetupPanelState();
+
+  useEffect(() => {
+    onPrefsDirtyChange?.(isPrefsDirty);
+  }, [isPrefsDirty, onPrefsDirtyChange]);
+
+  const unsavedWarning = isPrefsDirty ? t("finance.setup.unsavedPreferencesWarning") : undefined;
+
+  return (
+    <ModuleSetupContent>
+      <SectionCard
+        accentColor="primary"
+        icon={DollarSign}
+        title={t("finance.settings.title")}
+        className={SETUP_SECTION_CARD_CLASS}
+      >
+        <FinancePreferencesSection settings={settings} settingsDraft={settingsDraft} upd={upd} />
+      </SectionCard>
+
+      <FinanceInvoiceNumberingSection
+        settingsDraft={settingsDraft}
+        upd={upd}
+        isPrefsDirty={isPrefsDirty}
+        saving={saving}
+        saved={saved}
+        onSave={handleSave}
+      />
+
+      <FinanceFeeStructuresSection />
+
+      <ModuleSetupSaveFooter
+        dirty={isPrefsDirty}
+        saving={saving}
+        saved={saved}
+        unsavedWarning={unsavedWarning}
+        saveLabel={t("common.save")}
+        savedLabel={t("settings.savedBadge")}
+        onSave={handleSave}
+      />
+    </ModuleSetupContent>
+  );
+};
+
+export default FinanceSettings;

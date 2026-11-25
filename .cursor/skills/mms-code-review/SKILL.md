@@ -1,6 +1,6 @@
 ---
 name: mms-code-review
-description: Reviews a concrete change set (PR or local diff) against MMS rules before merge — severity triage, rule citations, and a merge/no-merge verdict. Use when a specific diff must be accepted or rejected before merge. Do NOT use for finding and fixing a security weakness (use mms-backend-security), for authoring a new module (use mms-module-page), or for running the browser test suites (use mms-testing-e2e).
+description: Reviews a concrete diff/PR against rules before merge (severity triage, citations, verdict). Use when a diff must be accepted/rejected. Do NOT use to fix a security weakness (use mms-backend-security), author a module (use mms-module-page), or run tests (use mms-testing-e2e).
 license: Proprietary
 metadata:
   owner: mms-platform
@@ -98,8 +98,8 @@ pnpm ci:local
 
 Module access verification (when touching routing, navigation, or endpoints):
 ```bash
-pnpm --filter mms-backend test src/__tests__/moduleAccessCoverage.test.ts
-pnpm --filter mms-frontend test src/lib/config/routeAccess.test.ts
+pnpm --filter mms-api test src/__tests__/moduleAccessCoverage.test.ts
+pnpm --filter mms-tenant-web test src/lib/config/routeAccess.test.ts
 ```
 
 E2E when touching auth/routing/onboard: `pnpm test:e2e` (critical path: `e2e/tests/platform-onboarding.spec.ts`)

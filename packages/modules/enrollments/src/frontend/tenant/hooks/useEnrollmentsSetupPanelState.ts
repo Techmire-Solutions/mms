@@ -1,0 +1,47 @@
+import { type EnrollmentsSettings } from "@mms/contracts";
+import { useEnrollmentConfig } from "../host/useEnrollmentConfig";
+import { useModuleSettingsEditor } from "../host/useModuleSettingsEditor";
+import { useEnrollmentsSetupSaveActions } from "./useEnrollmentsSetupSaveActions";
+
+export interface UseEnrollmentsSetupPanelStateReturn {
+  settingsDraft: EnrollmentsSettings;
+  upd: <K extends keyof EnrollmentsSettings>(field: K, value: EnrollmentsSettings[K]) => void;
+  saved: boolean;
+  setSaved: (value: boolean | ((curr: boolean) => boolean)) => void;
+  saving: boolean;
+  isPrefsDirty: boolean;
+  preferenceErrors: Partial<Record<keyof EnrollmentsSettings, string>>;
+  saveError: string | null;
+  isDirty: boolean;
+  handleSave: () => Promise<void>;
+}
+
+/** Enrollments Setup panel state — encapsulates config, editor draft, dirty check, and save actions. */
+export function useEnrollmentsSetupPanelState(): UseEnrollmentsSetupPanelStateReturn {
+  const config = useEnrollmentConfig();
+  const { settings, settingsDraft, saved, setSaved, upd, saveSettingsAsync } =
+    useModuleSettingsEditor<EnrollmentsSettings>({
+      config,
+    });
+
+  const { saving, isPrefsDirty, handleSave, preferenceErrors, saveError } =
+    useEnrollmentsSetupSaveActions({
+      settings,
+      settingsDraft,
+      setSaved,
+      saveSettingsAsync,
+    });
+
+  return {
+    settingsDraft,
+    upd,
+    saved,
+    setSaved,
+    saving,
+    isPrefsDirty,
+    preferenceErrors,
+    saveError,
+    isDirty: isPrefsDirty,
+    handleSave,
+  };
+}

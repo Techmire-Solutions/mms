@@ -95,8 +95,22 @@ export default defineConfig({
   projects: [
     {
       name: "chromium",
+      // Tenant console suites run against apps/tenant-web (:5173); platform specs
+      // run in their own project against apps/platform-web (:5174).
+      testIgnore: [...ignoredSpecs, ...A11Y_SWEEP_SPECS, "tests/platform/**"],
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: process.env.BASE_URL || "http://localhost:5173",
+      },
+    },
+    {
+      name: "platform",
+      testMatch: ["tests/platform/**/*.spec.ts"],
       testIgnore: [...ignoredSpecs, ...A11Y_SWEEP_SPECS],
-      use: { ...devices["Desktop Chrome"] },
+      use: {
+        ...devices["Desktop Chrome"],
+        baseURL: process.env.PLATFORM_BASE_URL || "http://localhost:5174",
+      },
     },
     {
       name: "a11y",
