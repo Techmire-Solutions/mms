@@ -1,19 +1,24 @@
 import React from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
-import { useTenant } from "@/lib/contexts/TenantContext";
+import { useTenant } from "@mms/fe-core/tenant";
 import { ROUTES, tenantNotFoundPath } from "@mms/fe-core/config/routes";
 import { TENANT_APP_ENTRIES } from "@/lib/routing/moduleRegistry";
 import { apexUrl } from "@mms/fe-core/config/tenantConfig";
 import ProtectedRoute from "@/tenant/components/guards/ProtectedRoute";
 import GuestRoute from "@/tenant/components/guards/GuestRoute";
-import ModuleAccessRoute from "@/tenant/components/guards/ModuleAccessRoute";
-import RequirePermission from "@/tenant/components/guards/RequirePermission";
-import SettingsSectionRedirect from "@/tenant/features/settings/components/SettingsSectionRedirect";
-import WorkspaceDisabledScreen from "@/tenant/components/WorkspaceDisabledScreen";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AuthPageFrame } from "@/components/entry";
 import { ErrorState } from "@mms/fe-core/components/ErrorState";
 import { useTranslation } from "@mms/fe-core/i18n";
+
+const ModuleAccessRoute = React.lazy(() => import("@/tenant/components/guards/ModuleAccessRoute"));
+const RequirePermission = React.lazy(() => import("@/tenant/components/guards/RequirePermission"));
+const SettingsSectionRedirect = React.lazy(
+  () => import("@/tenant/features/settings/components/SettingsSectionRedirect"),
+);
+const WorkspaceDisabledScreen = React.lazy(
+  () => import("@/tenant/components/WorkspaceDisabledScreen"),
+);
 
 const AppLayout = React.lazy(() => import("@/tenant/components/layout/AppLayout"));
 const PageNotFound = React.lazy(() => import("@/tenant/components/PageNotFound"));
@@ -85,10 +90,12 @@ function TenantBootGate({ children }: { children: React.ReactNode }): React.JSX.
       return <Navigate to={ROUTES.home} replace />;
     }
     return (
-      <WorkspaceDisabledScreen
-        madrasaName={workspace.madrasaName}
-        subdomain={workspace.subdomain}
-      />
+      <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
+        <WorkspaceDisabledScreen
+          madrasaName={workspace.madrasaName}
+          subdomain={workspace.subdomain}
+        />
+      </React.Suspense>
     );
   }
 
@@ -160,11 +167,11 @@ function TenantRoutesInner(): React.JSX.Element {
           <Route
             path={ROUTES.institutionSetup}
             element={
-              <RequirePermission permission="settings.branding.write">
-                <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
+              <React.Suspense fallback={<RouteStatusFallback fullScreen />}>
+                <RequirePermission permission="settings.branding.write">
                   <InstitutionSetup />
-                </React.Suspense>
-              </RequirePermission>
+                </RequirePermission>
+              </React.Suspense>
             }
           />
           <Route
@@ -174,7 +181,13 @@ function TenantRoutesInner(): React.JSX.Element {
               </React.Suspense>
             }
           >
-            <Route element={<ModuleAccessRoute />}>
+            <Route
+              element={
+                <React.Suspense fallback={<RouteStatusFallback />}>
+                  <ModuleAccessRoute />
+                </React.Suspense>
+              }
+            >
               {TENANT_APP_ROUTES.map(({ path, Component }) => (
                 <Route
                   key={path}
@@ -186,7 +199,14 @@ function TenantRoutesInner(): React.JSX.Element {
                   }
                 />
               ))}
-              <Route path={`${ROUTES.settings}/:section`} element={<SettingsSectionRedirect />} />
+              <Route
+                path={`${ROUTES.settings}/:section`}
+                element={
+                  <React.Suspense fallback={<RouteStatusFallback />}>
+                    <SettingsSectionRedirect />
+                  </React.Suspense>
+                }
+              />
             </Route>
           </Route>
         </Route>

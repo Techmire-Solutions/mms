@@ -1,5 +1,5 @@
 import { DEFAULT_BRANDING_SETTINGS } from "@mms/contracts";
-import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
+import { getBrandingChartPalette } from "@mms/fe-core/ui/brandingChartPalette";
 import { getScopedBrandingSettings } from "@mms/fe-core/lib/settingsPreviewStore";
 import { PRINT_COLORS, PRINT_NEUTRAL_PALETTE } from "@mms/fe-core/print/printTemplateStyles";
 

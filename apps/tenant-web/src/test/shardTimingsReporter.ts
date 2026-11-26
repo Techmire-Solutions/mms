@@ -10,7 +10,7 @@ import { SHARD_TIMINGS_FILE } from "./shardSequencer";
  *   gh run download <main CI run id> -p 'vitest-blob-report-*' -D /tmp/vitest-blobs
  *   mkdir -p apps/tenant-web/.vitest-reports
  *   find /tmp/vitest-blobs -name 'blob-*.json' -exec mv {} apps/tenant-web/.vitest-reports/ \;
- *   pnpm --filter mms-frontend test:shard-timings
+ *   pnpm --filter mms-tenant-web test:shard-timings
  */
 export default class ShardTimingsReporter implements Reporter {
   onTestRunEnd(testModules: ReadonlyArray<TestModule>): void {

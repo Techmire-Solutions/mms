@@ -31,7 +31,7 @@ import {
 import {
   STUDENTS_METRICS_QUERY_KEY,
   STUDENTS_QUERY_KEY,
-} from "@/tenant/hooks/collections/students";
+} from "@mms/mod-students/frontend/tenant/hooks/studentsQueryKeys";
 
 configureContactsCrossModuleQueryKeys({
   messagingContactsResolve: MESSAGING_CONTACTS_RESOLVE_QUERY_KEY,

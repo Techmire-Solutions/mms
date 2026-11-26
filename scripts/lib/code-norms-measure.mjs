@@ -6,6 +6,7 @@
 export const SCAN_DIRS = [
   // P7 split: apps/frontend retired into apps/tenant-web + apps/platform-web.
   "apps/tenant-web/src",
+  "apps/platform-web/src",
   "apps/api/src",
   "packages/contracts/src",
   "packages/db/src",

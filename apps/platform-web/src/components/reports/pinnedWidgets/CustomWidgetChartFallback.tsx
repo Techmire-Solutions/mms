@@ -5,7 +5,7 @@ import { SafeResponsiveContainer } from "@mms/ui/app/SafeResponsiveContainer";
 import { chartAxisTick } from "@mms/ui/app/ChartGrid";
 import { EmptyState } from "@mms/ui";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { resolveWidgetChartHex } from "@/lib/ui/brandingChartPalette";
+import { resolveWidgetChartHex } from "@mms/fe-core/ui/brandingChartPalette";
 import { computeWidgetChartData, type getWidgetCollections } from "@/lib/reports/widgetDataUtils";
 import { THEME_PALETTES, type CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
 

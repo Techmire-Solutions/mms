@@ -1,9 +1,0 @@
-{
-  "src/tenant/components/reports/moduleReportAdapters.ts": [
-    "question-bank",
-    "users",
-    "enrollments",
-    "accounting",
-    "obligations"
-  ]
-}

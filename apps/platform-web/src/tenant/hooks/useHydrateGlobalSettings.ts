@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@mms/fe-core/auth/AuthContext";
-import { useTenant } from "@/lib/contexts/TenantContext";
+import { useTenant } from "@mms/fe-core/tenant";
 import { isEntryPath } from "@mms/fe-core/config/routes";
 import { hydrateGlobalSettingsFromServer } from "@/lib/globalSettingsHydration";
 

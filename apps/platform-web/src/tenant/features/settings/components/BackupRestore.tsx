@@ -11,7 +11,7 @@ import { AuditIntegritySection } from "@/tenant/features/settings/components/bac
 import { SettingsPanel } from "@mms/fe-core/components/SettingsShell";
 import { useBackupRestore } from "@/tenant/features/settings/hooks/useBackupRestore";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
-import { useTenant } from "@/lib/contexts/TenantContext";
+import { useTenant } from "@mms/fe-core/tenant";
 import { useAuth } from "@mms/fe-core/auth/AuthContext";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { Button } from "@mms/ui";

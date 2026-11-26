@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <style>
+    :root {
+      --bg-start: #0d9488;
+      --bg-end: #0f766e;
+      --mark-color: #ffffff;
+      --spine-color: #115e59;
+      --border-color: rgba(13, 148, 136, 0.25);
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-start: #14b8a6;
+        --bg-end: #0d9488;
+        --mark-color: #ffffff;
+        --spine-color: #0f766e;
+        --border-color: rgba(255, 255, 255, 0.3);
+      }
+    }
+    .bg { fill: url(#bg-grad); stroke: var(--border-color); stroke-width: 1.5; }
+    .mark { fill: var(--mark-color); }
+    .spine { stroke: var(--spine-color); }
+  </style>
+  <defs>
+    <linearGradient id="bg-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="var(--bg-start)"/>
+      <stop offset="100%" stop-color="var(--bg-end)"/>
+    </linearGradient>
+  </defs>
+  <rect class="bg" x="2" y="2" width="44" height="44" rx="11" />
+  <path class="mark" d="M12 32.5c3.5-0.75 8.5-2.5 12-4 3.5 1.5 8.5 3.25 12 4V16c-3.5-0.75-8.5-2.5-12-4-3.5 1.5-8.5 3.25-12 4v16.5z" />
+  <path class="spine" d="M24 13.5v15" stroke-width="2.5" stroke-linecap="round" />
+</svg>

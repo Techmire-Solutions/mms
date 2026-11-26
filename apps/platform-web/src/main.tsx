@@ -6,10 +6,19 @@ import App from "@/App";
 import "@/index.css";
 import { getAppDomain } from "@mms/fe-core/config/tenantConfig";
 import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
-import { installChunkLoadRecovery } from "@/lib/chunkLoadRecovery";
+import { applyApexPlatformTheme } from "@mms/fe-core/lib/apexPlatformTheme";
+import {
+  getPlatformBrandingAsBrandingSettings,
+  hydratePlatformBranding,
+} from "@mms/fe-core/lib/platformBrandingStore";
+import { cleanupLegacyServiceWorkers, installChunkLoadRecovery } from "@/lib/chunkLoadRecovery";
+import { applyPlatformDocumentFavicon } from "@/lib/documentFavicon";
 import { runAfterFirstPaint } from "@/lib/runAfterFirstPaint";
 
 installChunkLoadRecovery();
+// Evict any legacy pre-split Service Worker and Workbox caches from the apex origin.
+void cleanupLegacyServiceWorkers();
+
 runAfterFirstPaint(() => {
   void import("@mms/fe-core/reporting/clientErrorReporting").then(({ initErrorReporting }) =>
     initErrorReporting(),
@@ -26,20 +35,14 @@ function withTimeout(promise: Promise<unknown>, ms: number): Promise<void> {
 
 async function applyBootChrome(): Promise<void> {
   void getAppDomain();
-  const [{ hydratePlatformBranding, getPlatformBrandingAsBrandingSettings }, favicon] =
-    await Promise.all([
-      import("@mms/fe-core/lib/platformBrandingStore"),
-      import("@/lib/documentFavicon"),
-    ]);
   await withTimeout(hydratePlatformBranding(), APEX_BRANDING_BOOT_TIMEOUT_MS);
   const branding = getPlatformBrandingAsBrandingSettings();
-  favicon.applyPlatformDocumentFavicon({
+  applyPlatformDocumentFavicon({
     faviconUrl: branding.faviconUrl,
     logoUrl: branding.logoUrl,
     productName: branding.madrasaName,
     primaryColor: branding.primaryColor,
   });
-  const { applyApexPlatformTheme } = await import("@mms/fe-core/lib/apexPlatformTheme");
   applyApexPlatformTheme("en");
 }
 
@@ -63,7 +66,12 @@ const app = (
   </ErrorBoundary>
 );
 async function bootstrap(): Promise<void> {
-  await applyBootChrome();
+  try {
+    await applyBootChrome();
+  } catch {
+    applyPlatformDocumentFavicon();
+    applyApexPlatformTheme("en");
+  }
   ReactDOM.createRoot(rootElement as HTMLElement).render(
     import.meta.env.DEV ? <React.StrictMode>{app}</React.StrictMode> : app,
   );

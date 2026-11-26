@@ -4,7 +4,20 @@ import { describe, expect, it, vi, afterEach } from "vitest";
 import { notify } from "@mms/fe-core/notify";
 import { useMessageComposerModel } from "./useMessageComposerModel";
 import { clearComposerDraft } from "./messageComposerDraft";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { createTestQueryClient } from "@/test/queryClientTestUtils";
 import type { MessageTemplate } from "@mms/contracts";
+
+// The composer's hook chain reads the authenticated user through fe-core; the platform app mounts
+// an AuthProvider, this unit test does not.
+vi.mock("@mms/fe-core/auth/AuthContext", () => ({
+  useAuth: () => ({
+    isAuthenticated: true,
+    authChecked: true,
+    user: { id: "u-1", email: "ops@example.com" },
+  }),
+  useOptionalAuth: () => null,
+}));
 
 vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({
@@ -12,11 +25,16 @@ vi.mock("@mms/fe-core/i18n", () => ({
   }),
 }));
 
-vi.mock("@/hooks/useMessaging", () => ({
-  useMessageTemplates: () => ({
-    templates: [],
-  }),
-}));
+vi.mock("@mms/mod-messaging/frontend/tenant/hooks/useMessaging", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("@mms/mod-messaging/frontend/tenant/hooks/useMessaging")>();
+  return {
+    ...actual,
+    useMessageTemplates: () => ({
+      templates: [],
+    }),
+  };
+});
 
 vi.mock("@mms/fe-core/notify", () => ({
   notify: {
@@ -27,7 +45,7 @@ vi.mock("@mms/fe-core/notify", () => ({
   },
 }));
 
-vi.mock("./useMessageComposerDispatch", () => ({
+vi.mock("@mms/mod-messaging/frontend/tenant/hooks/useMessageComposerDispatch", () => ({
   useMessageComposerDispatch: () => ({
     eligibleRecipients: [],
     skippedRecipients: [],
@@ -47,13 +65,15 @@ vi.mock("./useMessageComposerDispatch", () => ({
 
 function renderHookInDom<P, R>(hookFn: (props: P) => R, initialProps: P) {
   let result!: R;
+  const queryClient = createTestQueryClient();
   const container = document.createElement("div");
   document.body.appendChild(container);
   const root = createRoot(container);
 
   function Wrapper({ props }: { props: P }) {
+    // The hook chain uses TanStack Query (recipient lookups); the app mounts QueryClientProvider.
     result = hookFn(props);
-    return null;
+    return <QueryClientProvider client={queryClient}>{null}</QueryClientProvider>;
   }
 
   const rerenderFn = (nextProps: P) => {

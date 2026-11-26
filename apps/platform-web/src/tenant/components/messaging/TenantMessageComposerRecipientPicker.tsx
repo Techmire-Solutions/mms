@@ -9,7 +9,7 @@ import {
   type StandardMessagingRecipient,
 } from "@mms/contracts";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { useMessagingWorkRecipients } from "@/tenant/features/messaging/hooks/useMessagingWorkRecipients";
+import { useMessagingWorkRecipients } from "@mms/mod-messaging/frontend/tenant/hooks/useMessagingWorkRecipients";
 import { apiContract } from "@mms/fe-core/api/tsRest";
 import { ApiError } from "@mms/fe-core/api/client";
 import { notify } from "@mms/fe-core/notify";

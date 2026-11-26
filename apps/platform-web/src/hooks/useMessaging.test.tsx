@@ -45,6 +45,11 @@ vi.mock("@tanstack/react-query", () => ({
     invalidateQueries: vi.fn(),
   }),
   keepPreviousData: (previous: unknown) => previous,
+  // The hook now builds its mutations through TanStack; the mock must expose it.
+  useMutation: (options: { mutationFn?: () => unknown; onSuccess?: () => unknown }) => ({
+    mutate: vi.fn(),
+    mutateAsync: vi.fn(async () => options.mutationFn?.()),
+  }),
 }));
 
 vi.mock("@mms/fe-core/api/tsRest", () => ({

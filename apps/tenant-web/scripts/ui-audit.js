@@ -1,7 +1,7 @@
-// UI Audit Script for MMS Frontend
-// Scans apps/frontend/src/{routes,components/ui,tenant,platform}/**/*.{tsx,ts} for UI pattern violations
-// Outputs JSON report to apps/frontend/scripts/ui-audit-report.json
-// Usage: node apps/frontend/scripts/ui-audit.js
+// UI Audit Script for the Tenant Console
+// Scans apps/tenant-web/src/{tenant,platform,components}/**/*.{tsx,ts} for UI pattern violations
+// Outputs JSON report to apps/tenant-web/scripts/ui-audit-report.json
+// Usage: pnpm --filter mms-tenant-web audit:ui
 
 import fs from "fs";
 import path from "path";

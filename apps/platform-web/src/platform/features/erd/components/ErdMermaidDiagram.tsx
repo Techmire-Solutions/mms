@@ -89,13 +89,12 @@ export function ErdMermaidDiagram({ domain }: ErdMermaidDiagramProps): React.JSX
           theme: "base",
           themeVariables: {
             fontFamily: "ui-sans-serif, system-ui, sans-serif",
-            primaryColor: readThemeColor("--card", "#f8fafc"),
-            primaryTextColor: readThemeColor("--foreground", "#0f172a"),
-            primaryBorderColor: readThemeColor("--border", "#cbd5e1"),
-            // eslint-disable-next-line no-restricted-syntax -- CSS-var fallback for when the variable is unavailable (off-DOM)
-            lineColor: readThemeColor("--primary", "#047857"),
-            secondaryColor: readThemeColor("--muted", "#f1f5f9"),
-            tertiaryColor: readThemeColor("--background", "#ffffff"),
+            primaryColor: readThemeColor("--card", "hsl(210, 40%, 98%)"),
+            primaryTextColor: readThemeColor("--foreground", "hsl(222, 47%, 11%)"),
+            primaryBorderColor: readThemeColor("--border", "hsl(214, 32%, 91%)"),
+            lineColor: readThemeColor("--primary", "hsl(163, 94%, 24%)"),
+            secondaryColor: readThemeColor("--muted", "hsl(210, 40%, 96%)"),
+            tertiaryColor: readThemeColor("--background", "hsl(0, 0%, 100%)"),
           },
         });
         const { svg: nextSvg } = await mermaid.render(

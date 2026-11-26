@@ -1,12 +1,14 @@
 import { beforeAll, describe, expect, it, vi } from "vitest";
 import { configureContactsCrossModuleQueryKeys } from "@mms/mod-contacts/frontend/tenant/crossModuleQueryKeys";
 import { configureFacultyCrossModuleKeys } from "@mms/mod-faculty/frontend/tenant/crossModuleKeys";
+import { configureFinanceAccountingKeys } from "@mms/mod-billing/frontend/tenant/host/accountingCollection";
+import { configureStudentsHost } from "@mms/mod-students/frontend/tenant/host";
+import { invalidateContactsQueries } from "@/tenant/hooks/collections/contacts";
 import {
   MESSAGING_CONTACTS_RESOLVE_QUERY_KEY,
   MESSAGING_RECIPIENTS_QUERY_KEY,
 } from "@/tenant/hooks/collections/messaging";
 import type { QueryClient } from "@tanstack/react-query";
-import { invalidateContactsQueries } from "@/tenant/hooks/collections/contacts";
 import { invalidateStudentsQueries } from "@/tenant/hooks/collections/students";
 import { invalidateFacultyQueries } from "@/tenant/hooks/collections/faculty";
 import { invalidateFinanceQueries } from "@/tenant/hooks/collections/finance";
@@ -19,7 +21,7 @@ import { CONTACTS_QUERY_KEY } from "@mms/mod-contacts/frontend/tenant/hooks/cont
 import {
   STUDENTS_METRICS_QUERY_KEY,
   STUDENTS_QUERY_KEY,
-} from "@/tenant/features/students/hooks/studentsQueryKeys";
+} from "@mms/mod-students/frontend/tenant/hooks/studentsQueryKeys";
 import {
   FACULTY_DETAIL_QUERY_KEY,
   FACULTY_METRICS_QUERY_KEY,
@@ -28,7 +30,7 @@ import {
 import {
   FINANCE_INVOICES_QUERY_KEY,
   FINANCE_PAYMENTS_QUERY_KEY,
-} from "@/tenant/features/finance/hooks/financeQueryKeys";
+} from "@mms/mod-billing/frontend/tenant/hooks/financeQueryKeys";
 import {
   ACCOUNTING_ACCOUNTS_QUERY_KEY,
   ACCOUNTING_ENTRIES_QUERY_KEY,
@@ -81,6 +83,17 @@ describe("module query invalidation conformance", () => {
       contacts: CONTACTS_QUERY_KEY,
       students: STUDENTS_QUERY_KEY,
     });
+    // Finance writes also invalidate the accounting ledger caches; the app binds this in
+    // providers/BillingHostProvider.tsx.
+    configureFinanceAccountingKeys({
+      invalidateAccountingQueries,
+      ACCOUNTING_ENTRIES_QUERY_KEY,
+    });
+    // Students invalidate the contact-derived caches through their module host seam; the app
+    // binds the real collection table in providers/StudentsHostProvider.tsx.
+    configureStudentsHost({
+      contactsCollection: { invalidateContactsQueries },
+    } as unknown as Parameters<typeof configureStudentsHost>[0]);
   });
 
   it("refreshes contacts list + metrics and the student rows that derive from them", () => {

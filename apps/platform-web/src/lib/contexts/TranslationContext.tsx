@@ -3,7 +3,7 @@ import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
 import { useHydrateGlobalSettings } from "@/tenant/hooks/useHydrateGlobalSettings";
 import { useHydrateBranding } from "@/tenant/hooks/useHydrateBranding";
 import { useLocation } from "react-router-dom";
-import { useTenant } from "@/lib/contexts/TenantContext";
+import { useTenant } from "@mms/fe-core/tenant";
 import {
   getPlatformBrandingState,
   subscribePlatformBranding,

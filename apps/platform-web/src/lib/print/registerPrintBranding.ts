@@ -1,5 +1,5 @@
 import { configurePrintBrandingResolver } from "@mms/fe-core/print/printBrandingTokens";
-import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
+import { getBrandingChartPalette } from "@mms/fe-core/ui/brandingChartPalette";
 import { getScopedBrandingSettings } from "@mms/fe-core/lib/settingsPreviewStore";
 
 /**

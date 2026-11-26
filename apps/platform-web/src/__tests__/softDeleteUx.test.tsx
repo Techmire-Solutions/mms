@@ -17,9 +17,9 @@ import {
   calculateRemainingRetentionDays,
 } from "@mms/fe-core/components/DetailDrawerArchiveChrome";
 import { ContactArchivedBanner } from "@mms/mod-contacts/frontend/tenant/components/ContactArchivedBanner";
-import { StudentArchivedBanner } from "@/tenant/features/students/components/StudentArchivedBanner";
+import { StudentArchivedBanner } from "@mms/mod-students/frontend/tenant/components/StudentArchivedBanner";
 import { FacultyArchivedBanner } from "@mms/mod-faculty/frontend/tenant/components/FacultyArchivedBanner";
-import { SessionArchivedBanner } from "@/tenant/features/sessions/components/SessionArchivedBanner";
+import { SessionArchivedBanner } from "@mms/mod-sessions/frontend/tenant/components/SessionArchivedBanner";
 import { ContactDetailDrawerHeaderActions } from "@mms/mod-contacts/frontend/tenant/components/detail/ContactDetailDrawerChrome";
 import { notify } from "@mms/fe-core/notify";
 import { Toaster } from "@mms/ui";

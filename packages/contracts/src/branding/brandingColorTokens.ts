@@ -17,6 +17,12 @@ function parseHslToken(token: string): HslColor | null {
   return { h: Number(match[1]), s: Number(match[2]), l: Number(match[3]) };
 }
 
+/** Canonical white foreground hex fallback for WCAG contrast and brand previews. */
+export const BRAND_FOREGROUND_WHITE_HEX = "#ffffff";
+
+/** Default teal primary hex for auto-generated initials favicons. */
+export const BRAND_DEFAULT_FAVICON_PRIMARY_HEX = "#0f766e";
+
 /** Tailwind HSL token → `#rrggbb` (for Recharts / canvas APIs). */
 export function brandingTokenToHex(token: string, fallback = "#047857"): string {
   const parsed = parseHslToken(token);

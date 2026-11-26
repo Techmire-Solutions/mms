@@ -4,7 +4,7 @@ import { FORM_LABEL } from "@mms/ui";
 import { LegendChip } from "@mms/ui/app/LegendChip";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { resolveWidgetChartHex } from "@/lib/ui/brandingChartPalette";
+import { resolveWidgetChartHex } from "@mms/fe-core/ui/brandingChartPalette";
 
 interface WidgetBuilderColorOptionsProps {
   builderColor: string;

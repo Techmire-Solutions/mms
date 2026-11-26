@@ -3,7 +3,7 @@ import { APP_TRANSLATIONS_EN } from "@mms/contracts/translations/en";
 import {
   FINANCE_AVAILABLE_FIELDS,
   FINANCE_PRESETS,
-} from "@/tenant/features/finance/lib/financeTemplateData";
+} from "@mms/mod-billing/frontend/tenant/lib/financeTemplateData";
 import {
   EXAMINATION_AVAILABLE_FIELDS,
   EXAMINATION_PRESETS,
@@ -12,7 +12,7 @@ import {
   HASANAT_AVAILABLE_FIELDS,
   HASANAT_PRESETS,
 } from "@mms/mod-hasanat/frontend/tenant/lib/hasanatTemplateData";
-import { AVAILABLE_STUDENT_CARD_FIELDS } from "@/tenant/features/students/lib/studentCardTemplateStore";
+import { AVAILABLE_STUDENT_CARD_FIELDS } from "@mms/mod-students/frontend/tenant/lib/studentCardTemplateStore";
 import { AVAILABLE_FIELDS as OBLIGATION_RECEIPT_FIELDS } from "@/lib/invoiceTemplateFields";
 import { INVOICE_TEMPLATE_FIELD_KEY_PREFIX } from "@/lib/invoiceTemplateTypes";
 import { getAvailablePresets as getObligationReceiptPresets } from "@/lib/invoiceTemplatePresets";

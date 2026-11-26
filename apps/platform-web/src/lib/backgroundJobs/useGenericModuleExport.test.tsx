@@ -10,7 +10,7 @@ vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (k: string) => k }),
 }));
 
-vi.mock("@/lib/contexts/TenantContext", () => ({
+vi.mock("@mms/fe-core/tenant", () => ({
   useOptionalTenant: () => ({ subdomain: "demo" }),
 }));
 

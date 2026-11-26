@@ -1,4 +1,1 @@
-import { type Student, calcAge } from "@mms/contracts";
-
-export type { Student };
-export { calcAge };
+export * from "@mms/mod-students/frontend/tenant/lib/studentsData";

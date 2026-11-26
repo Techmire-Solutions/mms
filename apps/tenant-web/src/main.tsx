@@ -24,13 +24,21 @@ runAfterFirstPaint(() => {
 
 /**
  * Tenant-host chrome: tenant favicon + theme before React mounts.
- * The apex/platform chrome lives in `apps/platform-web`.
+ * Kept async so initial script evaluation yields before React hydration (preserving
+ * mobile Total Blocking Time <= 300ms) while guarding against offline/stale-chunk
+ * rejection so root render is never blocked.
  */
 async function applyBootChrome(): Promise<void> {
-  const { applyTenantDocumentFavicon } = await import("@/lib/documentFavicon");
-  applyTenantDocumentFavicon({});
-  const { applyAppTheme } = await import("@mms/fe-core/lib/brandingTheme");
-  applyAppTheme();
+  try {
+    const [{ applyTenantDocumentFavicon }, { applyAppTheme }] = await Promise.all([
+      import("@/lib/documentFavicon"),
+      import("@mms/fe-core/lib/brandingTheme"),
+    ]);
+    applyTenantDocumentFavicon({});
+    applyAppTheme();
+  } catch {
+    // Non-fatal: never block root mount on initial chrome setup.
+  }
 }
 
 // DEV ONLY: suppress the Recharts v3 false-positive dimension warnings that
@@ -62,6 +70,9 @@ const app = (
 
 async function bootstrap(): Promise<void> {
   await applyBootChrome();
+  // Yield a macrotask boundary before React hydration so boot-chrome evaluation and
+  // root render never fuse into a single >50ms Long Task on throttled mobile CPUs.
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
   ReactDOM.createRoot(rootElement as HTMLElement).render(
     import.meta.env.DEV ? <React.StrictMode>{app}</React.StrictMode> : app,
   );

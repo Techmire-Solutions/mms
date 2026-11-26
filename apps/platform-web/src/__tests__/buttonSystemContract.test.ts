@@ -35,14 +35,17 @@ describe.each(BUTTON_PRIMITIVES)("button primitive — %s", (relativePath) => {
 
 describe("button primitives — shared component ownership", () => {
   it("has no local button fork — the primitive lives in @mms/ui", () => {
-    // The app-local re-export shims were deleted across both consoles (P2/P12a); the contract is now
-    // the stronger one: no local Button implementation may exist in either app.
-    for (const app of ["apps/tenant-web", "apps/platform-web"]) {
-      expect(existsSync(path.join(REPO_ROOT, app, "src/components/ui/button.tsx"))).toBe(false);
-    }
-    expect(
-      readFileSync(path.join(REPO_ROOT, "packages/ui/src/button/Button.tsx"), "utf-8"),
-    ).toContain("export");
+    // The app-local re-export facade was deleted with the rest of the dead shims (P2): with nothing
+    // importing it, the contract is stronger and simpler — no app-local Button implementation may
+    // exist, and every consumer imports the primitive from the package.
+    expect(existsSync(path.join(REPO_ROOT, "apps/tenant-web/src/components/ui/button.tsx"))).toBe(
+      false,
+    );
+    const buttonSource = readFileSync(
+      path.join(REPO_ROOT, "packages/ui/src/button/Button.tsx"),
+      "utf-8",
+    );
+    expect(buttonSource).toContain("export");
   });
 
   it("removes CopyButton's bespoke colour/shadow/radius block", () => {

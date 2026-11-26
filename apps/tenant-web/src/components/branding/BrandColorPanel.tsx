@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ArrowLeftRight } from "lucide-react";
 import {
+  BRAND_FOREGROUND_WHITE_HEX,
   brandingTokenToHex,
   buildBrandingCssVariables,
   suggestHarmoniousSecondaryColor,
@@ -47,9 +48,15 @@ export default function BrandColorPanel({
   const tokens = (() => buildBrandingCssVariables(primaryColor, secondaryColor, previewMode))();
 
   const onPrimaryBg = brandingTokenToHex(tokens["--primary"] ?? "", primaryColor);
-  const onPrimaryFg = brandingTokenToHex(tokens["--primary-foreground"] ?? "", "#ffffff");
+  const onPrimaryFg = brandingTokenToHex(
+    tokens["--primary-foreground"] ?? "",
+    BRAND_FOREGROUND_WHITE_HEX,
+  );
   const onSecondaryBg = brandingTokenToHex(tokens["--secondary"] ?? "", secondaryColor);
-  const onSecondaryFg = brandingTokenToHex(tokens["--secondary-foreground"] ?? "", "#ffffff");
+  const onSecondaryFg = brandingTokenToHex(
+    tokens["--secondary-foreground"] ?? "",
+    BRAND_FOREGROUND_WHITE_HEX,
+  );
 
   const handleSwapColors = (): void => {
     onPrimaryChange(secondaryColor);

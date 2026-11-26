@@ -4,7 +4,7 @@ import {
   type BackgroundJobRecord,
   type ExportColumn,
 } from "@mms/contracts";
-import { useOptionalTenant } from "@/lib/contexts/TenantContext";
+import { useOptionalTenant } from "@mms/fe-core/tenant";
 import { startServerModuleCsvExport } from "@mms/fe-core/lib/startServerModuleCsvExport";
 import { downloadBackgroundJobArtifact } from "@mms/fe-core/backgroundJobs/api";
 import { notify } from "@mms/fe-core/notify";

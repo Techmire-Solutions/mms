@@ -1,4 +1,4 @@
-import { useTenant } from "@/lib/contexts/TenantContext";
+import { useTenant } from "@mms/fe-core/tenant";
 
 /**
  * Blocks tenant auth UI until workspace branding has been fetched from the server.

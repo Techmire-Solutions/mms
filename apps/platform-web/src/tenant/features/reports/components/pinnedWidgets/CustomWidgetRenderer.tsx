@@ -3,7 +3,10 @@ import { useTranslation } from "@mms/fe-core/i18n";
 import { resolveWidgetTitle, resolveWidgetSubText } from "@/lib/dashboardWidgets";
 import { COMPOSED_WIDGET_TYPES } from "@/components/dashboard-widgets/registry";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
-import { resolveThresholdChartHex, resolveWidgetChartHex } from "@/lib/ui/brandingChartPalette";
+import {
+  resolveThresholdChartHex,
+  resolveWidgetChartHex,
+} from "@mms/fe-core/ui/brandingChartPalette";
 import { computeCustomCard, type CustomCard } from "@/lib/reports/reportMetadata";
 import { readDashboardSwitchState } from "@/tenant/features/reports/components/pinnedWidgets/useDashboardSectionSettings";
 import { type ReportCollectionsSnapshot } from "@/lib/reports/useReportCollections";

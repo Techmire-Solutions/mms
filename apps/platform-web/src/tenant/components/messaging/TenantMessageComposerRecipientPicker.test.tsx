@@ -26,7 +26,7 @@ vi.mock("@mms/fe-core/notify", () => ({
   notify: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
 
-vi.mock("@/tenant/features/messaging/hooks/useMessagingWorkRecipients", () => ({
+vi.mock("@mms/mod-messaging/frontend/tenant/hooks/useMessagingWorkRecipients", () => ({
   useMessagingWorkRecipients: () => ({
     recipients,
     page: 1,

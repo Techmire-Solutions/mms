@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  BRAND_FOREGROUND_WHITE_HEX,
   brandingTokenToHex,
   buildBrandingCssVariables,
   resolveBrandingChartPaletteHex,
@@ -51,11 +52,14 @@ export function BrandSemanticPreview({
 
   const previewContext = (() => ({
     activeOnPrimaryBg: brandingTokenToHex(activeTokens["--primary"] ?? "", primaryColor),
-    activeOnPrimaryFg: brandingTokenToHex(activeTokens["--primary-foreground"] ?? "", "#ffffff"),
+    activeOnPrimaryFg: brandingTokenToHex(
+      activeTokens["--primary-foreground"] ?? "",
+      BRAND_FOREGROUND_WHITE_HEX,
+    ),
     activeOnSecondaryBg: brandingTokenToHex(activeTokens["--secondary"] ?? "", secondaryColor),
     activeOnSecondaryFg: brandingTokenToHex(
       activeTokens["--secondary-foreground"] ?? "",
-      "#ffffff",
+      BRAND_FOREGROUND_WHITE_HEX,
     ),
     activeTokens,
     chartPalette: resolveBrandingChartPaletteHex(primaryColor, secondaryColor, localMode),

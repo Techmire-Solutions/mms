@@ -124,7 +124,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "messaging",
     path: TENANT_PATHS.messaging,
     access: moduleAccess("messaging"),
-    loader: () => import("@/tenant/features/messaging/MessagingPage"),
+    loader: () =>
+      import("@mms/mod-messaging/frontend/tenant").then((m) => ({ default: m.MessagingPage })),
     nav: { labelKey: "nav.messaging", icon: MessageSquare, order: 3 },
     apexRedirectable: true,
   },
@@ -140,7 +141,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "students",
     path: TENANT_PATHS.students,
     access: moduleAccess("students"),
-    loader: () => import("@/tenant/features/students/StudentsPage"),
+    loader: () =>
+      import("@mms/mod-students/frontend/tenant").then((m) => ({ default: m.StudentsPage })),
     // Students is a daily destination, not a sub-tool of the Academics group.
     nav: { labelKey: "nav.students", icon: GraduationCap, order: 1.5 },
     apexRedirectable: true,
@@ -149,7 +151,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "sessions",
     path: TENANT_PATHS.sessions,
     access: moduleAccess("sessions"),
-    loader: () => import("@/tenant/features/sessions/SessionsPage"),
+    loader: () =>
+      import("@mms/mod-sessions/frontend/tenant").then((m) => ({ default: m.SessionsPage })),
     nav: { labelKey: "nav.sessions", icon: Calendar, order: 1, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },
@@ -157,7 +160,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "enrollments",
     path: TENANT_PATHS.enrollments,
     access: moduleAccess("enrollment"),
-    loader: () => import("@/tenant/features/enrollments/EnrollmentsPage"),
+    loader: () =>
+      import("@mms/mod-enrollments/frontend/tenant").then((m) => ({ default: m.EnrollmentsPage })),
     nav: { labelKey: "nav.enrollments", icon: ClipboardList, order: 2, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },
@@ -206,7 +210,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "finance",
     path: TENANT_PATHS.finance,
     access: moduleAccess("finance"),
-    loader: () => import("@/tenant/features/finance/FinancePage"),
+    loader: () =>
+      import("@mms/mod-billing/frontend/tenant").then((m) => ({ default: m.FinancePage })),
     nav: { labelKey: "nav.finance", icon: DollarSign, order: 6 },
     apexRedirectable: true,
   },
