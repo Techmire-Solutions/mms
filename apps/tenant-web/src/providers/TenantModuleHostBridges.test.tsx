@@ -101,4 +101,22 @@ describe("TenantModuleHostBridges", () => {
     });
     expect(container.textContent).toContain("ALL_HOSTS_READY");
   });
+
+  it("evaluates module imports cleanly under production mode before host bridges render", async () => {
+    vi.resetModules();
+    vi.stubEnv("MODE", "production");
+    try {
+      await expect(import("./TenantModuleHostBridges")).resolves.toHaveProperty(
+        "TenantModuleHostBridges",
+      );
+      await expect(
+        import("@mms/mod-attendance/frontend/tenant/AttendancePage"),
+      ).resolves.toHaveProperty("default");
+      await expect(import("@mms/mod-tasks/frontend/tenant/TasksPage")).resolves.toHaveProperty(
+        "default",
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
 });
