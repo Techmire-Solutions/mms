@@ -5,9 +5,7 @@ import ReactDOM from "react-dom/client";
 import App from "@/App";
 import "@/index.css";
 import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
-import { applyAppTheme } from "@mms/fe-core/lib/brandingTheme";
 import { installChunkLoadRecovery } from "@/lib/chunkLoadRecovery";
-import { applyTenantDocumentFavicon } from "@/lib/documentFavicon";
 import { runAfterFirstPaint } from "@/lib/runAfterFirstPaint";
 
 // Hashed chunk names change on every deploy while the PWA service worker keeps
@@ -26,12 +24,21 @@ runAfterFirstPaint(() => {
 
 /**
  * Tenant-host chrome: tenant favicon + theme before React mounts.
- * Statically imported so Workbox's entry-closure precache includes them for
- * cold offline starts and never triggers an extra pre-mount chunk fetch.
+ * Kept async so initial script evaluation yields before React hydration (preserving
+ * mobile Total Blocking Time <= 300ms) while guarding against offline/stale-chunk
+ * rejection so root render is never blocked.
  */
-function applyBootChrome(): void {
-  applyTenantDocumentFavicon({});
-  applyAppTheme();
+async function applyBootChrome(): Promise<void> {
+  try {
+    const [{ applyTenantDocumentFavicon }, { applyAppTheme }] = await Promise.all([
+      import("@/lib/documentFavicon"),
+      import("@mms/fe-core/lib/brandingTheme"),
+    ]);
+    applyTenantDocumentFavicon({});
+    applyAppTheme();
+  } catch {
+    // Non-fatal: never block root mount on initial chrome setup.
+  }
 }
 
 // DEV ONLY: suppress the Recharts v3 false-positive dimension warnings that
@@ -61,12 +68,11 @@ const app = (
   </ErrorBoundary>
 );
 
-function bootstrap(): void {
-  try {
-    applyBootChrome();
-  } catch {
-    // Non-fatal: never block root mount on initial chrome setup.
-  }
+async function bootstrap(): Promise<void> {
+  await applyBootChrome();
+  // Yield a macrotask boundary before React hydration so boot-chrome evaluation and
+  // root render never fuse into a single >50ms Long Task on throttled mobile CPUs.
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
   ReactDOM.createRoot(rootElement as HTMLElement).render(
     import.meta.env.DEV ? <React.StrictMode>{app}</React.StrictMode> : app,
   );
@@ -77,4 +83,4 @@ function bootstrap(): void {
   });
 }
 
-bootstrap();
+void bootstrap();
