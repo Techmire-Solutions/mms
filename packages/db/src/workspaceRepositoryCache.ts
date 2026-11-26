@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { activeDb } from "./client.js";
+import { activeDb, hasActiveTransaction, hasCommitScope, runAfterCommit } from "./client.js";
 import { workspaces as workspacesTable } from "./schema.js";
 
 // ---------------------------------------------------------------------------
@@ -20,13 +20,18 @@ const workspaceCache = new Map<
   { row: typeof workspacesTable.$inferSelect; expiresAt: number }
 >();
 
+function normalizeCacheKey(subdomain: string): string {
+  return subdomain.trim().toLowerCase();
+}
+
 function readCachedWorkspaceRow(
   subdomain: string,
 ): typeof workspacesTable.$inferSelect | undefined {
-  const entry = workspaceCache.get(subdomain);
+  const key = normalizeCacheKey(subdomain);
+  const entry = workspaceCache.get(key);
   if (!entry) return undefined;
   if (Date.now() > entry.expiresAt) {
-    workspaceCache.delete(subdomain);
+    workspaceCache.delete(key);
     return undefined;
   }
   return entry.row;
@@ -36,19 +41,28 @@ function writeCachedWorkspaceRow(
   subdomain: string,
   row: typeof workspacesTable.$inferSelect | null,
 ): void {
+  const key = normalizeCacheKey(subdomain);
   if (row === null) {
-    workspaceCache.delete(subdomain);
+    workspaceCache.delete(key);
     return;
   }
   if (workspaceCache.size >= WORKSPACE_CACHE_MAX_ENTRIES) {
     const oldestKey = workspaceCache.keys().next().value;
     if (oldestKey !== undefined) workspaceCache.delete(oldestKey);
   }
-  workspaceCache.set(subdomain, { row, expiresAt: Date.now() + WORKSPACE_CACHE_TTL_MS });
+  workspaceCache.set(key, { row, expiresAt: Date.now() + WORKSPACE_CACHE_TTL_MS });
 }
 
 export function invalidateWorkspaceCache(subdomain: string): void {
-  workspaceCache.delete(subdomain);
+  const key = normalizeCacheKey(subdomain);
+  workspaceCache.delete(key);
+  if (hasCommitScope()) {
+    // Re-evict after COMMIT so a concurrent request that read the pre-commit row
+    // before the transaction committed cannot leave a stale 30s TTL entry behind.
+    runAfterCommit(() => {
+      workspaceCache.delete(key);
+    });
+  }
 }
 
 /** Test helper — clears the in-process workspace cache. */
@@ -114,14 +128,19 @@ export const ALL_WORKSPACE_COLUMNS = {
 export async function loadWorkspaceRow(
   subdomain: string,
 ): Promise<typeof workspacesTable.$inferSelect | null> {
-  const cached = readCachedWorkspaceRow(subdomain);
-  if (cached) return cached;
+  const inTransaction = typeof hasActiveTransaction === "function" && hasActiveTransaction();
+  if (!inTransaction) {
+    const cached = readCachedWorkspaceRow(subdomain);
+    if (cached) return cached;
+  }
   const rows = await activeDb()
     .select(ALL_WORKSPACE_COLUMNS)
     .from(workspacesTable)
     .where(eq(workspacesTable.subdomain, subdomain))
     .limit(1);
   const ws = rows[0] ?? null;
-  writeCachedWorkspaceRow(subdomain, ws);
+  if (!inTransaction) {
+    writeCachedWorkspaceRow(subdomain, ws);
+  }
   return ws;
 }
