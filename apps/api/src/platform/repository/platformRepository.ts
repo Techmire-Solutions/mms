@@ -7,7 +7,7 @@
  */
 type ActivityLogsModule = typeof import("../../db/repositories/platformActivityLogsRepository.js");
 type PlatformUserModule = typeof import("../../db/repositories/platformUserRepository.js");
-type TenantUserModule = typeof import("../../db/repositories/tenantUserRepository.js");
+type TenantUserModule = typeof import("@mms/mod-iam/backend/tenant/repository");
 
 export interface PlatformRepository {
   insertPlatformActivityLog: ActivityLogsModule["insertPlatformActivityLog"];

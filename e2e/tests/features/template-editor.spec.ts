@@ -52,17 +52,24 @@ const platformPassword = "Pa$$w0rd123";
  * trigger reports itself active.
  */
 async function activateSectionTrigger(page: Page, name: RegExp): Promise<void> {
-  const trigger = page.getByRole("tab", { name }).or(page.getByRole("button", { name })).first();
+  const trigger = page
+    .getByRole("tab", { name })
+    .or(page.getByRole("button", { name }))
+    .locator("visible=true")
+    .first();
   await expect(trigger).toBeVisible({ timeout: 30_000 });
 
   const isActive = async () =>
     (await trigger.getAttribute("aria-selected")) === "true" ||
-    (await trigger.getAttribute("aria-expanded")) === "true";
+    (await trigger.getAttribute("aria-expanded")) === "true" ||
+    (await trigger.getAttribute("aria-current")) === "page";
 
-  if (!(await isActive())) {
-    await trigger.click();
-    await expect.poll(isActive, { timeout: 15_000 }).toBe(true);
-  }
+  await expect(async () => {
+    if (!(await isActive())) {
+      await trigger.click();
+    }
+    expect(await isActive()).toBe(true);
+  }).toPass({ timeout: 15_000 });
 }
 
 /** Opens Obligations → Setup → Invoice Template and returns the editor root. */

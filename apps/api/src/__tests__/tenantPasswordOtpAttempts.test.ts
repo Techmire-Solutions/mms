@@ -49,8 +49,9 @@ vi.mock("../services/globalSettingsService.js", () => ({
   loadGlobalSettings: mocks.loadGlobalSettings,
 }));
 
-vi.mock("../db/repositories/tenantUserRepository.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/repository", () => ({
   activateInvitedTenantUserRow: mocks.activateInvitedTenantUserRow,
+  usersRepository: { bulkSaveActivityLogs: vi.fn() },
 }));
 
 vi.mock("../services/auth/authService.js", () => ({
@@ -60,10 +61,6 @@ vi.mock("../services/auth/authService.js", () => ({
 vi.mock("../services/auth/userService.js", () => ({
   findUserByLoginEmailAndWorkspace: mocks.findUserByLoginEmailAndWorkspace,
   getPublicUserById: mocks.getPublicUserById,
-}));
-
-vi.mock("../users/repository/usersRepositoryAdapter.js", () => ({
-  usersRepository: { bulkSaveActivityLogs: vi.fn() },
 }));
 
 vi.mock("../lib/livePush.js", () => ({

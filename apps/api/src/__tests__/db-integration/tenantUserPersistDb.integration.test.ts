@@ -10,8 +10,8 @@ import {
   beginLongLivedTenantTransaction,
 } from "@mms/db/client";
 import { workspaces, tenantUsers } from "@mms/db/schema";
-import { upsertTenantUsersBatch } from "../../db/repositories/tenantUserRepositoryPersist.js";
-import type { TenantUserRow } from "../../db/repositories/tenantUserRepositoryHydrate.js";
+import { upsertTenantUsersBatch } from "@mms/mod-iam/backend/tenant/repository";
+import type { TenantUserRow } from "@mms/mod-iam/backend/tenant/repository";
 
 const TEST_SUBDOMAIN = "perf-parity-users";
 

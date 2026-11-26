@@ -11,7 +11,6 @@ import {
   reconcileContactSystemTags,
   removeSystemTagsForContacts,
 } from "../systemTags/contactSystemTagUseCases.js";
-import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
 import { runInTransaction } from "@mms/db/client";
 import {
   assertContactUniqueFields,
@@ -22,7 +21,10 @@ import {
 import { stripUnreadableContactWriteKeys } from "./contactViewerWriteGuard.js";
 import { assertContactAttachmentUrls } from "./contactAttachmentUrls.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
-import { loadPreviousRelationshipTargets } from "./contactRelationshipIds.js";
+import {
+  inferAndReconcileContactSystemTags,
+  loadPreviousRelationshipTargets,
+} from "./contactRelationshipIds.js";
 import { broadcastCollection } from "@mms/be-core/realtime";
 import { invalidateMultiTierCache } from "@mms/be-core/cache";
 import { ConflictError, NotFoundError, ValidationError } from "@mms/be-core/http/errors";
@@ -111,33 +113,27 @@ export async function mergeContactsById(
       updatedAt: new Date().toISOString(),
     };
 
-    // Archive the merged-away row FIRST (frees the CNIC partial-unique index for the
-    // survivor) and clear its child rows so they don't collide under unique indexes.
     await archiveMergeLoser(repo, tenant, other, keepId, deleteId, deletedBy);
-
     if (expectedKeepUpdatedAt) {
-      // Same predicate-in-the-UPDATE guarantee as the interactive edit path.
       const savedUpdatedAt = await repo.saveIfVersionMatches(tenant, next, expectedKeepUpdatedAt);
       if (!savedUpdatedAt) throw new ConflictError(CONTACT_VERSION_CONFLICT);
       next.updatedAt = savedUpdatedAt;
     } else {
       next.updatedAt = await repo.save(tenant, next);
     }
-    await applyContactRelationshipInference(tenant, next, undefined, repo, {
+    await inferAndReconcileContactSystemTags({
+      tenant,
+      contact: next,
+      previousContact: keep,
+      repo,
       actorId: deletedBy,
-      previousSource: keep,
       relationshipPairs: context.relationshipPairs,
+      beforeReconcile: async () => {
+        await repo.reparentContactReferences(tenant, keepId, deleteId, deletedBy);
+        await removeSystemTagsForContacts(tenant, [deleteId]);
+      },
+      reconcileContactIds: [keepId],
     });
-
-    await repo.reparentContactReferences(tenant, keepId, deleteId, deletedBy);
-    // Merge is not a role end: the survivor inherits the reconciled roles.
-    await removeSystemTagsForContacts(tenant, [deleteId]);
-    await reconcileContactSystemTags(tenant, [keepId], {
-      actorId: deletedBy,
-    });
-
-    // The destructive half of a merge must be audited atomically with it: the
-    // route summary alone can be lost if the process dies after commit.
     await auditContactMerged({
       tenant,
       keepId: String(keepId),
@@ -148,9 +144,7 @@ export async function mergeContactsById(
     return next;
   });
   const tenant = getRequestTenant();
-  if (tenant) {
-    await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
-  }
+  if (tenant) await invalidateMultiTierCache({ tenantId: tenant, domain: "contacts" });
   await broadcastCollection("contacts");
   return saved;
 }

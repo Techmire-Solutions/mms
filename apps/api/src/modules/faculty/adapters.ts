@@ -18,12 +18,12 @@ import {
   findTenantUserRowByContactId,
   listAllTenantUsersByWorkspace,
   upsertTenantUserRow,
-} from "../../db/repositories/tenantUserRepository.js";
+} from "@mms/mod-iam/backend/tenant/repository";
 import {
   getUserModulePreferencesByWorkspace,
   upsertUserModulePreferences,
-} from "../../db/repositories/userModulePreferencesRepository.js";
-import { getTenantUsersSettings } from "../../services/users/usersSettingsService.js";
+} from "@mms/mod-iam/backend/tenant/repository";
+import { getTenantUsersSettings } from "@mms/mod-iam/backend/tenant/services/usersSettingsService";
 import { resolveCurrentTenantRole } from "../../lib/currentTenantRole.js";
 import { tenantUserHasPermission } from "../../lib/tenantRoleCatalog.js";
 import { invalidateTenantRbac } from "../../services/rbacService.js";

@@ -94,12 +94,12 @@ export async function restoreStudentById(
       userId,
       new Date(restoredAt),
     );
-    await recordRestoreEvents(tenant, next, restoredAt, userId);
     await reconcileContactSystemTags(
       tenant,
       [next.contactId, next.fatherContactId, next.motherContactId, next.guardianContactId],
       { actorId: userId },
     );
+    await recordRestoreEvents(tenant, next, restoredAt, userId);
     return next;
   }).finally(invalidateStudentsCache);
   if (restored) await broadcastCollection("students");
@@ -251,9 +251,6 @@ export async function bulkRestoreStudents(
         userId,
         new Date(batchRestoredAt),
       );
-      for (const row of restoredRows) {
-        await recordRestoreEvents(tenant, row, batchRestoredAt, userId);
-      }
       await reconcileContactSystemTags(
         tenant,
         restoredRows.flatMap((row) => [
@@ -264,6 +261,9 @@ export async function bulkRestoreStudents(
         ]),
         { actorId: userId },
       );
+      for (const row of restoredRows) {
+        await recordRestoreEvents(tenant, row, batchRestoredAt, userId);
+      }
     }
     return { succeeded, failed, conflicts };
   }).finally(invalidateStudentsCache);

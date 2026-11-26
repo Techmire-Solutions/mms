@@ -18,7 +18,7 @@ import { createOtpChallengeService, type OtpChallengePayload } from "./otpChalle
 import { revokeAllUserSessions } from "@mms/be-core/auth/sessionRevocation";
 import { hashPassword } from "./passwordService.js";
 import { assertPasswordMeetsPolicy } from "../globalSettingsService.js";
-import { activateInvitedTenantUserRow } from "../../db/repositories/tenantUserRepository.js";
+import { activateInvitedTenantUserRow } from "@mms/mod-iam/backend/tenant/repository";
 import {
   findUserByLoginEmailAndWorkspace,
   getPublicUserById,
@@ -26,7 +26,7 @@ import {
 } from "./userService.js";
 import { establishSession, type AuthResult } from "./authService.js";
 import { broadcastCollection } from "../../lib/livePush.js";
-import { usersRepository } from "../../users/repository/usersRepositoryAdapter.js";
+import { usersRepository } from "@mms/mod-iam/backend/tenant/repository";
 import { dispatchTenantPasswordOtp, sendTenantWelcomeEmail } from "./tenantPasswordOtpDispatch.js";
 
 export { sendTenantWelcomeEmail };

@@ -14,7 +14,7 @@ import {
   type WorkspaceRole,
 } from "@mms/contracts";
 import { getOrSetMultiTier } from "@mms/be-core/cache";
-import { getTenantUsersSettings } from "../services/users/usersSettingsService.js";
+import { getTenantUsersSettings } from "@mms/mod-iam/backend/tenant/services/usersSettingsService";
 import { resolveCurrentTenantRole } from "./currentTenantRole.js";
 
 const ROLE_CATALOG_TTL_SECONDS = 3600;

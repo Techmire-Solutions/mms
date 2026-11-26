@@ -51,6 +51,12 @@ test("deploy migrates legacy apps/backend/.env and validates ENV_FILE before tar
   assert.match(remoteDeploy, /apps\/backend\/\.env/);
 });
 
+test("deploy migrates legacy apps/backend/uploads into apps/api/uploads non-destructively", () => {
+  assert.match(deploy, /apps\/backend\/uploads/);
+  assert.match(deploy, /apps\/api\/uploads/);
+  assert.match(deploy, /--ignore-existing|cp -rn/);
+});
+
 test("deploy cleans contracts and all module dists and uses valid directory checks", () => {
   assert.match(deploy, /packages\/contracts\/dist/);
   assert.match(deploy, /packages\/modules\/\*\/dist/);

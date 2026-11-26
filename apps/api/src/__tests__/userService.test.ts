@@ -12,7 +12,7 @@ const mockHashPassword = vi.fn();
 const mockVerifyPassword = vi.fn();
 const mockGetRequestTenant = vi.fn();
 
-vi.mock("../db/repositories/tenantUserRepository.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/repository", () => ({
   listTenantUsersByWorkspace: (...args: unknown[]) => mockListTenantUsers(...args),
   findTenantUserRowById: (...args: unknown[]) => mockFindTenantUserById(...args),
   replaceTenantUsersForWorkspace: (...args: unknown[]) => mockReplaceTenantUsers(...args),
@@ -46,20 +46,16 @@ vi.mock("../services/auth/passwordService.js", async (importOriginal) => {
 
 vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@mms/mod-contacts/backend/use-cases")>()),
-  ...{
-    loadContactsByIds: vi.fn().mockResolvedValue([]),
-    getContactById: vi.fn().mockResolvedValue(null),
-    updateContactById: vi.fn(),
-  },
+  loadContactsByIds: vi.fn().mockResolvedValue([]),
+  getContactById: vi.fn().mockResolvedValue(null),
+  updateContactById: vi.fn(),
 }));
 
 vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@mms/mod-contacts/backend/services")>()),
-  ...{
-    loadContactsByIds: vi.fn().mockResolvedValue([]),
-    getContactById: vi.fn().mockResolvedValue(null),
-    updateContactById: vi.fn(),
-  },
+  loadContactsByIds: vi.fn().mockResolvedValue([]),
+  getContactById: vi.fn().mockResolvedValue(null),
+  updateContactById: vi.fn(),
 }));
 
 vi.mock("../services/globalSettingsService.js", () => ({

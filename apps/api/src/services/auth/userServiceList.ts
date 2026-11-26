@@ -6,7 +6,7 @@ import {
 import {
   findTenantUserRowById,
   upsertTenantUsersBatch,
-} from "../../db/repositories/tenantUserRepository.js";
+} from "@mms/mod-iam/backend/tenant/repository";
 import {
   getContactsForUsers,
   getRawUsers,

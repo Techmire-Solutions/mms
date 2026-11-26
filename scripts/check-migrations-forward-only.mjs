@@ -196,6 +196,11 @@ const MOVED_MODULE_REPOSITORIES = [
     pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/task[A-Za-z0-9_]*Repository\.js$/,
     pkg: "@mms/mod-tasks/backend/repository",
   },
+  {
+    pattern:
+      /^(?:\.\.\/)+(?:db\/)?repositories\/(?:tenantUser|user|workspaceAdminUser)[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-iam/backend/tenant/repository",
+  },
 ];
 const MOVED_MIGRATION_MODULE = /^(?:\.{1,2}\/)+(?:migrations\/)?(\d{3}_[A-Za-z0-9_]+)\.js$/;
 

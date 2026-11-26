@@ -1,4 +1,4 @@
-import { usersUseCases } from "../users/use-cases/usersUseCases.js";
+import { usersUseCases } from "@mms/mod-iam/backend/tenant/use-cases/usersUseCases";
 
 /**
  * Thin re-export of the users use-cases facade.

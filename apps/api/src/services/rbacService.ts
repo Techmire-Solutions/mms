@@ -19,7 +19,7 @@ export async function getTenantRoleMatrix(tenantId: string): Promise<TenantRoleM
     "matrix",
     async () => {
       const { listAllTenantUsersByWorkspace } =
-        await import("../db/repositories/tenantUserRepositoryHydrate.js");
+        await import("@mms/mod-iam/backend/tenant/repository");
       const users = await listAllTenantUsersByWorkspace(tenantId);
       const matrix: TenantRoleMatrix = {};
       for (const u of users) {

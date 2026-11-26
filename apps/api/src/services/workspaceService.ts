@@ -25,7 +25,7 @@ import {
 import {
   getUserModulePreferencesByWorkspace,
   upsertUserModulePreferences,
-} from "../db/repositories/userModulePreferencesRepository.js";
+} from "@mms/mod-iam/backend/tenant/repository";
 import { clearModuleAvailabilityCache } from "../lib/moduleAvailabilityService.js";
 import { broadcastTenantUpdate } from "../lib/livePush.js";
 

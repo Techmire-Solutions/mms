@@ -1,16 +1,22 @@
+import type { Enrollment } from "@mms/contracts";
 import { getSessionsHost } from "../host.js";
 
-export const enrollmentsCollection: any = new Proxy(
+export const enrollmentsCollection: Record<string, unknown> = new Proxy(
   {},
   {
-    get: (_t, prop) => (getSessionsHost() as any).enrollmentsCollection?.[prop],
+    get: (_target, prop: string) => getSessionsHost().enrollmentsCollection?.[prop],
   },
 );
 
-export function useEnrollmentsCollection(..._args: any[]): Record<string, (...args: any[]) => any> {
-  return (getSessionsHost() as any).enrollmentsCollection;
+export function useEnrollmentsCollection(...args: unknown[]): Enrollment[] {
+  const fn = getSessionsHost().enrollmentsCollection?.useEnrollmentsCollection;
+  const result = typeof fn === "function" ? fn(...args) : [];
+  return Array.isArray(result) ? (result as Enrollment[]) : [];
 }
 
-export function invalidateEnrollmentsQueries(...args: any[]): void {
-  (getSessionsHost() as any).invalidation?.invalidateEnrollmentsQueries?.(...args);
+export function invalidateEnrollmentsQueries(...args: unknown[]): void {
+  const fn = getSessionsHost().invalidation?.invalidateEnrollmentsQueries;
+  if (typeof fn === "function") {
+    fn(...args);
+  }
 }

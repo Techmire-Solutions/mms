@@ -252,7 +252,7 @@ vi.mock("@mms/mod-examinations/backend/use-cases", async (importOriginal) => ({
 const mockDeleteUserById = vi.fn();
 const mockRestoreUserById = vi.fn();
 
-vi.mock("../users/use-cases/usersUseCases.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/use-cases/usersUseCases", () => ({
   usersUseCases: {
     loadWorkspaceUsers: vi.fn().mockResolvedValue([]),
     upsertWorkspaceUsers: vi.fn(),

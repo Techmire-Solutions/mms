@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { runWithTenant } from "../lib/tenantContext.js";
-import { verifyPassword } from "../services/auth/passwordService.js";
+import { runWithTenant } from "@mms/be-core/http";
+import { verifyPassword } from "@mms/mod-iam/backend/tenant/deps";
 import {
   findTenantUserRowById,
   verifyTenantUserEmailRow,
   resetTenantUserPasswordRow,
-} from "../db/repositories/tenantUserRepository.js";
+} from "@mms/mod-iam/backend/tenant/repository";
 import {
   upsertLogs,
   verifyUserEmailById,
@@ -13,10 +13,13 @@ import {
   deleteUserById,
   upsertWorkspaceUsers,
 } from "../services/usersService.js";
-import { broadcastCollection } from "../lib/livePush.js";
-import { assertPasswordMeetsPolicy } from "../services/globalSettingsService.js";
-import { deleteRefreshTokensForUser } from "../services/auth/authArtifactService.js";
+import { broadcastCollection } from "@mms/be-core/realtime";
+import { assertPasswordMeetsPolicy } from "@mms/mod-iam/backend/tenant/deps";
+import { deleteRefreshTokensForUser } from "@mms/mod-iam/backend/tenant/deps";
 import { revokeAllUserSessions } from "@mms/be-core/auth/sessionRevocation";
+import { configureIamUsersAdapters } from "../modules/iam/userAdapters.js";
+
+configureIamUsersAdapters();
 
 const { bulkSaveActivityLogs, replaceActivityLogsForWorkspace } = vi.hoisted(() => ({
   bulkSaveActivityLogs: vi.fn(),
@@ -32,38 +35,27 @@ vi.mock("../db/repositories/logsRepository.js", () => ({
   replaceActivityLogsForWorkspace,
 }));
 
-vi.mock("../lib/livePush.js", () => ({
+vi.mock("@mms/be-core/realtime", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/be-core/realtime")>()),
   broadcastCollection: vi.fn(),
   broadcastTenantUpdate: vi.fn(),
 }));
 
-vi.mock("../services/auth/userService.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/deps", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/mod-iam/backend/tenant/deps")>()),
   getHydratedUsers: vi.fn().mockResolvedValue([]),
   saveUsers: vi.fn(),
+  deleteRefreshTokensForUser: vi.fn(),
+  assertPasswordMeetsPolicy: vi.fn(),
 }));
 
-vi.mock("../db/repositories/tenantUserRepository.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/repository", () => ({
   softDeleteTenantUserRow: vi.fn(),
   restoreTenantUserRow: vi.fn(),
   verifyTenantUserEmailRow: vi.fn().mockResolvedValue(true),
   findTenantUserRowById: vi.fn(),
   resetTenantUserPasswordRow: vi.fn(),
   listTenantUsersByIds: vi.fn().mockResolvedValue([]),
-}));
-
-vi.mock("../services/auth/authArtifactService.js", () => ({
-  deleteRefreshTokensForUser: vi.fn(),
-
-  authArtifactUserScopeKey: vi.fn(() => ""),
-  authArtifactWorkspaceScopeKey: vi.fn(() => ""),
-  deleteAuthArtifact: vi.fn().mockResolvedValue(undefined),
-  findAuthArtifactByLookupKey: vi.fn().mockResolvedValue(null),
-  tryClaimAuthArtifactByLookupKey: vi.fn().mockResolvedValue(null),
-  updateAuthArtifactPayload: vi.fn().mockResolvedValue(undefined),
-}));
-
-vi.mock("../services/globalSettingsService.js", () => ({
-  assertPasswordMeetsPolicy: vi.fn(),
 }));
 
 vi.mock("@mms/be-core/auth/sessionRevocation", () => ({

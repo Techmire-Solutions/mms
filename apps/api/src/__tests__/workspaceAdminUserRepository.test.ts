@@ -1,9 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { configureIamUsersAdapters } from "../modules/iam/userAdapters.js";
 import {
   createWorkspaceAdminUser,
   getWorkspaceAdminEmailsMap,
   listWorkspaceSuperAdminIds,
-} from "../db/repositories/workspaceAdminUserRepository.js";
+} from "@mms/mod-iam/backend/tenant/repository";
+
+configureIamUsersAdapters();
 
 const mockDbState = vi.hoisted(() => ({
   existingUsers: [] as Array<{

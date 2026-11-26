@@ -1915,6 +1915,15 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@ts-rest/core':
+        specifier: ^3.52.1
+        version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
+      '@ts-rest/fastify':
+        specifier: ^3.52.1
+        version: 3.52.1(@ts-rest/core@3.52.1(@types/node@26.6.6)(zod@4.6.7))(fastify@5.12.8)(zod@4.6.7)
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.7

@@ -8,7 +8,7 @@ import { getRequestTenant } from "../../lib/tenantContext.js";
 import {
   listTenantUsersByWorkspace,
   type TenantUserRow,
-} from "../../db/repositories/tenantUserRepository.js";
+} from "@mms/mod-iam/backend/tenant/repository";
 import { loadContactsByIds } from "@mms/mod-contacts/backend/services";
 
 /** Auth-capable user with credentials resolved for login and session. */

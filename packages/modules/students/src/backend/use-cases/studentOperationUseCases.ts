@@ -156,7 +156,6 @@ export async function bulkUpdateStudentStatus(
       previousStatusById,
       actor,
     );
-    await recordStudentStatusAuditEvents(tenant, transitions, userId);
     await reconcileContactSystemTags(
       tenant,
       writtenStudents.flatMap((s) => [
@@ -167,6 +166,7 @@ export async function bulkUpdateStudentStatus(
       ]),
       userId ? { actorId: userId } : undefined,
     );
+    await recordStudentStatusAuditEvents(tenant, transitions, userId);
     return {
       succeeded: statusWrite.succeeded,
       failed: uniqueIds.length - statusWrite.succeeded,

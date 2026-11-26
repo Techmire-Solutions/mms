@@ -66,7 +66,7 @@ vi.mock("../services/backgroundJobService.js", () => ({
 }));
 
 const listAllTenantUsersByWorkspace = vi.fn(async (_subdomain?: string) => [] as unknown[]);
-vi.mock("../db/repositories/tenantUserRepository.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/repository", () => ({
   listAllTenantUsersByWorkspace: (subdomain: string) => listAllTenantUsersByWorkspace(subdomain),
 }));
 

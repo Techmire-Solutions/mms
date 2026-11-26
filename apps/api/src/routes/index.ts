@@ -34,7 +34,7 @@ import hasanatTenantRoutes from "@mms/mod-hasanat/backend/tenant";
 import { workshopsRoutes } from "@mms/mod-workshops/backend/tenant";
 import { examinationsRoutes } from "@mms/mod-examinations/backend/tenant";
 import { questionBankRoutes } from "@mms/mod-question-bank/backend/tenant";
-import usersRoutes from "./tenant/users.js";
+import usersRoutes from "@mms/mod-iam/backend/tenant/users";
 import attendanceTenantRoutes from "@mms/mod-attendance/backend/tenant";
 import sessionsTenantRoutes from "@mms/mod-sessions/backend/tenant";
 import backgroundJobRoutes from "./common/backgroundJobs.js";
@@ -173,7 +173,11 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     registerModuleAccess(scope, "questionBank");
     await scope.register(questionBankRoutes);
   });
-  await app.register(usersRoutes);
+  await app.register(async (scope) => {
+    scope.addHook("preHandler", authenticateTenant);
+    registerModuleAccess(scope, "users");
+    await scope.register(usersRoutes);
+  });
 
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);

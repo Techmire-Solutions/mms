@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createUsersUseCases } from "../users/use-cases/usersUseCases.js";
-import type { UsersRepository } from "../users/repository/usersRepository.js";
+import { createUsersUseCases } from "@mms/mod-iam/backend/tenant/use-cases";
+import type { UsersRepository } from "@mms/mod-iam/backend/tenant/repository";
 import { runWithTenant } from "@mms/be-core/http";
 import type { HttpDomainError } from "@mms/be-core/http/errors";
+import { configureIamUsersAdapters } from "../modules/iam/userAdapters.js";
 
 const mockFindFacultyByContactId = vi.fn();
 const mockListFacultyDesignations = vi.fn();
@@ -26,9 +27,11 @@ vi.mock("@mms/mod-faculty/backend/use-cases", async (importOriginal) => ({
   mergeWorkspaceRolesForPrefsSave: vi.fn((incoming) => incoming),
 }));
 
-vi.mock("../services/users/usersSettingsService.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/services/usersSettingsService", () => ({
   getTenantUsersSettings: (...args: unknown[]) => mockGetTenantUsersSettings(...args),
 }));
+
+configureIamUsersAdapters();
 
 vi.mock("../services/auth/userService.js", () => ({
   getHydratedUsers: (...args: unknown[]) => mockGetHydratedUsers(...args),

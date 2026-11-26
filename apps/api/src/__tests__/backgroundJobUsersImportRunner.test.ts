@@ -12,7 +12,7 @@ vi.mock("../lib/registerModuleCsvImportJobRunner.js", () => ({
     h.importBatch = o.importBatch as typeof h.importBatch;
   },
 }));
-vi.mock("../users/use-cases/usersUseCases.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/use-cases/usersUseCases", () => ({
   usersUseCases: { createWorkspaceUser: h.createWorkspaceUser },
 }));
 vi.mock("../lib/currentTenantRole.js", () => ({

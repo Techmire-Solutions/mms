@@ -6,21 +6,57 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./shared": {
-      "import": "./dist/shared/index.js",
-      "types": "./dist/shared/index.d.ts"
+    "./backend/platform": {
+      "import": "./dist/backend/platform.router.js",
+      "types": "./dist/backend/platform.router.d.ts"
     },
     "./backend/tenant": {
       "import": "./dist/backend/tenant.router.js",
       "types": "./dist/backend/tenant.router.d.ts"
     },
-    "./backend/platform": {
-      "import": "./dist/backend/platform.router.js",
-      "types": "./dist/backend/platform.router.d.ts"
+    "./backend/tenant/deps": {
+      "import": "./dist/backend/tenant/deps.js",
+      "types": "./dist/backend/tenant/deps.d.ts"
     },
-    "./frontend/tenant": "./src/frontend/tenant/index.ts",
+    "./backend/tenant/iamPort": {
+      "import": "./dist/backend/tenant/iamPort.js",
+      "types": "./dist/backend/tenant/iamPort.d.ts"
+    },
+    "./backend/tenant/repository": {
+      "import": "./dist/backend/tenant/repository/index.js",
+      "types": "./dist/backend/tenant/repository/index.d.ts"
+    },
+    "./backend/tenant/repository/*": {
+      "import": "./dist/backend/tenant/repository/*.js",
+      "types": "./dist/backend/tenant/repository/*.d.ts"
+    },
+    "./backend/tenant/services": {
+      "import": "./dist/backend/tenant/services/index.js",
+      "types": "./dist/backend/tenant/services/index.d.ts"
+    },
+    "./backend/tenant/services/*": {
+      "import": "./dist/backend/tenant/services/*.js",
+      "types": "./dist/backend/tenant/services/*.d.ts"
+    },
+    "./backend/tenant/use-cases": {
+      "import": "./dist/backend/tenant/use-cases/index.js",
+      "types": "./dist/backend/tenant/use-cases/index.d.ts"
+    },
+    "./backend/tenant/use-cases/*": {
+      "import": "./dist/backend/tenant/use-cases/*.js",
+      "types": "./dist/backend/tenant/use-cases/*.d.ts"
+    },
+    "./backend/tenant/users": {
+      "import": "./dist/backend/tenant/users.router.js",
+      "types": "./dist/backend/tenant/users.router.d.ts"
+    },
     "./frontend/platform": "./src/frontend/platform/index.ts",
-    "./package.json": "./package.json"
+    "./frontend/tenant": "./src/frontend/tenant/index.ts",
+    "./package.json": "./package.json",
+    "./shared": {
+      "import": "./dist/shared/index.js",
+      "types": "./dist/shared/index.d.ts"
+    }
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc --noEmit -p tsconfig.frontend.json",
@@ -35,7 +71,10 @@
     "@mms/fe-core": "workspace:*",
     "@mms/ui": "workspace:*",
     "@tanstack/react-query": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "drizzle-orm": "catalog:",
+    "@ts-rest/fastify": "^3.52.1",
+    "@ts-rest/core": "^3.52.1"
   },
   "peerDependencies": {
     "fastify": "^5.12.8",

@@ -96,6 +96,12 @@ export interface ContactRelationshipInferenceOptions {
    * inference never re-reads preferences (the N+1 config load in batch writes).
    */
   relationshipPairs?: RelationshipPair[];
+  /**
+   * Defers the inference `recordModernAuditEvent` call to the returned callback so
+   * callers that also run `reconcileContactSystemTags` acquire per-contact tag
+   * advisory locks *before* the workspace-wide `audit:<tenant>` shard lock.
+   */
+  deferAudit?: boolean;
 }
 
 /**
@@ -112,7 +118,8 @@ export async function applyContactRelationshipInference(
   customPairs?: RelationshipPair[],
   repo: ContactsRepository = contactsRepository,
   options?: ContactRelationshipInferenceOptions,
-): Promise<void> {
+): Promise<() => Promise<void>> {
+  const noopAudit = async (): Promise<void> => {};
   const sourceId = String(sourceContact.id);
   const sourceLinks = linksForContact(sourceContact).filter(
     (entry) => entry.contactId !== sourceId,
@@ -128,7 +135,7 @@ export async function applyContactRelationshipInference(
   const firstIds = Array.from(
     new Set([...sourceLinks.map((entry) => entry.contactId), ...previousTargetIds]),
   ).filter((id) => id !== sourceId);
-  if (sourceLinks.length === 0 && firstIds.length === 0) return;
+  if (sourceLinks.length === 0 && firstIds.length === 0) return noopAudit;
 
   const resolvedPairs =
     sourceLinks.length > 0
@@ -227,27 +234,35 @@ export async function applyContactRelationshipInference(
     await repo.bulkSave(tenant, fallbackUpdates);
   }
 
-  if (options?.actorId && (savedIds.length > 0 || skippedIds.length > 0)) {
-    await recordModernAuditEvent({
-      workspaceSubdomain: tenant,
-      tableName: "contacts",
-      recordId: sourceId,
-      actionType: "UPDATE",
-      realUserId: options.actorId,
-      subjectId: sourceId,
-      newState: {
-        action: "contact.relationship_inference",
-        summary: `Inferred ${savedIds.length} reciprocal link(s)${
-          skippedIds.length > 0 ? `; skipped ${skippedIds.length} concurrent edit(s)` : ""
-        }`,
-        savedTargetIds: savedIds,
-        skippedTargetIds: skippedIds,
-      },
-    }).catch((error: unknown) => {
-      logger.error(
-        { err: error instanceof Error ? error.message : String(error), tenant, sourceId },
-        "Relationship inference audit append failed",
-      );
-    });
+  const flushAudit = async (): Promise<void> => {
+    if (options?.actorId && (savedIds.length > 0 || skippedIds.length > 0)) {
+      await recordModernAuditEvent({
+        workspaceSubdomain: tenant,
+        tableName: "contacts",
+        recordId: sourceId,
+        actionType: "UPDATE",
+        realUserId: options.actorId,
+        subjectId: sourceId,
+        newState: {
+          action: "contact.relationship_inference",
+          summary: `Inferred ${savedIds.length} reciprocal link(s)${
+            skippedIds.length > 0 ? `; skipped ${skippedIds.length} concurrent edit(s)` : ""
+          }`,
+          savedTargetIds: savedIds,
+          skippedTargetIds: skippedIds,
+        },
+      }).catch((error: unknown) => {
+        logger.error(
+          { err: error instanceof Error ? error.message : String(error), tenant, sourceId },
+          "Relationship inference audit append failed",
+        );
+      });
+    }
+  };
+
+  if (options?.deferAudit) {
+    return flushAudit;
   }
+  await flushAudit();
+  return noopAudit;
 }

@@ -31,6 +31,9 @@ export interface AttendanceHostValue {
   BrandingPaletteContext: Record<string, unknown>;
   SessionClassSectionSelect: ComponentType<any>;
   ModuleReportsTier: ComponentType<any>;
+  ReportChartCard?: ComponentType<any>;
+  KPISummary?: ComponentType<any>;
+  ModuleReports?: ComponentType<any>;
   TenantMessageComposer: ComponentType<any>;
   WorkBatchTable: ComponentType<any>;
   WorkTaskToolbar: ComponentType<any>;

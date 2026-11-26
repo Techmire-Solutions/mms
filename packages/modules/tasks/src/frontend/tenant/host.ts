@@ -8,6 +8,7 @@ export interface TasksHostValue {
   useGenericModuleExport: TasksHostHook;
   BrandingPaletteContext: Record<string, unknown>;
   ModuleReportsTier: ComponentType<any>;
+  ReportChartCard?: ComponentType<any>;
 }
 
 let configured: TasksHostValue | null = null;

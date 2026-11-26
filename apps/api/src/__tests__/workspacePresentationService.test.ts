@@ -8,12 +8,9 @@ vi.mock("../db/repositories/workspaceRepository.js", () => ({
   listWorkspaceRowsPage: (...args: unknown[]) => mockListWorkspaceRowsPage(...args),
 }));
 
-vi.mock("../db/repositories/userModulePreferencesRepository.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/repository", () => ({
   getUserModulePreferencesByWorkspaces: (...args: unknown[]) =>
     mockGetUserModulePreferencesByWorkspaces(...args),
-}));
-
-vi.mock("../db/repositories/workspaceAdminUserRepository.js", () => ({
   getWorkspaceAdminEmailsMap: (...args: unknown[]) => mockGetWorkspaceAdminEmailsMap(...args),
 }));
 

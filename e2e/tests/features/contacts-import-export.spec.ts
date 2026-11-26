@@ -57,17 +57,36 @@ async function skipWhenPlatformConsoleUnavailable(
     ensureE2ePlatformAdmin(credentials.platformEmail, credentials.platformPassword);
   }
 
-  await page.goto("/");
-  await page.waitForLoadState("domcontentloaded");
+  const platformOrigin = (process.env.PLATFORM_BASE_URL || "http://localhost:5174").replace(
+    /\/$/,
+    "",
+  );
+  await page.goto(`${platformOrigin}/`, { waitUntil: "domcontentloaded" }).catch(async () => {
+    await page.reload({ waitUntil: "domcontentloaded" });
+  });
   const setupEmail = page.locator("#platform-setup-email");
   const signInEmail = page.locator("#platform-email");
+  const platformLanding = page
+    .getByRole("heading", { name: /Dashboard/i })
+    .or(page.locator('a[href="/onboarding"]'))
+    .or(page.locator('a[href="/platform/workspaces"]'));
   await setupEmail
     .or(signInEmail)
+    .or(platformLanding)
     .first()
     .waitFor({ state: "visible", timeout: 25_000 })
     .catch(() => undefined);
 
-  if (process.env.E2E_PLATFORM_EMAIL || (await setupEmail.isVisible().catch(() => false))) return;
+  if (
+    process.env.E2E_PLATFORM_EMAIL ||
+    (await setupEmail.isVisible().catch(() => false)) ||
+    (await platformLanding
+      .first()
+      .isVisible()
+      .catch(() => false))
+  ) {
+    return;
+  }
 
   await signInEmail.fill(credentials.platformEmail);
   await page.fill("#platform-password", credentials.platformPassword);

@@ -49,10 +49,10 @@ vi.mock("../db/database.js", () => ({
 
 vi.mock("../db/repositories/platformUserRepository.js", () => ({
   findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => {
-    return mockUsers.find((u) => u.id === id) ?? null;
+    return mockUsers.find((u: any) => u.id === id) ?? null;
   }),
   findPlatformUserRowByEmail: vi.fn().mockImplementation(async (email: string) => {
-    return mockUsers.find((u) => u.email === email) ?? null;
+    return mockUsers.find((u: any) => u.email === email) ?? null;
   }),
   listPlatformUsers: vi.fn().mockImplementation(async () => [...mockUsers]),
   countPlatformUserRows: vi.fn().mockImplementation(async () => mockUsers.length),
@@ -61,13 +61,13 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
     return u;
   }),
   deletePlatformUserRow: vi.fn().mockImplementation(async (id: string) => {
-    const idx = mockUsers.findIndex((u) => u.id === id);
+    const idx = mockUsers.findIndex((u: any) => u.id === id);
     if (idx >= 0) mockUsers.splice(idx, 1);
   }),
   updatePlatformUserRow: vi
     .fn()
     .mockImplementation(async (id: string, patch: Partial<(typeof mockUsers)[number]>) => {
-      const user = mockUsers.find((u) => u.id === id);
+      const user = mockUsers.find((u: any) => u.id === id);
       if (user) Object.assign(user, patch);
       return user ?? null;
     }),

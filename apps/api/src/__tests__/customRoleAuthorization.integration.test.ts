@@ -39,7 +39,7 @@ vi.mock("../services/rbacService.js", async (importOriginal) => {
 });
 
 const mockSettings = vi.fn();
-vi.mock("../services/users/usersSettingsService.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/services/usersSettingsService", () => ({
   getTenantUsersSettings: (...args: unknown[]) => mockSettings(...args),
 }));
 

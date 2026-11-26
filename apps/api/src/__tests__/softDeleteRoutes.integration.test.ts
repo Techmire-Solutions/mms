@@ -95,16 +95,21 @@ const mockListAllTenantUsersByWorkspace = vi.fn();
 const mockFindTeacherById = vi.fn();
 const mockIsTeacherDeletedByUserId = vi.fn();
 
-vi.mock("../db/repositories/tenantUserRepositoryHydrate.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../db/repositories/tenantUserRepositoryHydrate.js")>();
-  return {
-    ...actual,
-    findTenantUserRowById: (...args: unknown[]) => mockFindTenantUserRowById(...args),
-    listAllTenantUsersByWorkspace: (...args: unknown[]) =>
-      mockListAllTenantUsersByWorkspace(...args),
-  };
-});
+vi.mock(
+  "@mms/mod-iam/backend/tenant/repository/db/tenantUserRepositoryHydrate",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@mms/mod-iam/backend/tenant/repository/db/tenantUserRepositoryHydrate")
+      >();
+    return {
+      ...actual,
+      findTenantUserRowById: (...args: unknown[]) => mockFindTenantUserRowById(...args),
+      listAllTenantUsersByWorkspace: (...args: unknown[]) =>
+        mockListAllTenantUsersByWorkspace(...args),
+    };
+  },
+);
 
 vi.mock("@mms/mod-faculty/backend/repository", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@mms/mod-faculty/backend/repository")>();
@@ -151,7 +156,7 @@ import { buildApp } from "../app.js";
 import { accountantToken, adminToken, teacherToken, signTenantToken } from "./helpers/tokens.js";
 import { redisGet, redisSet, clearInMemoryRedisFallback } from "../lib/redis.js";
 import { clearL1Cache } from "@mms/be-core/cache";
-import { softDeleteTenantUserRow } from "../db/repositories/tenantUserRepositoryPersist.js";
+import { softDeleteTenantUserRow } from "@mms/mod-iam/backend/tenant/repository";
 
 describe("Soft Delete Route Semantics & Session Invalidation Integration", () => {
   let app: FastifyInstance;

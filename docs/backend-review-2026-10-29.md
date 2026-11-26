@@ -418,7 +418,7 @@ role defaults.
 ### F36 — Staff activity logs can be forged by any `analytics.view` holder
 
 **Where:** [`rbacPermissionMaps.ts:147`](../apps/api/src/lib/rbacPermissionMaps.ts#L147),
-[`users.ts:47-55`](../apps/api/src/routes/tenant/users.ts#L47-L55),
+[`users.router.ts:43-55`](../packages/modules/iam/src/backend/tenant/users.router.ts#L43-L55),
 [`logsRepository.ts:163-172`](../apps/api/src/db/repositories/logsRepository.ts#L163-L172).
 
 `COLLECTION_WRITE_PERMISSION.user_activity_logs` is `analytics.view` — the same value as the read
@@ -632,7 +632,7 @@ token's remaining lifetime (`exp − now`), or revoke the user session (which th
 `POST /api/auth/change-password` hashes the new password and clears the caller's cookies
 ([`authProfileRoutes.ts:84-90`](../apps/api/src/routes/common/auth/authProfileRoutes.ts#L84-L90));
 unlike the admin reset path it never calls `revokeAllUserSessions`
-([`userPasswordUseCases.ts:129`](../apps/api/src/users/use-cases/userPasswordUseCases.ts#L129)).
+([`userPasswordUseCases.ts:129`](../packages/modules/iam/src/backend/tenant/use-cases/userPasswordUseCases.ts#L129)).
 A stolen refresh token (7-day artifact) or another device's access token keeps working after the
 password change — precisely the action a user takes when they suspect compromise. Fix: revoke all
 sessions and refresh artifacts after a successful self-service change (and require re-login, which

@@ -20,7 +20,7 @@ import { consumeAuthArtifact } from "../../../services/auth/authArtifactService.
 import { revokeAllUserSessions, revokeToken } from "@mms/be-core/auth/sessionRevocation";
 import { getJwtExpiresIn, loadGlobalSettings } from "../../../services/globalSettingsService.js";
 import { tenantSessionScope, touchSession } from "@mms/mod-sessions/backend/services";
-import { usersUseCases } from "../../../users/use-cases/usersUseCases.js";
+import { usersUseCases } from "@mms/mod-iam/backend/tenant/use-cases/usersUseCases";
 import { facultyUseCases } from "@mms/mod-faculty/backend/use-cases";
 import {
   enforceTenantSessionClock,

@@ -40,6 +40,7 @@ vi.mock("../services/rbacService.js", () => ({
   invalidateTenantRbac: (...args: unknown[]) => mockInvalidateTenantRbac(...args),
 }));
 
+import { configureIamUsersAdapters } from "../modules/iam/userAdapters.js";
 import {
   activateInvitedTenantUserRow,
   findTenantUserRowById,
@@ -51,7 +52,9 @@ import {
   upsertTenantUserRow,
   verifyTenantUserEmailRow,
   verifyTenantUserEmailRowGlobal,
-} from "../db/repositories/tenantUserRepository.js";
+} from "@mms/mod-iam/backend/tenant/repository";
+
+configureIamUsersAdapters();
 
 const existingDbRow = {
   id: "u-1",
