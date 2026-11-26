@@ -184,6 +184,18 @@ const MOVED_MODULE_REPOSITORIES = [
     pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/messaging[A-Za-z0-9_]*Repository\.js$/,
     pkg: "@mms/mod-messaging/backend/repository",
   },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/attendance[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-attendance/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/contacts[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-contacts/backend/repository",
+  },
+  {
+    pattern: /^(?:\.\.\/)+(?:db\/)?repositories\/task[A-Za-z0-9_]*Repository\.js$/,
+    pkg: "@mms/mod-tasks/backend/repository",
+  },
 ];
 const MOVED_MIGRATION_MODULE = /^(?:\.{1,2}\/)+(?:migrations\/)?(\d{3}_[A-Za-z0-9_]+)\.js$/;
 

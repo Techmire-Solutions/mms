@@ -184,7 +184,7 @@ describe("examinations tenant isolation", () => {
              'question_citations', 'question_attachments', 'test_blueprint_buckets'
            )
       `);
-      const byName = new Map((rows.rows ?? []).map((row) => [row.relname, row]));
+      const byName = new Map((rows.rows ?? []).map((row: any) => [row.relname, row]));
       for (const table of [
         "exams",
         "exam_classes",
@@ -228,8 +228,12 @@ describe("examinations tenant isolation", () => {
     expect(analyticsB.analytics?.subjectPassRates).toEqual([
       expect.objectContaining({ total: 1, passed: 1 }),
     ]);
-    expect(analyticsA.analytics?.topPerformers.map((row) => row.studentId)).toEqual([STUDENT_A]);
-    expect(analyticsB.analytics?.topPerformers.map((row) => row.studentId)).toEqual([STUDENT_B]);
+    expect(analyticsA.analytics?.topPerformers.map((row: any) => row.studentId)).toEqual([
+      STUDENT_A,
+    ]);
+    expect(analyticsB.analytics?.topPerformers.map((row: any) => row.studentId)).toEqual([
+      STUDENT_B,
+    ]);
   });
 
   it("unfiltered reads return only the tenant's own rows", async () => {
@@ -238,9 +242,9 @@ describe("examinations tenant isolation", () => {
       withTenantRead(TENANT_A, (tx) => tx.select().from(examResults)),
       withTenantRead(TENANT_A, (tx) => tx.select().from(examEligibilityOverrides)),
     ]);
-    expect(ownExams.map((row) => row.workspaceSubdomain)).toEqual([TENANT_A]);
-    expect(ownResults.map((row) => row.workspaceSubdomain)).toEqual([TENANT_A]);
-    expect(ownOverrides.map((row) => row.workspaceSubdomain)).toEqual([TENANT_A]);
+    expect(ownExams.map((row: any) => row.workspaceSubdomain)).toEqual([TENANT_A]);
+    expect(ownResults.map((row: any) => row.workspaceSubdomain)).toEqual([TENANT_A]);
+    expect(ownOverrides.map((row: any) => row.workspaceSubdomain)).toEqual([TENANT_A]);
   });
 
   it("repository reads never cross tenants, even when asked for another tenant's exam", async () => {

@@ -1,0 +1,86 @@
+import React from "react";
+import { ACADEMIC_CALENDAR_SCOPES, type AcademicCalendarScope } from "@mms/contracts";
+import { Field, FormSelect } from "@mms/fe-core/components/FormPrimitives";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useAcademicTerms } from "../../host/useAcademicTerms";
+import { useSessionsCollection } from "../../host/sessionsCollection";
+import { SessionClassSectionSelect } from "../../../tenant/host/SessionClassSectionSelect.js";
+
+export interface CalendarEventScopeValue {
+  scope: AcademicCalendarScope;
+  sessionId: string;
+  classId: string;
+  sectionId: string;
+}
+
+export interface CalendarEventScopeFieldsProps {
+  value: CalendarEventScopeValue;
+  onChange: (next: CalendarEventScopeValue) => void;
+  disabled?: boolean;
+  /** Field-level error from the event form's schema validation. */
+  error?: string;
+}
+
+/** Scope cascade for a calendar event: workspace → session → class → section. */
+export function CalendarEventScopeFields({
+  value,
+  onChange,
+  disabled,
+  error,
+}: CalendarEventScopeFieldsProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const terms = useAcademicTerms();
+  const sessions = useSessionsCollection();
+  const needsSession = value.scope !== "workspace";
+  const scopeLabel: Record<AcademicCalendarScope, string> = {
+    workspace: t("attendance.calendar.scope.workspace"),
+    session: terms.session.singular,
+    class: terms.class.singular,
+    section: terms.section.singular,
+  };
+
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      <Field
+        id="calendar-event-scope"
+        label={t("attendance.calendar.appliesTo")}
+        required
+        error={error}
+      >
+        <FormSelect
+          id="calendar-event-scope"
+          name="scope"
+          value={value.scope}
+          disabled={disabled}
+          onChange={(next: any) => {
+            const scope = (ACADEMIC_CALENDAR_SCOPES as readonly string[]).includes(next)
+              ? (next as AcademicCalendarScope)
+              : "workspace";
+            onChange({
+              ...value,
+              scope,
+              ...(scope === "workspace" ? { sessionId: "", classId: "", sectionId: "" } : {}),
+            });
+          }}
+          options={ACADEMIC_CALENDAR_SCOPES.map((scope) => ({
+            value: scope,
+            label: scopeLabel[scope],
+          }))}
+        />
+      </Field>
+      {needsSession ? (
+        <SessionClassSectionSelect
+          sessions={sessions}
+          value={value}
+          onChange={(next: any) => onChange({ ...value, ...next })}
+          levels={
+            value.scope === "section" ? "section" : value.scope === "class" ? "class" : "session"
+          }
+          idPrefix="calendar-event"
+          required
+          disabled={disabled}
+        />
+      ) : null}
+    </div>
+  );
+}

@@ -1,0 +1,51 @@
+import React from "react";
+import { describe, expect, it, vi } from "vitest";
+import { renderToStaticMarkup } from "react-dom/server";
+import { AttendanceSetupTier } from "./AttendanceSetupTier";
+
+vi.mock("@mms/fe-core/i18n", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+  }),
+}));
+
+vi.mock("@mms/ui/app/ModuleTierMotion", () => ({
+  ModuleTierMotion: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="module-tier-motion">{children}</div>
+  ),
+}));
+
+vi.mock("@mms/ui/app/SetupReadOnlyMessage", () => ({
+  SetupReadOnlyMessage: ({ title }: { title: string }) => (
+    <div data-testid="setup-read-only-message">{title}</div>
+  ),
+}));
+
+let mockCanEditSetup = true;
+
+vi.mock("../host/usePermissions", () => ({
+  useModulePermissions: () => ({
+    canEditSetup: mockCanEditSetup,
+  }),
+}));
+
+vi.mock("./AttendanceSettings", () => ({
+  default: () => <div data-testid="attendance-settings">Attendance Settings</div>,
+  AttendanceSettings: () => <div data-testid="attendance-settings">Attendance Settings</div>,
+}));
+
+describe("AttendanceSetupTier Component", () => {
+  it("renders attendance settings component in editable mode", () => {
+    mockCanEditSetup = true;
+    const html = renderToStaticMarkup(<AttendanceSetupTier />);
+    expect(html).toContain("module-tier-motion");
+    expect(html).toBeDefined();
+  });
+
+  it("renders read-only message when canEditSetup is false", () => {
+    mockCanEditSetup = false;
+    const html = renderToStaticMarkup(<AttendanceSetupTier />);
+    expect(html).toContain("setup-read-only-message");
+    expect(html).toContain("attendance.settings.readOnly");
+  });
+});

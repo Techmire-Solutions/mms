@@ -69,26 +69,59 @@ vi.mock("@mms/mod-enrollments/backend/use-cases", async (importOriginal) => ({
   },
 }));
 
-vi.mock("../attendance/use-cases/attendanceUseCases.js", () => ({
-  attendanceUseCases: {
-    loadAttendanceRecords: vi.fn().mockResolvedValue([]),
-    loadAttendancePage: vi
-      .fn()
-      .mockResolvedValue({ records: [], total: 0, page: 1, limit: 15, hasMore: false }),
-    countAttendanceRecords: vi.fn().mockResolvedValue(0),
-    loadAttendanceCommandMetrics: vi.fn().mockResolvedValue({}),
-    createAttendanceRecord: vi.fn(),
-    updateAttendanceRecordById: vi.fn(),
-    replaceAttendanceRecords: vi.fn(),
-    upsertAttendanceRecords: vi.fn(),
-    bulkSoftDeleteAttendance: vi.fn(),
-    bulkRestoreAttendance: vi.fn(),
-    deleteAttendanceRecordById: (...args: unknown[]) => mockDeleteAttendanceRecordById(...args),
-    restoreAttendanceRecordById: (...args: unknown[]) => mockRestoreAttendanceRecordById(...args),
-    loadAttendanceWidgetAggregates: vi.fn().mockResolvedValue({}),
-    loadAttendanceReportAggregates: vi.fn().mockResolvedValue({}),
-  },
-}));
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/use-cases/attendanceUseCases.js",
+  () => ({
+    attendanceUseCases: {
+      loadAttendanceRecords: vi.fn().mockResolvedValue([]),
+      loadAttendancePage: vi
+        .fn()
+        .mockResolvedValue({ records: [], total: 0, page: 1, limit: 15, hasMore: false }),
+      countAttendanceRecords: vi.fn().mockResolvedValue(0),
+      loadAttendanceCommandMetrics: vi.fn().mockResolvedValue({}),
+      createAttendanceRecord: vi.fn(),
+      updateAttendanceRecordById: vi.fn(),
+      replaceAttendanceRecords: vi.fn(),
+      upsertAttendanceRecords: vi.fn(),
+      bulkSoftDeleteAttendance: vi.fn(),
+      bulkRestoreAttendance: vi.fn(),
+      deleteAttendanceRecordById: (...args: unknown[]) => mockDeleteAttendanceRecordById(...args),
+      restoreAttendanceRecordById: (...args: unknown[]) => mockRestoreAttendanceRecordById(...args),
+      loadAttendanceWidgetAggregates: vi.fn().mockResolvedValue({}),
+      loadAttendanceReportAggregates: vi.fn().mockResolvedValue({}),
+    },
+  }),
+);
+vi.mock("@mms/mod-attendance/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-attendance/backend/use-cases")>();
+  return {
+    ...actual,
+    copySessionCalendarEvents: vi.fn(),
+    streamAcademicCalendarCsv: vi.fn(),
+    streamAcademicCalendarIcs: vi.fn(),
+    recordApprovedLeave: vi.fn(),
+    assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
+    createAttendanceUseCases: vi.fn(),
+    attendanceUseCases: {
+      loadAttendanceRecords: vi.fn().mockResolvedValue([]),
+      loadAttendancePage: vi
+        .fn()
+        .mockResolvedValue({ records: [], total: 0, page: 1, limit: 15, hasMore: false }),
+      countAttendanceRecords: vi.fn().mockResolvedValue(0),
+      loadAttendanceCommandMetrics: vi.fn().mockResolvedValue({}),
+      createAttendanceRecord: vi.fn(),
+      updateAttendanceRecordById: vi.fn(),
+      replaceAttendanceRecords: vi.fn(),
+      upsertAttendanceRecords: vi.fn(),
+      bulkSoftDeleteAttendance: vi.fn(),
+      bulkRestoreAttendance: vi.fn(),
+      deleteAttendanceRecordById: (...args: unknown[]) => mockDeleteAttendanceRecordById(...args),
+      restoreAttendanceRecordById: (...args: unknown[]) => mockRestoreAttendanceRecordById(...args),
+      loadAttendanceWidgetAggregates: vi.fn().mockResolvedValue({}),
+      loadAttendanceReportAggregates: vi.fn().mockResolvedValue({}),
+    },
+  };
+});
 
 vi.mock("@mms/mod-billing/backend/use-cases", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@mms/mod-billing/backend/use-cases")>()),

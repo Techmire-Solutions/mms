@@ -13,15 +13,15 @@ export {
   useAttendanceReportAggregates,
   useAttendanceMutations,
   useAttendanceMetrics,
-} from "@/tenant/features/attendance/hooks/useAttendance";
-export { invalidateAttendanceQueries } from "@/tenant/features/attendance/hooks/invalidateAttendanceQueries";
+} from "@mms/mod-attendance/frontend/tenant/hooks/useAttendance";
+export { invalidateAttendanceQueries } from "@mms/mod-attendance/frontend/tenant/hooks/invalidateAttendanceQueries";
 export {
   useComposedAttendanceSettings,
   useAttendancePreferencesMutation,
   useAttendancePreferencesQuery,
   ATTENDANCE_PREFERENCES_QUERY_KEY,
-} from "@/tenant/features/attendance/hooks/useAttendanceSetupConfig";
-export { useAttendanceLookupsQuery } from "@/tenant/features/attendance/hooks/useAttendanceLookups";
+} from "@mms/mod-attendance/frontend/tenant/hooks/useAttendanceSetupConfig";
+export { useAttendanceLookupsQuery } from "@mms/mod-attendance/frontend/tenant/hooks/useAttendanceLookups";
 // Contract-driven tsrClient hooks & query factories
 export {
   attendanceListQueryOptions,
@@ -32,5 +32,5 @@ export {
   useAttendanceContractBulkRestore,
   useAttendanceContractUpdate,
   useAttendanceContractDelete,
-} from "@/tenant/features/attendance/hooks/useAttendance";
-export { applyAttendanceWorkDrillDown } from "@/tenant/features/attendance/hooks/attendanceWorkDrillDown";
+} from "@mms/mod-attendance/frontend/tenant/hooks/useAttendance";
+export { applyAttendanceWorkDrillDown } from "@mms/mod-attendance/frontend/tenant/hooks/attendanceWorkDrillDown";

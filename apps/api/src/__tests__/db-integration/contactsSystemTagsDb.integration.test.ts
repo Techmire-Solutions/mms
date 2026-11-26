@@ -419,8 +419,8 @@ describe("automatic module role tags (Postgres)", () => {
     const before = await withTenant(tenant, (tx) =>
       tx.select().from(contactTags).where(eq(contactTags.contactId, facultyContact)),
     );
-    expect(before.filter((row) => row.systemKey?.startsWith("faculty:"))).toHaveLength(2);
-    expect(before.filter((row) => row.systemKey === null)).toHaveLength(0);
+    expect(before.filter((row: any) => row.systemKey?.startsWith("faculty:"))).toHaveLength(2);
+    expect(before.filter((row: any) => row.systemKey === null)).toHaveLength(0);
 
     await runWithTenant(tenant, () =>
       contactUseCases.upsertContact({
@@ -603,6 +603,6 @@ describe("automatic module role tags (Postgres)", () => {
       tx.select().from(contactTags).where(eq(contactTags.contactId, sameNameContact)),
     );
     expect(rows).toHaveLength(2);
-    expect(new Set(rows.map((row) => row.systemKey)).size).toBe(2);
+    expect(new Set(rows.map((row: any) => row.systemKey)).size).toBe(2);
   });
 });

@@ -139,7 +139,7 @@ describe("exam marks concurrency", () => {
         .from(examResults)
         .where(eq(examResults.workspaceSubdomain, TENANT)),
     );
-    expect(rows.map((row) => row.studentId).sort()).toEqual([STUDENT_1, STUDENT_2]);
+    expect(rows.map((row: any) => row.studentId).sort()).toEqual([STUDENT_1, STUDENT_2]);
   });
 
   it("serialises overlapping batches written in opposite orders without 40P01", async () => {
@@ -153,7 +153,7 @@ describe("exam marks concurrency", () => {
         .from(examResults)
         .where(eq(examResults.workspaceSubdomain, TENANT)),
     );
-    const tokens = new Map(versioned.map((row) => [row.studentId, row.version]));
+    const tokens = new Map(versioned.map((row: any) => [row.studentId, row.version]));
 
     const outcomes = await Promise.allSettled([
       bulkSaveExamResults(TENANT, [

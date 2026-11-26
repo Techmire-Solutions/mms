@@ -14,8 +14,10 @@ import {
   tenantUsers,
   workspaces,
 } from "@mms/db/schema";
-import { findEligibleTaskRecipientRows } from "../../db/repositories/taskRecipientRepository.js";
+import { findEligibleTaskRecipientRows } from "@mms/mod-tasks/backend/repository";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { configureAttendanceAdapters } from "../../modules/attendance/adapters.js";
+import { configureTasksAdapters } from "../../modules/tasks/adapters.js";
 
 const TENANT = `task-delegation-${randomUUID().slice(0, 8)}`;
 
@@ -41,6 +43,8 @@ const PEOPLE = [
 ] as const;
 
 beforeAll(async () => {
+  configureAttendanceAdapters();
+  configureTasksAdapters();
   await requireDatabaseConnection();
   await applyDrizzleMigrations();
   await purge();
@@ -150,7 +154,7 @@ async function eligibleUserIds(options: {
   allowSelfAssignment?: boolean;
 }): Promise<string[]> {
   const rows = await findEligibleTaskRecipientRows(TENANT, "user-actor", options);
-  return rows.map((row) => String(row.userId)).sort();
+  return rows.map((row: any) => String(row.userId)).sort();
 }
 
 describe("Task delegation scope", () => {

@@ -113,7 +113,7 @@ describe("workshop completion and certificates (real Postgres)", () => {
     const rows = await inTenant(() => workshopsCompletionUseCases.evaluateCompletion("done"));
 
     // Assert
-    const byName = Object.fromEntries(rows.map((row) => [row.contactName, row]));
+    const byName = Object.fromEntries(rows.map((row: any) => [row.contactName, row]));
     expect(byName["Amina Khan"]).toMatchObject({
       status: "completed",
       attendancePct: 100,
@@ -142,7 +142,9 @@ describe("workshop completion and certificates (real Postgres)", () => {
     // Assert
     expect(first.issued).toEqual([amina]);
     expect(again.issued).toEqual([]);
-    expect(first.rows.find((row) => row.participantId === bilal)?.certificateIssuedAt).toBeNull();
+    expect(
+      first.rows.find((row: any) => row.participantId === bilal)?.certificateIssuedAt,
+    ).toBeNull();
   });
 
   it("given a re-evaluation that no longer completes, should keep the certificate and its completed standing", async () => {

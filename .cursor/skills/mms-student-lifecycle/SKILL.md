@@ -33,7 +33,7 @@ metadata:
 |---|---|---|
 | Students & Admissions | `apps/tenant-web/src/tenant/features/students/StudentsPage.tsx` | `packages/modules/students/src/`, `packages/modules/contacts/src/backend/systemTags/` |
 | Enrollments & Classes | `apps/tenant-web/src/tenant/features/enrollments/EnrollmentsPage.tsx` | `packages/modules/enrollments/src/backend/` |
-| Attendance Tracking | `apps/tenant-web/src/tenant/features/attendance/AttendancePage.tsx` | `apps/api/src/attendance/` |
+| Attendance Tracking | `packages/modules/attendance/src/frontend/tenant/AttendancePage.tsx` | `packages/modules/attendance/src/backend/` |
 | Examinations & Grades | `apps/tenant-web/src/tenant/features/examinations/ExaminationsPage.tsx` | `packages/modules/examinations/src/backend/` |
 | Hasanat & Merits | `apps/tenant-web/src/tenant/features/hasanat/HasanatCardsPage.tsx` | `packages/modules/hasanat/src/backend/` |
 

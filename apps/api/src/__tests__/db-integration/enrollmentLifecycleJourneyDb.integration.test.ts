@@ -360,13 +360,13 @@ describe("enrollment lifecycle journey (apply → waitlist → offer → enroll 
        WHERE workspace_subdomain = ${TENANT}
          AND session_id IN ('journey-complete', 'journey-cancel')
        ORDER BY session_id, student_id`);
-    expect(rows.map((row) => `${row.sessionId}:${row.status}`)).toEqual([
+    expect(rows.map((row: any) => `${row.sessionId}:${row.status}`)).toEqual([
       "journey-cancel:cancelled",
       "journey-cancel:cancelled",
       "journey-complete:completed",
       "journey-complete:completed",
     ]);
-    expect(rows.every((row) => row.endOn !== null)).toBe(true);
+    expect(rows.every((row: any) => row.endOn !== null)).toBe(true);
     const openPlacements = await query<{ count: number }>(sql`
       SELECT count(*)::int AS count FROM enrollment_placements p
         JOIN enrollments e ON e.workspace_subdomain = p.workspace_subdomain AND e.id = p.enrollment_id

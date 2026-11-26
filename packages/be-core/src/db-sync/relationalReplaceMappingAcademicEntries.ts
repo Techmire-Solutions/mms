@@ -4,24 +4,24 @@ import type { RelationalCollectionMapping } from "./relationalReplaceMappingType
 export const RELATIONAL_REPLACE_MAPPING_ACADEMIC: Record<string, RelationalCollectionMapping> = {
   attendance_lookups: {
     priority: 36,
-    importPath: "./repositories/attendanceLookupsRepository.js",
+    importPath: "@mms/mod-attendance/backend/repository",
     fnName: "replaceAttendanceLookupsForWorkspace",
     snapshotFnName: "listAllAttendanceLookupsByWorkspace",
   },
   attendance_field_configs: {
     priority: 36,
-    importPath: "./repositories/attendanceFieldConfigRepository.js",
+    importPath: "@mms/mod-attendance/backend/repository",
     fnName: "replaceAttendanceFieldConfigsForWorkspace",
     snapshotFnName: "listAllAttendanceFieldConfigsByWorkspace",
   },
   attendance_module_preferences: {
     priority: 36,
-    importPath: "./repositories/attendanceModulePreferencesRepository.js",
+    importPath: "@mms/mod-attendance/backend/repository",
     fnName: "replaceAttendanceModulePreferencesForWorkspace",
     snapshotFnName: "listAllAttendanceModulePreferencesByWorkspace",
   },
   attendance_records: {
-    importPath: "./repositories/attendanceRepository.js",
+    importPath: "@mms/mod-attendance/backend/repository",
     fnName: "replaceAttendanceRecordsForWorkspace",
     snapshotFnName: "listAttendanceRecordsByWorkspace",
   },

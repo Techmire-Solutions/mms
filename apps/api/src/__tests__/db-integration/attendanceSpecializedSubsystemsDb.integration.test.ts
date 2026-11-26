@@ -18,10 +18,10 @@ import {
   workspaces,
 } from "@mms/db/schema";
 import type { User } from "@mms/contracts";
-import { runWithTenant } from "../../lib/tenantContext.js";
-import { attendanceExcuseUseCases } from "../../attendance/use-cases/attendanceExcuseUseCases.js";
-import { scanAbsenceStreaks } from "../../attendance/use-cases/attendanceEscalationUseCases.js";
-import { listAbsenceAlerts } from "../../db/repositories/attendanceEscalationRepository.js";
+import { runWithTenant } from "@mms/be-core/http";
+import { attendanceExcuseUseCases } from "@mms/mod-attendance/backend/use-cases";
+import { scanAbsenceStreaks } from "@mms/mod-attendance/backend/use-cases";
+import { listAbsenceAlerts } from "@mms/mod-attendance/backend/repository";
 import {
   loadExamEligibility,
   setExamAttendanceGate,
@@ -29,6 +29,8 @@ import {
 import { setExamResultsFinalized } from "@mms/mod-examinations/backend/repository";
 import { assertExamResultsEligible } from "@mms/mod-examinations/backend/use-cases";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { configureAttendanceAdapters } from "../../modules/attendance/adapters.js";
+import { configureTasksAdapters } from "../../modules/tasks/adapters.js";
 
 /**
  * The three specialised attendance subsystems against real PostgreSQL: the excuse lifecycle with its
@@ -199,6 +201,8 @@ async function readMarks(studentId: string) {
 }
 
 beforeAll(async () => {
+  configureAttendanceAdapters();
+  configureTasksAdapters();
   await requireDatabaseConnection();
   await applyDrizzleMigrations();
   await seedFixtures();
@@ -250,7 +254,7 @@ describe("excuse lifecycle (real Postgres)", () => {
     const leaves = await withTenant(TENANT, (tx) =>
       tx.select().from(attendanceLeaves).where(eq(attendanceLeaves.workspaceSubdomain, TENANT)),
     );
-    const approved = leaves.find((row) => row.status === "approved");
+    const approved = leaves.find((row: any) => row.status === "approved");
     expect(approved).toBeDefined();
 
     await expect(
@@ -264,7 +268,7 @@ describe("excuse lifecycle (real Postgres)", () => {
     const leaves = await withTenant(TENANT, (tx) =>
       tx.select().from(attendanceLeaves).where(eq(attendanceLeaves.workspaceSubdomain, TENANT)),
     );
-    const approved = leaves.find((row) => row.status === "approved")!;
+    const approved = leaves.find((row: any) => row.status === "approved")!;
 
     const cancelled = await runWithTenant(TENANT, () =>
       attendanceExcuseUseCases.cancelExcuse(approved.id, { reason: "Returned early" }, ADMIN),
@@ -272,7 +276,7 @@ describe("excuse lifecycle (real Postgres)", () => {
     expect(cancelled.status).toBe("cancelled");
 
     const marks = await readMarks(STUDENT);
-    expect(marks.filter((row) => row.status === "excused")).toHaveLength(2);
+    expect(marks.filter((row: any) => row.status === "excused")).toHaveLength(2);
   });
 });
 
@@ -347,7 +351,7 @@ describe("exam attendance gate (real Postgres)", () => {
 
     const view = await loadExamEligibility(TENANT, EXAM);
     expect(view.requiredPct).toBe(75);
-    const byStudent = new Map(view.rows.map((row) => [row.studentId, row]));
+    const byStudent = new Map(view.rows.map((row: any) => [row.studentId, row]));
     expect(byStudent.get(STUDENT)).toMatchObject({ state: "eligible", attendancePct: 75 });
     expect(byStudent.get(STUDENT_2)).toMatchObject({ state: "blocked" });
   });
@@ -422,15 +426,14 @@ describe("exam attendance gate (real Postgres)", () => {
     });
     const view = await loadExamEligibility(TENANT, EXAM);
     expect(view.requiredPct).toBe(90);
-    const byStudent = new Map(view.rows.map((row) => [row.studentId, row]));
+    const byStudent = new Map(view.rows.map((row: any) => [row.studentId, row]));
     expect(byStudent.get(STUDENT)?.state).toBe("blocked");
   });
 });
 
 describe("marking matrix roster (real Postgres)", () => {
   it("returns every mark for the class/day and ignores other classes", async () => {
-    const { listAttendanceRoster } =
-      await import("../../db/repositories/attendanceRepositoryList.js");
+    const { listAttendanceRoster } = await import("@mms/mod-attendance/backend/repository");
     await seedMarks([
       markRow(STUDENT, "2026-03-02", "absent"),
       markRow(STUDENT_2, "2026-03-02", "present"),
@@ -448,14 +451,13 @@ describe("marking matrix roster (real Postgres)", () => {
       date: "2026-03-02",
     });
     expect(roster).toHaveLength(2);
-    expect(roster.map((row) => row.studentId).sort()).toEqual([STUDENT, STUDENT_2]);
+    expect(roster.map((row: any) => row.studentId).sort()).toEqual([STUDENT, STUDENT_2]);
     // The grid needs the OCC token to echo on save.
-    expect(roster.every((row) => typeof row.version === "number")).toBe(true);
+    expect(roster.every((row: any) => typeof row.version === "number")).toBe(true);
   });
 
   it("does not depend on how many rows exist elsewhere in the tenant", async () => {
-    const { listAttendanceRoster } =
-      await import("../../db/repositories/attendanceRepositoryList.js");
+    const { listAttendanceRoster } = await import("@mms/mod-attendance/backend/repository");
     // 300 unrelated rows in another class would have pushed this day out of a capped collection.
     const noise = Array.from({ length: 300 }, (_, index) => {
       const day = new Date(Date.UTC(2025, 0, 1 + index)).toISOString().slice(0, 10);
@@ -475,8 +477,7 @@ describe("marking matrix roster (real Postgres)", () => {
   });
 
   it("rejects a batch with several invalid rows and writes nothing", async () => {
-    const { assertAttendanceWriteAllowed } =
-      await import("../../attendance/use-cases/attendancePolicyGuard.js");
+    const { assertAttendanceWriteAllowed } = await import("@mms/mod-attendance/backend/use-cases");
     const before = await readMarks(STUDENT);
 
     await expect(
@@ -487,7 +488,7 @@ describe("marking matrix roster (real Postgres)", () => {
           rows: [
             markRow(STUDENT, "2026-03-02", "absent"),
             { ...markRow(STUDENT_2, "2026-03-02", "absent"), notes: "" },
-          ].map((row) => ({ ...row, status: "late", timeIn: "", timeOut: "" })),
+          ].map((row: any) => ({ ...row, status: "late", timeIn: "", timeOut: "" })),
         }),
       ),
     ).rejects.toMatchObject({ type: "attendance_batch_rejected" });

@@ -24,7 +24,10 @@ vi.mock("@mms/be-core/auth/sessionRevocation", () => ({
 }));
 
 vi.mock("../services/workspaceService.js", () => ({
-  getWorkspaceBySubdomain: vi.fn().mockImplementation(async (subdomain: string) => {
+  getWorkspaceBySubdomain: vi.fn().mockImplementation(async (raw: string) => {
+    const subdomain = String(raw ?? "")
+      .replace(/\.mms\.local$/, "")
+      .replace(/\.localhost$/, "");
     if (subdomain === "campus-a" || subdomain === "campus-b") {
       return { id: 1, subdomain, enabled: true, madrasaName: "Campus Madrasa" };
     }
@@ -45,7 +48,7 @@ vi.mock("../services/rbacService.js", () => ({
   userHasTenantRole: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/tasksRepository.js", () => ({
+vi.mock("../repository/db/tasksRepository.js", () => ({
   listTasks: (...args: unknown[]) => mocks.listTasks(...args),
   findTaskById: vi.fn(),
   getTaskMetrics: vi.fn(),
@@ -64,19 +67,35 @@ vi.mock("../services/taskMutationService.js", () => ({
   TaskDelegationError: class TaskDelegationError extends Error {},
 }));
 
-vi.mock("../db/repositories/tasksTrashRepository.js", () => ({
+vi.mock("../repository/db/tasksTrashRepository.js", () => ({
   deleteTask: (...args: unknown[]) => mocks.deleteTask(...args),
   restoreTask: vi.fn(),
 }));
 
+vi.mock(
+  "../../../../packages/modules/tasks/dist/backend/use-cases/tasksUseCases.js",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("../../../../packages/modules/tasks/dist/backend/use-cases/tasksUseCases.js")
+    >()),
+    listTasks: (...args: unknown[]) => mocks.listTasks(...args),
+    getTaskMetrics: vi.fn().mockResolvedValue({ total: 0, todo: 0, inProgress: 0, done: 0 }),
+  }),
+);
 import fastifyJwt from "@fastify/jwt";
-import tasksRoutes from "../routes/tenant/tasksRoutes.js";
+import { authenticateTenant } from "../middleware/authenticate.js";
+import { configureTasksAdapters } from "../modules/tasks/adapters.js";
+import { registerModuleAccess } from "../middleware/requireTenantModule.js";
+import tasksRoutes from "@mms/mod-tasks/backend/tenant";
 
 async function buildApp() {
   const app = Fastify();
   await app.register(fastifyJwt, {
     secret: "test-secret-at-least-32-chars-long!!",
   });
+  configureTasksAdapters();
+  app.addHook("preHandler", authenticateTenant);
+  registerModuleAccess(app, "tasks");
   await app.register(tasksRoutes);
   return app;
 }

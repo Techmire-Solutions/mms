@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { configureAttendanceAdapters } from "../modules/attendance/adapters.js";
 
 /**
  * Runner coverage + enqueue guard.
@@ -18,17 +19,13 @@ vi.mock("../../../../packages/be-core/dist/jobs/jobRunnerRegistry.js", () => ({
   },
   hasBackgroundJobRunner: (key: string) => mocks.runners.has(key),
 }));
-vi.mock("@mms/be-core/jobs", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@mms/be-core/jobs")>()),
-  registerBackgroundJobRunner: (key: string, runner: unknown) => {
-    mocks.runners.set(key, runner);
-  },
-  hasBackgroundJobRunner: (key: string) => mocks.runners.has(key),
+vi.mock("@mms/be-core/jobs", () => ({
   registerModuleCsvExportJobRunner: (options: { moduleId: string }) => {
     mocks.runners.set(`${options.moduleId}:export`, vi.fn());
   },
-}));
-vi.mock("../services/backgroundJobWorkerService.js", () => ({
+  registerModuleCsvImportJobRunner: (options: { moduleId: string }) => {
+    mocks.runners.set(`${options.moduleId}:import`, vi.fn());
+  },
   registerBackgroundJobRunner: (key: string, runner: unknown) => {
     mocks.runners.set(key, runner);
   },
@@ -43,7 +40,11 @@ vi.mock("../services/attendanceExportService.js", () => ({
   buildAttendanceCsvExport: vi.fn(),
   generateAttendanceCsvStreamChunks: vi.fn(),
 }));
-vi.mock("../attendance/use-cases/attendanceEscalationUseCases.js", () => ({
+vi.mock("@mms/mod-attendance/backend/use-cases", () => ({
+  streamAcademicCalendarCsv: vi.fn(),
+  streamAcademicCalendarIcs: vi.fn(),
+  recordApprovedLeave: vi.fn(),
+  copySessionCalendarEvents: vi.fn(),
   scanAbsenceStreaks: vi.fn(),
 }));
 vi.mock("../lib/registerModuleCsvExportJobRunner.js", () => ({
@@ -52,11 +53,11 @@ vi.mock("../lib/registerModuleCsvExportJobRunner.js", () => ({
   },
 }));
 
-const { registerAttendanceJobRunners } =
-  await import("../services/backgroundJobAttendanceRunners.js");
-const { hasBackgroundJobRunner } = await import("../services/backgroundJobWorkerService.js");
+const { registerAttendanceJobRunners } = await import("@mms/mod-attendance/backend/jobs");
+const { hasBackgroundJobRunner } = await import("@mms/be-core/jobs");
 
 beforeEach(() => {
+  configureAttendanceAdapters();
   mocks.runners.clear();
 });
 

@@ -276,7 +276,9 @@ describe("dbSyncService collection persistence", () => {
     );
     const prefsRows =
       (prefsCall?.[1] as Array<{ preferences?: Record<string, unknown> }> | undefined) ?? [];
-    expect(prefsRows.some((row) => row.preferences?.employeeIdPrefix === "TCH-LEGACY")).toBe(false);
+    expect(prefsRows.some((row: any) => row.preferences?.employeeIdPrefix === "TCH-LEGACY")).toBe(
+      false,
+    );
 
     const columnCall = dbSaveCollection.mock.calls.find(
       (call) => call[0] === "faculty_user_column_prefs",

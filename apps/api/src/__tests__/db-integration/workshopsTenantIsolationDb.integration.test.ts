@@ -132,7 +132,7 @@ describe("workshop tenant isolation (real Postgres)", () => {
   it("filters report, metrics and direct reads to the caller tenant", async () => {
     const reportA = await inTenant(A, () => workshopsCompletionUseCases.getReport());
     const metricsA = await inTenant(A, () => workshopsUseCases.loadMetrics());
-    expect(reportA.map((row) => row.workshopId)).not.toContain("b-only");
+    expect(reportA.map((row: any) => row.workshopId)).not.toContain("b-only");
     expect(metricsA.total).toBeGreaterThanOrEqual(1);
 
     const leaked = await withTenantRead(A, (tx) =>
@@ -203,7 +203,7 @@ describe("workshop tenant isolation (real Postgres)", () => {
           ),
         ),
     );
-    expect(a.map((row) => row.tenant)).toEqual([A]);
-    expect(b.map((row) => row.tenant)).toEqual([B]);
+    expect(a.map((row: any) => row.tenant)).toEqual([A]);
+    expect(b.map((row: any) => row.tenant)).toEqual([B]);
   });
 });

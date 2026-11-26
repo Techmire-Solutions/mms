@@ -2,6 +2,8 @@ import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import { buildApp } from "../../app.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { configureAttendanceAdapters } from "../../modules/attendance/adapters.js";
+import { configureTasksAdapters } from "../../modules/tasks/adapters.js";
 import { workspaces, tenantUsers, platformUsers, contacts } from "@mms/db/schema";
 import { beginLongLivedTenantTransaction, closeDatabase, getRootDb } from "@mms/db/client";
 import { hashPassword } from "../../services/auth/passwordService.js";
@@ -15,6 +17,8 @@ const TEST_PASSWORD = "ValidPassword123!";
 let app: FastifyInstance;
 
 beforeAll(async () => {
+  configureAttendanceAdapters();
+  configureTasksAdapters();
   await requireDatabaseConnection();
   app = await buildApp();
 

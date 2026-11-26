@@ -15,7 +15,7 @@ const RUNS = Number(process.env.CONCURRENCY_RUNS ?? 5);
 const APP_FILES = [
   "../../packages/modules/enrollments/src/backend/__tests__/db-integration/enrollmentConcurrencyDb.integration.test.ts",
   // Two staff marking one roster in different orders used to deadlock on the ON CONFLICT locks.
-  "src/__tests__/db-integration/attendanceConcurrencyDb.integration.test.ts",
+  "../../packages/modules/attendance/src/backend/__tests__/db-integration/attendanceConcurrencyDb.integration.test.ts",
   // Double redeem/void, idempotent issue, OCC, stock and quota races behind the Hasanat cards.
   "../../packages/modules/hasanat/src/backend/__tests__/db-integration/hasanatConcurrencyDb.integration.test.ts",
   // Exam OCC batches/moderation/publication: repeated so a lucky single run cannot hide a race.

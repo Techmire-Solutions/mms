@@ -3,20 +3,20 @@
 **Module**: Task  
 **Audit Scope**: Schema Contracts · View & Bulk Endpoints · Serialization & Security  
 **Files Examined**:
-- [`tasksRoutes.ts`](../apps/api/src/routes/tenant/tasksRoutes.ts)
-- [`tasksReadRoutes.ts`](../apps/api/src/routes/tenant/tasksReadRoutes.ts)
-- [`tasksSoftDeleteRoutes.ts`](../apps/api/src/routes/tenant/tasksSoftDeleteRoutes.ts)
-- [`tasksExportRoutes.ts`](../apps/api/src/routes/tenant/tasksExportRoutes.ts)
+- [`tasksRoutes.ts`](../packages/modules/tasks/src/backend/tenant.router.ts)
+- [`tasksReadRoutes.ts`](../packages/modules/tasks/src/backend/routes/tasksReadRoutes.ts)
+- [`tasksSoftDeleteRoutes.ts`](../packages/modules/tasks/src/backend/routes/tasksSoftDeleteRoutes.ts)
+- [`tasksExportRoutes.ts`](../packages/modules/tasks/src/backend/routes/tasksExportRoutes.ts)
 - [`tasksModuleManifest.ts`](../packages/contracts/src/tasks/tasksModuleManifest.ts)
 - [`tasks.contract.ts`](../packages/contracts/src/contracts/tasks.contract.ts)
-- [`tasksRepository.ts`](../apps/api/src/db/repositories/tasksRepository.ts)
-- [`tasksBulkRepository.ts`](../apps/api/src/db/repositories/tasksBulkRepository.ts)
-- [`tasksRowMapping.ts`](../apps/api/src/db/repositories/tasksRowMapping.ts)
-- [`taskPermissionService.ts`](../apps/api/src/services/taskPermissionService.ts)
-- [`taskSettingsService.ts`](../apps/api/src/services/taskSettingsService.ts)
+- [`tasksRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksRepository.ts)
+- [`tasksBulkRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksBulkRepository.ts)
+- [`tasksRowMapping.ts`](../packages/modules/tasks/src/backend/repository/db/tasksRowMapping.ts)
+- [`taskPermissionService.ts`](../packages/modules/tasks/src/backend/services/taskPermissionService.ts)
+- [`taskSettingsService.ts`](../packages/modules/tasks/src/backend/services/taskSettingsService.ts)
 - [`api.dto.ts`](../packages/contracts/src/schemas/api.dto.ts)
 - [`registerModuleCsvExportRoutes.ts`](../apps/api/src/lib/registerModuleCsvExportRoutes.ts)
-- [`taskRouteErrors.ts`](../apps/api/src/lib/taskRouteErrors.ts)
+- [`taskRouteErrors.ts`](../packages/modules/tasks/src/backend/lib/taskRouteErrors.ts)
 
 **Date**: 2026-11-12
 
@@ -232,7 +232,7 @@ No Kanban board view exists and no drag-and-drop reorder endpoint exists. This i
 
 ### 3.1 Issue #3 (Medium) — `SELECT_COLS` Selects Internal Metadata Columns That Are Silently Dropped
 
-[`tasksRowMapping.ts`](../apps/api/src/db/repositories/tasksRowMapping.ts) declares `SELECT_COLS` selecting **28 columns** from the database including:
+[`tasksRowMapping.ts`](../packages/modules/tasks/src/backend/repository/db/tasksRowMapping.ts) declares `SELECT_COLS` selecting **28 columns** from the database including:
 
 ```typescript
 export const SELECT_COLS = {

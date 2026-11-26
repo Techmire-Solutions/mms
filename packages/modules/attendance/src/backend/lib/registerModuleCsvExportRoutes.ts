@@ -1,0 +1,171 @@
+import type { FastifyInstance, FastifyRequest } from "fastify";
+import type { ZodTypeAny } from "zod";
+import type { User } from "@mms/contracts";
+import { isSystemMetadataKey, moduleExportAuditBodySchema } from "@mms/contracts";
+import { getRequestAuditContext, getRequestTenant } from "@mms/be-core/http";
+import { enqueueCsvExportJob, normalizeExportQuery } from "../deps.js";
+import { ForbiddenError, sendForbidden, sendServiceUnavailable } from "@mms/be-core/http/errors";
+import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
+import { recordModernAuditEvent, mapActionStringToAuditType } from "@mms/be-core/audit";
+import {
+  BackgroundJobLimitError,
+  QueueUnavailableError,
+  hasBackgroundJobRunner,
+} from "@mms/be-core/jobs";
+
+export type RegisterModuleCsvExportRoutesOptions = {
+  canRead: (user: User) => boolean;
+  canDeleteTrash: (user: User) => boolean;
+  bodySchema: ZodTypeAny;
+  moduleId: string;
+  defaultLabel: string;
+  /** Singular entity noun for audit copy, e.g. `contact` / `student`. */
+  entityNoun: string;
+  /** Audit action prefixes, e.g. `contact.export` / `student.export`. */
+  exportAuditAction: string;
+  queueAuditAction: string;
+  exportAuditSchema?: ZodTypeAny;
+  /**
+   * Register the legacy client-initiated `/export-audit` endpoint. When the
+   * module's queue path already writes an authoritative audit row, a caller can
+   * still forge the client-supplied count/scope — callers that do not need the
+   * duplicate row pass `false` (C-09).
+   * @default true
+   */
+  registerExportAudit?: boolean;
+  /**
+   * Server-side scope overrides merged into the export query after normalization.
+   * Used by modules whose rows must be limited to the caller's authorization scope
+   * (e.g. Students section scope). Throw `ForbiddenError` to reject the request
+   * (for example when an explicit id selection contains no permitted rows).
+   */
+  resolveQueryScope?: (args: {
+    user: User;
+    request: FastifyRequest;
+    query: Record<string, unknown>;
+  }) => Promise<Record<string, unknown> | undefined> | Record<string, unknown> | undefined;
+};
+
+/**
+ * Register POST `/export/csv` (+ optional POST `/export-audit`) for a module.
+ * Contacts keeps VCF/merge/import as separate handlers.
+ */
+export function registerModuleCsvExportRoutes(
+  fastify: FastifyInstance,
+  options: RegisterModuleCsvExportRoutesOptions,
+): void {
+  const exportAuditSchema = options.exportAuditSchema ?? moduleExportAuditBodySchema;
+
+  fastify.post("/export/csv", async (request, reply) => {
+    const user = request.user as User;
+    if (!options.canRead(user)) return sendForbidden(reply);
+
+    const parsed = parseRequest(options.bodySchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+
+    const data = parsed.data as {
+      query?: Record<string, unknown>;
+      ids?: Array<string | number>;
+      columns?: Array<{ id: string; label: string }>;
+      filename?: string;
+      label?: string;
+      idempotencyKey?: string;
+    };
+
+    const allowDeleted = options.canDeleteTrash(user);
+    const query = normalizeExportQuery(data.query, allowDeleted);
+    if (data.ids && data.ids.length > 0) {
+      query.includeIds = data.ids.map(String);
+    }
+
+    if (options.resolveQueryScope) {
+      try {
+        const scopeOverrides = await options.resolveQueryScope({ user, request, query });
+        if (scopeOverrides) Object.assign(query, scopeOverrides);
+      } catch (err) {
+        if (err instanceof ForbiddenError) return sendForbidden(reply, err.message);
+        throw err;
+      }
+    }
+
+    const safeColumns = data.columns
+      ? data.columns.filter((c) => !isSystemMetadataKey(c.id) && !isSystemMetadataKey(c.label))
+      : undefined;
+
+    // A route must never accept a job the worker cannot run: without this the request answered 202
+    // and the job dead-lettered three attempts later (attendance had no export runner at all).
+    if (!hasBackgroundJobRunner(`${options.moduleId}:export`)) {
+      return sendServiceUnavailable(
+        reply,
+        "CSV export is not available for this module on this deployment",
+      );
+    }
+
+    const label = data.label?.trim() || options.defaultLabel;
+    let job;
+    try {
+      job = await enqueueCsvExportJob({
+        tenant: getRequestTenant()!,
+        userId: String(user.id),
+        moduleId: options.moduleId,
+        label,
+        query,
+        columns: safeColumns,
+        filename: data.filename,
+        viewerRole: user.role,
+        allowDeleted,
+        idempotencyKey: data.idempotencyKey,
+        correlationId: getRequestAuditContext()?.correlationId,
+      });
+    } catch (err) {
+      if (err instanceof BackgroundJobLimitError) {
+        return reply.status(429).send({ type: "background_job_limit", message: err.message });
+      }
+      if (err instanceof QueueUnavailableError) {
+        return sendServiceUnavailable(reply, err.message);
+      }
+      throw err;
+    }
+
+    await recordModernAuditEvent({
+      workspaceSubdomain: getRequestTenant() ?? "unknown",
+      tableName: options.moduleId,
+      recordId: job.id,
+      actionType: mapActionStringToAuditType(options.queueAuditAction),
+      realUserId: String(user.id),
+      newState: {
+        summary: `Queued ${options.entityNoun} export "${label}"`,
+        action: options.queueAuditAction,
+      },
+    });
+    return reply.status(202).send({ job });
+  });
+
+  if (options.registerExportAudit !== false) {
+    fastify.post("/export-audit", async (request, reply) => {
+      const user = request.user as User;
+      if (!options.canRead(user)) return sendForbidden(reply);
+
+      const parsed = parseRequest(exportAuditSchema, request.body);
+      if (!parsed.ok) return replyValidationError(reply, parsed.message);
+
+      const data = parsed.data as {
+        count: number;
+        scope?: "all" | "filtered" | "selection";
+      };
+      const scope = data.scope ?? "filtered";
+      await recordModernAuditEvent({
+        workspaceSubdomain: getRequestTenant() ?? "unknown",
+        tableName: options.moduleId,
+        recordId: options.moduleId,
+        actionType: mapActionStringToAuditType(options.exportAuditAction),
+        realUserId: String(user.id),
+        newState: {
+          summary: `Exported ${data.count} ${options.entityNoun}(s) (${scope})`,
+          action: options.exportAuditAction,
+        },
+      });
+      return reply.send({ success: true });
+    });
+  }
+}

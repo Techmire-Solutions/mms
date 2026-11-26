@@ -153,7 +153,7 @@ describe("workshop audit coverage (real Postgres)", () => {
       workshopsUseCases.removeParticipant("au-live", added.id, "u-teacher"),
     );
     const rows = await auditRows("workshop_participants", added.id);
-    const removed = rows.find((row) => row.actionType === "DELETE");
+    const removed = rows.find((row: any) => row.actionType === "DELETE");
     expect(removed).toBeDefined();
     expect(await state(removed!.oldState ?? null)).toMatchObject({ id: added.id });
     expect(await state(removed!.newState ?? null)).toHaveProperty("deletedAt");
@@ -249,7 +249,7 @@ describe("workshop audit coverage (real Postgres)", () => {
       ),
     );
     const archived = (await auditRows("workshop_participants", participant.id)).find(
-      (row) => row.actionType === "DELETE",
+      (row: any) => row.actionType === "DELETE",
     );
     expect(archived).toBeDefined();
     expect(await state(archived!.newState ?? null)).toMatchObject({ deletedWithCascade: true });

@@ -29,6 +29,7 @@ export default defineConfig({
     setupFiles: ["./src/__tests__/dbIntegrationSetup.ts"],
     include: [
       "src/__tests__/rls/**/*.{test,spec}.ts",
+      "../../packages/modules/attendance/src/backend/__tests__/db-integration/attendanceTenantIsolation.db.integration.test.ts",
       "../../packages/modules/enrollments/src/backend/__tests__/db-integration/enrollmentsTrashRls.db.integration.test.ts",
       "../../packages/modules/hasanat/src/backend/__tests__/db-integration/hasanatTenantIsolation.db.integration.test.ts",
     ],

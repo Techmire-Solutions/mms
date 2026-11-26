@@ -85,7 +85,7 @@ describe("contact system tags pre-migration cleanup (Postgres)", () => {
          GROUP BY "contact_id"`,
         [tenant, [studentGuardian, staffParent]],
       );
-      const byContact = new Map(remaining.rows.map((row) => [row.contact_id, row.count]));
+      const byContact = new Map(remaining.rows.map((row: any) => [row.contact_id, row.count]));
       expect(byContact.get(studentGuardian)).toBeUndefined();
       expect(byContact.get(staffParent)).toBe("2");
     } finally {

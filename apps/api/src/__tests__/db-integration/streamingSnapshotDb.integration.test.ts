@@ -1,4 +1,6 @@
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
+import { configureAttendanceAdapters } from "../../modules/attendance/adapters.js";
+import { configureTasksAdapters } from "../../modules/tasks/adapters.js";
 import { eq } from "drizzle-orm";
 import { readFileSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
@@ -59,6 +61,8 @@ function applyDatabaseUrlFromEnvFile(): void {
 let dbAvailable = false;
 
 beforeAll(async () => {
+  configureAttendanceAdapters();
+  configureTasksAdapters();
   applyDatabaseUrlFromEnvFile();
   initializeDatabaseConnection();
   dbAvailable = await pingDatabase();

@@ -78,8 +78,8 @@ describe("queued workshop participant import (real Postgres)", () => {
     expect(retry).toMatchObject({ added: 0, waitlisted: 0, skipped: 3, failed: [] });
 
     const detail = await inTenant(() => workshopsUseCases.getWorkshop("imp-seat"));
-    expect(detail.participants.map((row) => row.contactId)).toEqual([CONTACTS[0]]);
-    expect(detail.waitlisted.map((row) => row.contactId)).toEqual([CONTACTS[1], CONTACTS[2]]);
+    expect(detail.participants.map((row: any) => row.contactId)).toEqual([CONTACTS[0]]);
+    expect(detail.waitlisted.map((row: any) => row.contactId)).toEqual([CONTACTS[1], CONTACTS[2]]);
 
     const audits = await withTenantRead(TENANT, (tx) =>
       tx

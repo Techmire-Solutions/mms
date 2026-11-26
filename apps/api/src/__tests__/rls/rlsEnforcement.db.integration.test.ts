@@ -185,7 +185,7 @@ describe("RLS enforcement", () => {
 
   it("scopes a tenant transaction to its own rows", async () => {
     const rows = await withTenant(TENANT_A, (tx) => tx.select({ id: students.id }).from(students));
-    expect(rows.map((row) => row.id)).toEqual(["student-a"]);
+    expect(rows.map((row: any) => row.id)).toEqual(["student-a"]);
   });
 
   it("scopes every workshop table to the tenant", async () => {
@@ -200,8 +200,8 @@ describe("RLS enforcement", () => {
         .select({ attendance: workshopModulePreferences.defaultMinAttendancePct })
         .from(workshopModulePreferences),
     );
-    expect(events.map((row) => row.id)).toEqual(["w-a"]);
-    expect(participants.map((row) => row.id)).toEqual(["p-a"]);
+    expect(events.map((row: any) => row.id)).toEqual(["w-a"]);
+    expect(participants.map((row: any) => row.id)).toEqual(["p-a"]);
     expect(preferences).toHaveLength(1);
 
     const outside = await activeDb().select({ id: workshopEvents.id }).from(workshopEvents);

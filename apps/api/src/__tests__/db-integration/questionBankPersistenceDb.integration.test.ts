@@ -354,7 +354,7 @@ describe("one active paper result per (test, student)", () => {
           ),
         ),
     );
-    expect(active.map((row) => row.id)).toEqual([`${TENANT}-r2`]);
+    expect(active.map((row: any) => row.id)).toEqual([`${TENANT}-r2`]);
   });
 });
 
@@ -367,7 +367,7 @@ describe("declared schema objects really exist (real Postgres)", () => {
            AND tablename IN ('assessment_results', 'test_sections')
       `),
     );
-    const names = indexes.rows.map((row) => row.indexname);
+    const names = indexes.rows.map((row: any) => row.indexname);
     expect(names).toContain("assessment_results_workspace_submitted_idx");
     expect(names).toContain("assessment_results_ws_test_student_uidx");
     expect(names).toContain("test_sections_ws_id_uidx");
@@ -378,7 +378,7 @@ describe("declared schema objects really exist (real Postgres)", () => {
          WHERE conname IN ('tests_class_fk', 'test_section_questions_section_fk')
       `),
     );
-    const byName = new Map(constraints.rows.map((row) => [row.conname, row.convalidated]));
+    const byName = new Map(constraints.rows.map((row: any) => [row.conname, row.convalidated]));
     expect(byName.get("tests_class_fk")).toBe(true);
     expect(byName.get("test_section_questions_section_fk")).toBe(true);
   });
@@ -590,7 +590,7 @@ describe("question bank integrity (migration 0240)", () => {
                              'test_questions', 'test_section_questions')
       `),
     );
-    const names = indexes.rows.map((row) => row.indexname);
+    const names = indexes.rows.map((row: any) => row.indexname);
     for (const expected of [
       "questions_ws_active_difficulty_type_idx",
       "questions_ws_updated_active_idx",
@@ -617,7 +617,7 @@ describe("question bank integrity (migration 0240)", () => {
          WHERE tgrelid = 'questions'::regclass AND NOT tgisinternal
       `),
     );
-    expect(triggers.rows.map((row) => row.tgname)).toContain("trg_questions_referenced_guard");
+    expect(triggers.rows.map((row: any) => row.tgname)).toContain("trg_questions_referenced_guard");
   });
 });
 

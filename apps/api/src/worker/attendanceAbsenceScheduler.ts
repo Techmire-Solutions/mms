@@ -5,7 +5,7 @@ import {
   LEADER_LOCK_ATTENDANCE_ABSENCE,
   tryAcquireLeaderLease,
 } from "@mms/be-core/queues/leaderElection";
-import { scanAbsenceStreaks } from "../attendance/use-cases/attendanceEscalationUseCases.js";
+import { scanAbsenceStreaks } from "@mms/mod-attendance/backend/use-cases";
 import { listEnabledWorkspaces, withTimeout } from "./sweepSupport.js";
 
 /** Re-exported for the attendance sweep's own callers and tests. */

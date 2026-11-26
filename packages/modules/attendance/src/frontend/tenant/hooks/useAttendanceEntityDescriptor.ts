@@ -1,0 +1,17 @@
+import type { AttendanceRecord } from "@mms/contracts";
+import type { EntityDescriptor } from "@mms/fe-core/components/entityRegistryTypes";
+import { attendanceEntityDescriptor } from "../lib/attendanceDescriptors";
+import { useStaticEntityDescriptor } from "@mms/fe-core/components/useStaticEntityDescriptor";
+import { useTranslation } from "@mms/fe-core/i18n";
+
+/**
+ * Returns an i18n-resolved EntityDescriptor<AttendanceRecord> with all labels
+ * resolved through the active locale at call time.
+ */
+export function useAttendanceEntityDescriptor(): EntityDescriptor<AttendanceRecord> {
+  const { t } = useTranslation();
+  return useStaticEntityDescriptor(
+    attendanceEntityDescriptor,
+    (key, fallback) => t(key as Parameters<typeof t>[0]) || fallback,
+  );
+}

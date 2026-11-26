@@ -6,6 +6,8 @@ import { configureStudentsAdapters } from "../modules/students/adapters.js";
 import { configureSessionsAdapters } from "../modules/sessions/adapters.js";
 import { configureEnrollmentsAdapters } from "../modules/enrollments/adapters.js";
 import { configureFacultyAccountDeletionGuard } from "../modules/faculty/adapters.js";
+import { configureAttendanceAdapters } from "../modules/attendance/adapters.js";
+import { configureTasksAdapters } from "../modules/tasks/adapters.js";
 import "../modules/accounting/configure.js";
 import "../modules/examinations/configure.js";
 import "../modules/obligations/configure.js";
@@ -26,5 +28,7 @@ export function configureModuleAdapters(): void {
   configureSessionsAdapters();
   configureEnrollmentsAdapters();
   configureFacultyAccountDeletionGuard();
+  configureAttendanceAdapters();
+  configureTasksAdapters();
   configured = true;
 }

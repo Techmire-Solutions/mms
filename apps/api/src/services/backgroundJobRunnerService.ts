@@ -1,4 +1,4 @@
-import { registerAttendanceJobRunners } from "./backgroundJobAttendanceRunners.js";
+import { registerAttendanceJobRunners } from "@mms/mod-attendance/backend/jobs";
 import { registerExaminationsJobRunners } from "./backgroundJobExaminationsRunners.js";
 import { registerHasanatJobRunners } from "@mms/mod-hasanat/backend/jobs";
 import { registerObligationsJobRunners } from "./backgroundJobObligationsRunners.js";
@@ -62,7 +62,7 @@ import { registerContactsVcfExportJobRunner } from "@mms/mod-contacts/backend/jo
 import { registerMessagingCampaignJobRunner } from "@mms/mod-messaging/backend/services";
 import { registerMessagingImportJobRunner } from "@mms/mod-messaging/backend/jobs";
 import { registerFacultyBackgroundJobRunners } from "@mms/mod-faculty/backend/jobs";
-import { registerTasksBackgroundJobRunners } from "./backgroundJobTasksRunners.js";
+import { registerTasksBackgroundJobRunners } from "@mms/mod-tasks/backend/jobs";
 import { registerQuestionBankBackgroundJobRunners } from "./backgroundJobQuestionBankRunners.js";
 import { registerWorkshopImportJobRunner } from "@mms/mod-workshops/backend/jobs";
 import { registerStudentsImportJobRunner } from "@mms/mod-students/backend/services";

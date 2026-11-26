@@ -44,7 +44,7 @@ import {
   OBLIGATIONS_WAKALA_QUERY_KEY,
 } from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
 import { HASANAT_DISTRIBUTIONS_QUERY_KEY } from "@mms/mod-hasanat/frontend/tenant/hooks/hasanatQueryKeys";
-import { attendanceQueryKeys } from "@/tenant/features/attendance/hooks/attendanceQueryKeys";
+import { attendanceQueryKeys } from "@mms/mod-attendance/frontend/tenant/hooks/attendanceQueryKeys";
 
 function capture(invalidator: (queryClient: QueryClient) => void): readonly (readonly unknown[])[] {
   const queryClient = { invalidateQueries: vi.fn() };

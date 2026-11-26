@@ -1,0 +1,65 @@
+import React from "react";
+import type { HTMLMotionProps } from "framer-motion";
+import { DirectoryCardMetaTile } from "@mms/ui/app/DirectoryCardMetaTile";
+import { EntityCard } from "@mms/fe-core/components/EntityCard";
+import { useWorkCardAction } from "@mms/fe-core/hooks";
+import type { getAttendanceStatusInfo } from "../lib/attendanceData";
+import { MarkAttendanceFieldControl } from "./MarkAttendanceFieldControl";
+import { cn } from "@mms/ui";
+import type { ModuleFieldDef } from "@mms/contracts";
+import type { AttendanceRow } from "../lib/markAttendanceTypes";
+
+/** EntityCard tile (workshop) — not DirectoryEntityCard. */
+export interface MarkAttendanceStudentCardProps {
+  row: AttendanceRow;
+  statusInfo: ReturnType<typeof getAttendanceStatusInfo>;
+  enabledFields: ModuleFieldDef[];
+  onFieldChange: (studentId: string, key: string, value: unknown) => void;
+  motionProps?: HTMLMotionProps<"div">;
+}
+
+export function MarkAttendanceStudentCard({
+  row,
+  statusInfo,
+  enabledFields,
+  onFieldChange,
+  motionProps,
+}: MarkAttendanceStudentCardProps): React.JSX.Element {
+  const { cardProps } = useWorkCardAction({
+    entity: { id: row.studentId, name: row.name },
+    selectedIds: [],
+    canSelect: false,
+  });
+
+  return (
+    <EntityCard className={cn("space-y-3 p-4", statusInfo?.bg)} {...cardProps} {...motionProps}>
+      <EntityCard.Header
+        id={row.studentId}
+        displayName={row.name}
+        subtitle={<span className="font-mono text-xs text-muted-foreground">{row.rollNo}</span>}
+        isSelected={false}
+        onSelect={() => {}}
+        selectAriaLabel=""
+        showSelect={false}
+      />
+      <EntityCard.MetaGrid className="grid-cols-1 sm:grid-cols-2 gap-2 pt-2 border-t border-border/40 ms-0">
+        {enabledFields.map((field) => (
+          <DirectoryCardMetaTile
+            key={field.id}
+            label={`${field.label}${field.required ? " *" : ""}`}
+            className={field.id === "notes" ? "sm:col-span-2" : ""}
+          >
+            <div className={field.id === "status" ? "flex justify-start mt-0.5" : "mt-0.5"}>
+              <MarkAttendanceFieldControl
+                row={row}
+                field={field}
+                idPrefix="mobile"
+                onFieldChange={onFieldChange}
+              />
+            </div>
+          </DirectoryCardMetaTile>
+        ))}
+      </EntityCard.MetaGrid>
+    </EntityCard>
+  );
+}

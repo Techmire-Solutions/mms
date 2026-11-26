@@ -163,7 +163,7 @@ describe("platform consolidation", () => {
     // Assert
     const sub = report.members.find((member) => member.memberSubdomain === SUB);
     expect(sub?.functionalCurrency).toBe("USD");
-    expect(sub?.rows.find((row) => row.code === "1000")).toMatchObject({
+    expect(sub?.rows.find((row: any) => row.code === "1000")).toMatchObject({
       functionalBalance: 110,
       balance: 30800,
     });

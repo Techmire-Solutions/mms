@@ -64,7 +64,7 @@ async function currentCatalogue() {
       })
       .from(obligationDistributions)
       .where(eq(obligationDistributions.workspaceSubdomain, TENANT));
-    return { wakalas: wakalas.map((row) => row.id), rules };
+    return { wakalas: wakalas.map((row: any) => row.id), rules };
   });
 }
 
@@ -132,7 +132,7 @@ describe("catalogue aggregate concurrency", () => {
 
     // Whichever won, its rules are complete and point at a wakala that exists.
     const expectedRules = isSetA ? ["od-a"] : ["od-b", "od-b2"];
-    expect(catalogue.rules.map((row) => row.id).sort()).toEqual(expectedRules.sort());
+    expect(catalogue.rules.map((row: any) => row.id).sort()).toEqual(expectedRules.sort());
     for (const row of catalogue.rules) {
       expect(catalogue.wakalas).toContain(row.wakalaTypeId);
     }
@@ -161,8 +161,8 @@ describe("catalogue aggregate concurrency", () => {
         .select({ id: wakalaTypes.id })
         .from(wakalaTypes)
         .where(eq(wakalaTypes.workspaceSubdomain, TENANT));
-      const live = new Set(wakalas.map((row) => row.id));
-      return rows.filter((row) => !live.has(row.wakalaTypeId));
+      const live = new Set(wakalas.map((row: any) => row.id));
+      return rows.filter((row: any) => !live.has(row.wakalaTypeId));
     });
 
     expect(orphans).toHaveLength(0);
@@ -187,6 +187,6 @@ describe("catalogue aggregate concurrency", () => {
 
     const catalogue = await currentCatalogue();
     expect(catalogue.wakalas).toEqual(["wt-a"]);
-    expect(catalogue.rules.map((row) => row.id)).toEqual(["od-a"]);
+    expect(catalogue.rules.map((row: any) => row.id)).toEqual(["od-a"]);
   });
 });

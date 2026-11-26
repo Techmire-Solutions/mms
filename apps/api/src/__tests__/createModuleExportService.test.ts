@@ -132,7 +132,7 @@ describe("createModuleExportService OFFSET continuation", () => {
       yieldDataChunks: function* (rows) {
         for (const row of rows) yield `${row.name}\n`;
       },
-      extractCell: (row) => row.name,
+      extractCell: (row: any) => row.name,
     });
   }
 

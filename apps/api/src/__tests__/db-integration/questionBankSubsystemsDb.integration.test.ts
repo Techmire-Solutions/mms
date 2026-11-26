@@ -92,7 +92,7 @@ async function resetQuestions(): Promise<void> {
     }));
     await tx.insert(questions).values(rows);
     await tx.insert(questionCategories).values(
-      rows.map((row) => ({
+      rows.map((row: any) => ({
         workspaceSubdomain: TENANT,
         questionId: row.id,
         categoryId: "fiqh",

@@ -7,9 +7,9 @@ This audit reviews the domain use cases, business invariants, dependency validat
 ## Executive Summary & Architecture Analysis
 
 The task domain logic is distributed across three distinct layers:
-1. **HTTP Layer**: [`tasksRoutes.ts`](../apps/api/src/routes/tenant/tasksRoutes.ts), [`tasksReadRoutes.ts`](../apps/api/src/routes/tenant/tasksReadRoutes.ts), [`tasksSoftDeleteRoutes.ts`](../apps/api/src/routes/tenant/tasksSoftDeleteRoutes.ts).
-2. **Domain & Services Layer**: [`taskMutationService.ts`](../apps/api/src/services/taskMutationService.ts), [`taskDelegationService.ts`](../apps/api/src/services/taskDelegationService.ts), [`taskNotificationService.ts`](../apps/api/src/services/taskNotificationService.ts), [`tasksUseCases.ts`](../apps/api/src/tasks/use-cases/tasksUseCases.ts).
-3. **Persistence & Integrity Layer**: [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts), [`tasksBulkRepository.ts`](../apps/api/src/db/repositories/tasksBulkRepository.ts), [`tasksTrashRepository.ts`](../apps/api/src/db/repositories/tasksTrashRepository.ts).
+1. **HTTP Layer**: [`tasksRoutes.ts`](../packages/modules/tasks/src/backend/tenant.router.ts), [`tasksReadRoutes.ts`](../packages/modules/tasks/src/backend/routes/tasksReadRoutes.ts), [`tasksSoftDeleteRoutes.ts`](../packages/modules/tasks/src/backend/routes/tasksSoftDeleteRoutes.ts).
+2. **Domain & Services Layer**: [`taskMutationService.ts`](../packages/modules/tasks/src/backend/services/taskMutationService.ts), [`taskDelegationService.ts`](../packages/modules/tasks/src/backend/services/taskDelegationService.ts), [`taskNotificationService.ts`](../packages/modules/tasks/src/backend/services/taskNotificationService.ts), [`tasksUseCases.ts`](../packages/modules/tasks/src/backend/use-cases/tasksUseCases.ts).
+3. **Persistence & Integrity Layer**: [`tasksWriteRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksWriteRepository.ts), [`tasksBulkRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksBulkRepository.ts), [`tasksTrashRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksTrashRepository.ts).
 
 ```
 +----------------------------------------------------------------------------------------------------+
@@ -46,13 +46,13 @@ The task domain logic is distributed across three distinct layers:
 
 | Focus Area | Severity | Finding | Root Cause | Primary File |
 | :--- | :--- | :--- | :--- | :--- |
-| **Lifecycle & Invariants** | **HIGH** | Parent tasks can be marked `completed` while child subtasks remain unresolved | No subtask completion barrier in `updateTaskStatus` or `bulkUpdateTaskStatusBatch`. | [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L124-L135) |
-| **Lifecycle & Invariants** | **MEDIUM** | Inconsistent Assignee Completion | Marking a task `completed` does not update `completedAt` on `task_assignees` records. | [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L130-L135) |
+| **Lifecycle & Invariants** | **HIGH** | Parent tasks can be marked `completed` while child subtasks remain unresolved | No subtask completion barrier in `updateTaskStatus` or `bulkUpdateTaskStatusBatch`. | [`tasksWriteRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksWriteRepository.ts#L124-L135) |
+| **Lifecycle & Invariants** | **MEDIUM** | Inconsistent Assignee Completion | Marking a task `completed` does not update `completedAt` on `task_assignees` records. | [`tasksWriteRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksWriteRepository.ts#L130-L135) |
 | **Dependency Graph** | **CRITICAL** | Zero task dependency modeling (`task_dependencies` absent) | No way to model "A blocks B"; circular dependency checks cannot be implemented. | [`tasksTables.ts`](../packages/db/src/schema/tasksTables.ts#L23-L46) |
-| **Dependency Graph** | **HIGH** | Excessive subtask nesting depth (up to 20 levels) and missing DB self-parent constraint | Recursive CTE caps at 20 levels; table lacks `CHECK (parent_task_id <> id)`. | [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L34-L52) |
-| **Transactional Integrity** | **CRITICAL** | Transactional Outbox split-brain on task mutations | Task write and outbox notification emission run in two separate database transactions. | [`taskMutationService.ts`](../apps/api/src/services/taskMutationService.ts#L28-L60) |
-| **Clean Architecture** | **HIGH** | Route handlers leaking domain orchestration | Route handlers manually import services and dispatch notification intents for status changes. | [`tasksRoutes.ts`](../apps/api/src/routes/tenant/tasksRoutes.ts#L214-L224) |
-| **Transactional Integrity** | **HIGH** | Bulk status updates omit outbox events entirely | `bulkUpdateTaskStatusBatch` writes audit logs but never emits outbox events. | [`tasksBulkRepository.ts`](../apps/api/src/db/repositories/tasksBulkRepository.ts#L208-L254) |
+| **Dependency Graph** | **HIGH** | Excessive subtask nesting depth (up to 20 levels) and missing DB self-parent constraint | Recursive CTE caps at 20 levels; table lacks `CHECK (parent_task_id <> id)`. | [`tasksWriteRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksWriteRepository.ts#L34-L52) |
+| **Transactional Integrity** | **CRITICAL** | Transactional Outbox split-brain on task mutations | Task write and outbox notification emission run in two separate database transactions. | [`taskMutationService.ts`](../packages/modules/tasks/src/backend/services/taskMutationService.ts#L28-L60) |
+| **Clean Architecture** | **HIGH** | Route handlers leaking domain orchestration | Route handlers manually import services and dispatch notification intents for status changes. | [`tasksRoutes.ts`](../packages/modules/tasks/src/backend/tenant.router.ts#L214-L224) |
+| **Transactional Integrity** | **HIGH** | Bulk status updates omit outbox events entirely | `bulkUpdateTaskStatusBatch` writes audit logs but never emits outbox events. | [`tasksBulkRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksBulkRepository.ts#L208-L254) |
 
 ---
 
@@ -88,7 +88,7 @@ The status state machine is formally verified by `@mms/shared/src/obligations/ta
 ### 1.2 Broken Invariant: Unresolved Subtasks Barrier
 
 #### The Problem
-In [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L124-L135) and [`tasksBulkRepository.ts`](../apps/api/src/db/repositories/tasksBulkRepository.ts#L200-L205):
+In [`tasksWriteRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksWriteRepository.ts#L124-L135) and [`tasksBulkRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksBulkRepository.ts#L200-L205):
 When a task transitions to `completed`:
 - The code validates `isTaskStatusTransitionAllowed(current.status, "completed")`.
 - **It does NOT check whether child subtasks are completed!**
@@ -143,7 +143,7 @@ The table `task_assignees` contains a `completed_at` column:
 // tasksTables.ts
 completedAt: timestamp("completed_at", { withTimezone: true, mode: "date" })
 ```
-However, in [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L130-L135) and `updateTaskStatus`:
+However, in [`tasksWriteRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksWriteRepository.ts#L130-L135) and `updateTaskStatus`:
 - When `tasks.status` is updated to `completed`, `tasks.completedAt` is updated to `now()`.
 - **`task_assignees.completed_at` is never updated.**
 - Conversely, when a task is reopened (`completed -> in_progress`), `tasks.completedAt` is cleared to `null`, but if any assignee had a timestamp, it is desynchronized.
@@ -151,7 +151,7 @@ However, in [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWri
 
 ### 1.4 Soft-Delete (Archive) Invariants
 
-In [`tasksTrashRepository.ts`](../apps/api/src/db/repositories/tasksTrashRepository.ts#L17-L28):
+In [`tasksTrashRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksTrashRepository.ts#L17-L28):
 ```ts
 const children = await tx
   .select({ id: tasks.id })
@@ -175,7 +175,7 @@ if (children.length) throw new ConflictError("Task has active subtasks");
 
 ### 2.1 Subtask Hierarchy & Nesting Depth Limits
 
-Hierarchy validation is handled in [`tasksWriteRepository.ts`](../apps/api/src/db/repositories/tasksWriteRepository.ts#L26-L52) via `validateParent`:
+Hierarchy validation is handled in [`tasksWriteRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksWriteRepository.ts#L26-L52) via `validateParent`:
 
 ```sql
 WITH RECURSIVE chain AS (
@@ -260,7 +260,7 @@ export async function validateNoDependencyCycle(
 
 ### 3.1 Transactional Outbox Split-Brain Anomaly
 
-In [`taskMutationService.ts`](../apps/api/src/services/taskMutationService.ts#L28-L60):
+In [`taskMutationService.ts`](../packages/modules/tasks/src/backend/services/taskMutationService.ts#L28-L60):
 
 ```ts
 export async function mutateTask(...) {
@@ -291,7 +291,7 @@ export async function mutateTask(...) {
 }
 ```
 
-And in [`taskNotificationService.ts`](../apps/api/src/services/taskNotificationService.ts#L37-L64):
+And in [`taskNotificationService.ts`](../packages/modules/tasks/src/backend/services/taskNotificationService.ts#L37-L64):
 ```ts
 await withTenant(tenant, async (tx) => {
   if (shouldNotifyAssignment) {
@@ -338,7 +338,7 @@ const next = await withTenant(tenant, async (tx) => {
 
 Clean Architecture mandates that HTTP route handlers only parse inputs, verify request-level authentication, delegate to domain use cases, and serialize HTTP responses.
 
-In [`tasksRoutes.ts`](../apps/api/src/routes/tenant/tasksRoutes.ts#L176-L267), domain orchestration leaks directly into route controllers:
+In [`tasksRoutes.ts`](../packages/modules/tasks/src/backend/tenant.router.ts#L176-L267), domain orchestration leaks directly into route controllers:
 
 #### Leak 1: `/api/tasks/:id/status`
 ```ts
@@ -381,7 +381,7 @@ if (result.changes.length > 0) {
 
 ### 3.3 Bulk Status Updates Omit Outbox Events
 
-In [`tasksBulkRepository.ts`](../apps/api/src/db/repositories/tasksBulkRepository.ts):
+In [`tasksBulkRepository.ts`](../packages/modules/tasks/src/backend/repository/db/tasksBulkRepository.ts):
 - `bulkDeleteTasksBatch` calls `await emitOutboxEvents(...)` for `"entity.soft_deleted"`.
 - `bulkRestoreTasksBatch` calls `await emitOutboxEvents(...)` for `"entity.restored"`.
 - **`bulkUpdateTaskStatusBatch` NEVER calls `emitOutboxEvents`!**
@@ -390,7 +390,7 @@ In [`tasksBulkRepository.ts`](../apps/api/src/db/repositories/tasksBulkRepositor
 
 ### 3.4 CSV Task Import Transactional Strategy
 
-In [`taskImportUseCases.ts`](../apps/api/src/tasks/use-cases/taskImportUseCases.ts#L98-L138):
+In [`taskImportUseCases.ts`](../packages/modules/tasks/src/backend/use-cases/taskImportUseCases.ts#L98-L138):
 - `runTasksImportJob` iterates over each CSV row and calls `mutateTask` sequentially.
 - **Behavior**: Every single row executes its own independent transaction and advisory lock acquisition.
 - **Failure Model**: If row 250 of 500 fails, rows 1 through 249 are committed, while the remaining rows fail.
@@ -400,7 +400,7 @@ In [`taskImportUseCases.ts`](../apps/api/src/tasks/use-cases/taskImportUseCases.
 
 ## 4. Anemic Use Cases & Layering Recommendations
 
-[`tasksUseCases.ts`](../apps/api/src/tasks/use-cases/tasksUseCases.ts) currently acts as an anemic pass-through proxy to repository functions:
+[`tasksUseCases.ts`](../packages/modules/tasks/src/backend/use-cases/tasksUseCases.ts) currently acts as an anemic pass-through proxy to repository functions:
 ```ts
 export function createTasksUseCases(repo: TasksRepository = tasksRepositoryAdapter) {
   return {
@@ -483,7 +483,7 @@ export async function updateTaskStatusUseCase(input: {
 2. **Eliminate Transactional Outbox Split-Brain**:
    - Refactor `mutateTask` and `emitTaskNotificationIntents` to accept and execute inside a single continuous `tx` transaction.
 3. **Encapsulate Route Handlers**:
-   - Move notification intent emission from [`tasksRoutes.ts`](../apps/api/src/routes/tenant/tasksRoutes.ts#L214-L260) into dedicated domain use cases (`updateTaskStatusUseCase` and `bulkUpdateTaskStatusUseCase`).
+   - Move notification intent emission from [`tasksRoutes.ts`](../packages/modules/tasks/src/backend/tenant.router.ts#L214-L260) into dedicated domain use cases (`updateTaskStatusUseCase` and `bulkUpdateTaskStatusUseCase`).
 4. **Implement Task Dependency Graph & Cycle Detection**:
    - Create the `task_dependencies` table and implement recursive cycle detection to ensure $A \rightarrow B$ and $B \rightarrow A$ are strictly rejected.
 5. **Tighten Subtask Nesting Limits**:

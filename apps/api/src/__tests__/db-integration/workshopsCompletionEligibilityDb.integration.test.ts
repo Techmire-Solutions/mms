@@ -105,7 +105,7 @@ describe("completion eligibility (real Postgres)", () => {
     const evaluated = await inTenant(() =>
       workshopsCompletionUseCases.evaluateCompletion("el-stale"),
     );
-    expect(evaluated.find((row) => row.participantId === "p-stale")?.status).toBe("completed");
+    expect(evaluated.find((row: any) => row.participantId === "p-stale")?.status).toBe("completed");
 
     // The score is corrected downwards after the evaluation.
     await inTenant(() =>
@@ -119,7 +119,9 @@ describe("completion eligibility (real Postgres)", () => {
     );
 
     expect(issued.issued).toEqual([]);
-    expect(issued.rows.find((row) => row.participantId === "p-stale")?.status).toBe("attended");
+    expect(issued.rows.find((row: any) => row.participantId === "p-stale")?.status).toBe(
+      "attended",
+    );
   });
 
   it("certifies a participant who qualifies at issuance time without a separate Evaluate", async () => {
@@ -130,7 +132,7 @@ describe("completion eligibility (real Postgres)", () => {
     const evaluated = await inTenant(() =>
       workshopsCompletionUseCases.evaluateCompletion("el-late"),
     );
-    expect(evaluated.find((row) => row.participantId === "p-late")?.status).toBe("attended");
+    expect(evaluated.find((row: any) => row.participantId === "p-late")?.status).toBe("attended");
 
     // A late check-in makes them eligible; issuance must see it without another Evaluate click.
     await markPresent("el-late", "p-late", "2000-01-11");
@@ -224,8 +226,8 @@ describe("completion eligibility (real Postgres)", () => {
     );
 
     const rows = await inTenant(() => workshopsCompletionUseCases.getCompletion("el-complete"));
-    expect(rows.find((row) => row.participantId === "p-complete")?.status).toBe("completed");
+    expect(rows.find((row: any) => row.participantId === "p-complete")?.status).toBe("completed");
     const report = await inTenant(() => workshopsCompletionUseCases.getReport());
-    expect(report.find((row) => row.workshopId === "el-complete")?.completed).toBe(1);
+    expect(report.find((row: any) => row.workshopId === "el-complete")?.completed).toBe(1);
   });
 });

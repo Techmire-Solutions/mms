@@ -178,7 +178,7 @@ describe("exam_results column shape (real Postgres)", () => {
          WHERE schemaname = 'public' AND tablename = 'exam_results'
       `),
     );
-    const names = indexes.rows.map((row) => row.indexname);
+    const names = indexes.rows.map((row: any) => row.indexname);
     expect(names).toContain("exam_results_workspace_exam_student_uidx");
     expect(names).not.toContain("exam_results_workspace_exam_idx");
   });
@@ -233,7 +233,7 @@ describe("marks upsert arbiter and OCC", () => {
     ).rejects.toBeInstanceOf(ConflictError);
 
     const rows = await markRows();
-    expect(rows.map((row) => row.marksObtained)).toEqual([60, 61]);
+    expect(rows.map((row: any) => row.marksObtained)).toEqual([60, 61]);
   });
 
   it("serialises two simultaneous writes carrying the same token — exactly one wins", async () => {
@@ -409,7 +409,7 @@ describe("database-enforced score invariants", () => {
         .from(exams)
         .where(and(eq(exams.workspaceSubdomain, TENANT), inArray(exams.id, ids))),
     );
-    expect(rows.map((row) => row.status).sort()).toEqual([...EXAM_STATUSES].sort());
+    expect(rows.map((row: any) => row.status).sort()).toEqual([...EXAM_STATUSES].sort());
   });
 });
 
@@ -542,7 +542,7 @@ describe("restore fidelity (real Postgres)", () => {
 
     await replaceExamResultsForWorkspace(TENANT, before);
     const restored = (await listExamResultsByWorkspace(TENANT)).find(
-      (row) => row.studentId === STUDENT_1,
+      (row: any) => row.studentId === STUDENT_1,
     );
     expect(restored).toMatchObject({
       marksObtained: 60,
