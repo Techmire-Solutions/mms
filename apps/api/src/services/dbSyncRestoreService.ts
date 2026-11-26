@@ -83,8 +83,7 @@ async function restoreSpecialTenantObject(
 }
 
 async function verifyPostRestoreIntegrity(subdomain: string): Promise<void> {
-  const { listAllTenantUsersByWorkspace } =
-    await import("../db/repositories/tenantUserRepository.js");
+  const { listAllTenantUsersByWorkspace } = await import("@mms/mod-iam/backend/tenant/repository");
   const users = await listAllTenantUsersByWorkspace(subdomain);
   if (users.length > 0) {
     const hasAdmin = users.some(

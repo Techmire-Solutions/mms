@@ -18,7 +18,9 @@ function binScript(packageDir, pkg, name) {
   return path.join(path.dirname(pkgJson), typeof bin === "string" ? bin : bin[name]);
 }
 
-function start(name, packageDir, command, args) {
+const backendPort = process.env.MMS_BACKEND_PORT || process.env.PORT || "3000";
+
+function start(name, packageDir, command, args, extraEnv = {}) {
   const child = spawn(command, args, {
     cwd: path.join(repoRoot, packageDir),
     env: {
@@ -26,6 +28,8 @@ function start(name, packageDir, command, args) {
       NODE_ENV: process.env.NODE_ENV || "test",
       JWT_SECRET: process.env.JWT_SECRET || "e2e-test-jwt-secret-key-at-least-32-chars-long",
       MMS_ALLOW_IN_PROCESS_JOB_FALLBACK: process.env.MMS_ALLOW_IN_PROCESS_JOB_FALLBACK || "true",
+      MMS_BACKEND_PORT: backendPort,
+      ...extraEnv,
     },
     stdio: "inherit",
   });
@@ -78,11 +82,14 @@ async function waitForBackend(url, timeoutMs = 60000) {
   throw new Error(`Backend at ${url} failed to become ready within ${timeoutMs}ms`);
 }
 
-start("backend", "apps/api", process.execPath, [
-  binScript("apps/api", "tsx", "tsx"),
-  "src/index.ts",
-]);
-await waitForBackend("http://127.0.0.1:3000/ready");
+start(
+  "backend",
+  "apps/api",
+  process.execPath,
+  [binScript("apps/api", "tsx", "tsx"), "src/index.ts"],
+  { PORT: backendPort },
+);
+await waitForBackend(`http://127.0.0.1:${backendPort}/ready`);
 start("tenant-web", "apps/tenant-web", process.execPath, [
   binScript("apps/tenant-web", "vite", "vite"),
   "--host",

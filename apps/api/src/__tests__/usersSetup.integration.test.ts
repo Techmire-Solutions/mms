@@ -45,12 +45,12 @@ const mockSaveUserFieldConfig = vi.fn();
 const mockLoadUserModulePreferences = vi.fn();
 const mockSaveUserModulePreferences = vi.fn();
 
-vi.mock("../services/userConfigService.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/services/userConfigService", () => ({
   loadUserFieldConfig: (...args: unknown[]) => mockLoadUserFieldConfig(...args),
   saveUserFieldConfig: (...args: unknown[]) => mockSaveUserFieldConfig(...args),
 }));
 
-vi.mock("../services/userPreferencesService.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/services/userPreferencesService", () => ({
   loadUserModulePreferences: (...args: unknown[]) => mockLoadUserModulePreferences(...args),
   saveUserModulePreferences: (...args: unknown[]) => mockSaveUserModulePreferences(...args),
 }));

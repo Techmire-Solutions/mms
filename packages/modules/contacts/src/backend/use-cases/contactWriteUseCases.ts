@@ -1,7 +1,6 @@
 import { type Contact, summarizeContactFieldChanges, type User } from "@mms/contracts";
 import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
 import { getRequestTenant } from "@mms/be-core/http";
-import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
 import { assertContactAttachmentUrls } from "./contactAttachmentUrls.js";
 import { runInTransaction } from "@mms/db/client";
 import { canDeleteContacts } from "@mms/be-core/rbac";
@@ -19,8 +18,10 @@ import { invalidateMultiTierCache } from "@mms/be-core/cache";
 import { emitOutboxEvent } from "@mms/be-core/data/outbox";
 import { loadContactWriteContext } from "./contactWriteContext.js";
 import { stripUnreadableContactWriteKeys } from "./contactViewerWriteGuard.js";
-import { collectRelatedContactIds } from "./contactRelationshipIds.js";
-import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
+import {
+  collectRelatedContactIds,
+  inferAndReconcileContactSystemTags,
+} from "./contactRelationshipIds.js";
 import { type UpdateContactByIdOptions, type UpsertContactOptions } from "./contactWriteOptions.js";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
 import { contactsRepository } from "../repository/contactsRepositoryAdapter.js";
@@ -149,22 +150,18 @@ export async function upsertContact(
     } else {
       saved.updatedAt = await repo.save(tenant, saved);
     }
-    await applyContactRelationshipInference(tenant, saved, undefined, repo, {
+    // Batch writers skip per-row system-tag probes (their bulk path reconciles once).
+    await inferAndReconcileContactSystemTags({
+      tenant,
+      contact: saved,
+      previousContact: existing ?? undefined,
+      repo,
       actorId,
-      previousSource: existing ?? undefined,
       relationshipPairs: context.relationshipPairs,
+      reconcileContactIds: opts?.batchMode
+        ? undefined
+        : [String(saved.id), ...collectRelatedContactIds(existing ?? undefined, saved)],
     });
-    // Relationship edits can add/remove Student/Parent/Guardian roles; the
-    // reconcile expands to related contacts, and removed links are included
-    // explicitly so their archived tag is written. Batch writers skip the
-    // per-row role probe (their bulk path preserves system tags).
-    if (!opts?.batchMode) {
-      await reconcileContactSystemTags(
-        tenant,
-        [String(saved.id), ...collectRelatedContactIds(existing ?? undefined, saved)],
-        { actorId },
-      );
-    }
     if (!opts?.batchMode) {
       await invalidateDuplicateScanCache();
     }
@@ -259,18 +256,16 @@ export async function updateContactById(
     } else {
       next.updatedAt = await repo.save(tenant, next);
     }
-    if (applyInference) {
-      await applyContactRelationshipInference(tenant, next, undefined, repo, {
-        actorId,
-        previousSource: existing,
-        relationshipPairs: context.relationshipPairs,
-      });
-    }
-    await reconcileContactSystemTags(
+    await inferAndReconcileContactSystemTags({
       tenant,
-      [String(next.id), ...collectRelatedContactIds(existing, next)],
-      { actorId },
-    );
+      contact: next,
+      previousContact: existing,
+      repo,
+      actorId,
+      relationshipPairs: context.relationshipPairs,
+      applyInference,
+      reconcileContactIds: [String(next.id), ...collectRelatedContactIds(existing, next)],
+    });
     await invalidateDuplicateScanCache();
     await auditContactUpdated({
       tenant,

@@ -1,17 +1,20 @@
+import type { Session } from "@mms/contracts";
 import { getEnrollmentsHost } from "../host.js";
 
-const host = () => (getEnrollmentsHost() as any).sessionsCollection;
+const host = () => getEnrollmentsHost().sessionsCollection;
 
-export function useSessionsCollection(..._args: any[]): any {
-  return host();
+export function useSessionsCollection(...args: unknown[]): Session[] {
+  const fn = host()?.useSessionsCollection;
+  const result = typeof fn === "function" ? fn(...args) : [];
+  return Array.isArray(result) ? (result as Session[]) : [];
 }
 
-export function useSessionDetail(...args: any[]): any {
+export function useSessionDetail(...args: unknown[]) {
   const fn = host()?.useSessionDetail;
-  return typeof fn === "function" ? fn(...args) : { data: undefined, isLoading: false };
+  return typeof fn === "function" ? fn(...args) : null;
 }
 
-export function useSessions(...args: any[]): any {
+export function useSessions(...args: unknown[]) {
   const fn = host()?.useSessions;
-  return typeof fn === "function" ? fn(...args) : { sessions: [], isLoading: false };
+  return typeof fn === "function" ? fn(...args) : { data: undefined, isLoading: false };
 }

@@ -12,6 +12,11 @@ import { useMessagingHost } from "@mms/mod-messaging/frontend/tenant/host";
 import { getStudentsHost } from "@mms/mod-students/frontend/tenant/host";
 import { getSessionsHost } from "@mms/mod-sessions/frontend/tenant/host";
 import { getEnrollmentsHost } from "@mms/mod-enrollments/frontend/tenant/host";
+import { useEnrollmentsCollection as useSessionsEnrollmentsCollection } from "@mms/mod-sessions/frontend/tenant/host/enrollmentsCollection";
+import { useSessionsCollection as useBillingSessionsCollection } from "@mms/mod-billing/frontend/tenant/host/sessionsCollection";
+import { useSessionsCollection as useEnrollmentsSessionsCollection } from "@mms/mod-enrollments/frontend/tenant/host/sessionsCollection";
+import { useSessionsCollection as useStudentsSessionsCollection } from "@mms/mod-students/frontend/tenant/host/sessionsCollection";
+import { useEnrollmentsCollection as useStudentsEnrollmentsCollection } from "@mms/mod-students/frontend/tenant/host/enrollmentsCollection";
 
 vi.mock("@mms/fe-core/tenant", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@mms/fe-core/tenant")>();
@@ -93,5 +98,40 @@ describe("TenantModuleHostBridges", () => {
       );
     });
     expect(container.textContent).toContain("ALL_HOSTS_READY");
+  });
+
+  it("given mounted platform TenantModuleHostBridges, should return arrays from all cross-module collection shims when invoked", () => {
+    // Arrange
+    function CollectionProbe() {
+      const allArrays = [
+        useSessionsEnrollmentsCollection({ enabled: false }),
+        useBillingSessionsCollection({ enabled: false }),
+        useEnrollmentsSessionsCollection({ enabled: false }),
+        useStudentsSessionsCollection({ enabled: false }),
+        useStudentsEnrollmentsCollection({ enabled: false }),
+      ].every((collection) => Array.isArray(collection));
+      return <div>{allArrays ? "COLLECTIONS_ARE_ARRAYS" : "BROKEN_COLLECTION_SHIM"}</div>;
+    }
+
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    // Act
+    act(() => {
+      root!.render(
+        <QueryClientProvider client={qc}>
+          <MemoryRouter>
+            <TenantModuleHostBridges>
+              <CollectionProbe />
+            </TenantModuleHostBridges>
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+
+    // Assert
+    expect(container.textContent).toContain("COLLECTIONS_ARE_ARRAYS");
   });
 });

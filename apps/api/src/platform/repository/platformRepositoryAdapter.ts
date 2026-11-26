@@ -1,6 +1,6 @@
 import * as activityLogs from "../../db/repositories/platformActivityLogsRepository.js";
 import * as platformUsers from "../../db/repositories/platformUserRepository.js";
-import * as tenantUsers from "../../db/repositories/tenantUserRepository.js";
+import * as tenantUsers from "@mms/mod-iam/backend/tenant/repository";
 import type { PlatformRepository } from "./platformRepository.js";
 
 /**

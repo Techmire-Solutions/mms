@@ -1,12 +1,10 @@
 export * from "./attendanceCapabilities.js";
 export * from "./attendanceData.js";
 export * from "./attendanceFormValidation.js";
-export * from "./attendanceFormValidation.test.js";
 export * from "./attendanceRecordsTypes.js";
 export * from "./attendanceStatusUi.js";
 export { type AuditEntry } from "./auditLogFormatters.js";
 export * from "./markAttendanceQueue.js";
-export * from "./markAttendanceQueue.test.js";
 export * from "./markAttendanceRowState.js";
 export * from "./markAttendanceRowUtils.js";
 export * from "./markAttendanceTypes.js";

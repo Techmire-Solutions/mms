@@ -33,7 +33,7 @@ export function useAttendanceAnalyticsModel(filters: AnalyticsFilters) {
   const { statuses } = useAttendanceConfig();
   const { primary, secondary, charts } = useBrandPalette();
   const colors = [primary, charts[0], secondary, charts[3]];
-  const reportQuery = useAttendanceReportAggregates({ classId: filters.classId });
+  const reportQuery: any = useAttendanceReportAggregates({ classId: filters.classId });
   const overview: AttendanceReportOverview | undefined = reportQuery.data?.overview;
 
   const classStats: ClassStatEntry[] = (overview?.classRates ?? []).map((classRate) => ({

@@ -11,3 +11,4 @@ export {
 export { useInviteMember, useTeamMembers, useWorkspaceRoles } from "./hooks/useTeamMembers";
 export { iamTenantKeys } from "./queryKeys";
 export * from "../components/index";
+export { RoleBadge } from "../components/RoleBadge.js";

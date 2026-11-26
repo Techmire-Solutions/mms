@@ -4,7 +4,7 @@ import type { RelationalCollectionMapping } from "./relationalReplaceMappingType
 export const RELATIONAL_REPLACE_MAPPING_PERSON: Record<string, RelationalCollectionMapping> = {
   users: {
     priority: 900,
-    importPath: "./repositories/tenantUserRepository.js",
+    importPath: "@mms/mod-iam/backend/tenant/repository",
     fnName: "replaceTenantUsersForWorkspace",
     snapshotFnName: "listAllTenantUsersByWorkspace",
   },
@@ -109,19 +109,19 @@ export const RELATIONAL_REPLACE_MAPPING_PERSON: Record<string, RelationalCollect
   },
   user_field_configs: {
     priority: 47,
-    importPath: "./repositories/userFieldConfigRepository.js",
+    importPath: "@mms/mod-iam/backend/tenant/repository",
     fnName: "replaceUserFieldConfigsForWorkspace",
     snapshotFnName: "listAllUserFieldConfigsByWorkspace",
   },
   user_module_preferences: {
     priority: 48,
-    importPath: "./repositories/userModulePreferencesRepository.js",
+    importPath: "@mms/mod-iam/backend/tenant/repository",
     fnName: "replaceUserModulePreferencesForWorkspace",
     snapshotFnName: "listAllUserModulePreferencesByWorkspace",
   },
   user_ui_preferences: {
     priority: 910,
-    importPath: "./repositories/userUiPreferencesRepository.js",
+    importPath: "@mms/mod-iam/backend/tenant/repository",
     fnName: "replaceUserUiPreferencesForWorkspace",
     snapshotFnName: "listAllUserUiPreferencesByWorkspace",
   },

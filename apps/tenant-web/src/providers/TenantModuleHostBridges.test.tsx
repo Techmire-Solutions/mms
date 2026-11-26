@@ -14,6 +14,15 @@ import { getSessionsHost } from "@mms/mod-sessions/frontend/tenant/host";
 import { getEnrollmentsHost } from "@mms/mod-enrollments/frontend/tenant/host";
 import { getAttendanceHost } from "@mms/mod-attendance/frontend/tenant/host";
 import { getTasksHost } from "@mms/mod-tasks/frontend/tenant/host";
+import { useEnrollmentsCollection as useSessionsEnrollmentsCollection } from "@mms/mod-sessions/frontend/tenant/host/enrollmentsCollection";
+import { useEnrollmentsCollection as useAttendanceEnrollmentsCollection } from "@mms/mod-attendance/frontend/tenant/host/enrollmentsCollection";
+import { useSessionsCollection as useAttendanceSessionsCollection } from "@mms/mod-attendance/frontend/tenant/host/sessionsCollection";
+import { ReportChartCard as AttendanceReportChartCard } from "@mms/mod-attendance/frontend/tenant/host/ModuleReportsTier";
+import { useSessionsCollection as useBillingSessionsCollection } from "@mms/mod-billing/frontend/tenant/host/sessionsCollection";
+import { useSessionsCollection as useEnrollmentsSessionsCollection } from "@mms/mod-enrollments/frontend/tenant/host/sessionsCollection";
+import { useSessionsCollection as useStudentsSessionsCollection } from "@mms/mod-students/frontend/tenant/host/sessionsCollection";
+import { useEnrollmentsCollection as useStudentsEnrollmentsCollection } from "@mms/mod-students/frontend/tenant/host/enrollmentsCollection";
+import { ReportChartCard as TasksReportChartCard } from "@mms/mod-tasks/frontend/tenant/host/ModuleReportsTier";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
 
 vi.mock("@mms/fe-core/tenant", async (importOriginal) => {
@@ -102,6 +111,66 @@ describe("TenantModuleHostBridges", () => {
     expect(container.textContent).toContain("ALL_HOSTS_READY");
   });
 
+  it("given mounted TenantModuleHostBridges, should delegate collection shims to arrays and report cards to host components when rendered", () => {
+    // Arrange
+    function CollectionAndReportProbe() {
+      const sessionsEnrollments = useSessionsEnrollmentsCollection({
+        enabled: false,
+        sessionId: "s-1",
+      });
+      const attendanceEnrollments = useAttendanceEnrollmentsCollection({ enabled: false });
+      const attendanceSessions = useAttendanceSessionsCollection({ enabled: false });
+      const billingSessions = useBillingSessionsCollection({ enabled: false });
+      const enrollmentsSessions = useEnrollmentsSessionsCollection({ enabled: false });
+      const studentsSessions = useStudentsSessionsCollection({ enabled: false });
+      const studentsEnrollments = useStudentsEnrollmentsCollection({ enabled: false });
+      const allArrays = [
+        sessionsEnrollments,
+        attendanceEnrollments,
+        attendanceSessions,
+        billingSessions,
+        enrollmentsSessions,
+        studentsSessions,
+        studentsEnrollments,
+      ].every((collection) => Array.isArray(collection));
+
+      return (
+        <div>
+          <span>{allArrays ? "COLLECTIONS_ARE_ARRAYS" : "BROKEN_COLLECTION_SHIM"}</span>
+          <AttendanceReportChartCard title="Attendance Chart Title">
+            <span>attendance-body</span>
+          </AttendanceReportChartCard>
+          <TasksReportChartCard title="Tasks Chart Title">
+            <span>tasks-body</span>
+          </TasksReportChartCard>
+        </div>
+      );
+    }
+
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    // Act
+    act(() => {
+      root!.render(
+        <QueryClientProvider client={qc}>
+          <MemoryRouter>
+            <TenantModuleHostBridges>
+              <CollectionAndReportProbe />
+            </TenantModuleHostBridges>
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+
+    // Assert
+    expect(container.textContent).toContain("COLLECTIONS_ARE_ARRAYS");
+    expect(container.textContent).toContain("Attendance Chart Title");
+    expect(container.textContent).toContain("Tasks Chart Title");
+  });
+
   it("evaluates module imports cleanly under production mode before host bridges render", async () => {
     vi.resetModules();
     vi.stubEnv("MODE", "production");
@@ -109,14 +178,45 @@ describe("TenantModuleHostBridges", () => {
       await expect(import("./TenantModuleHostBridges")).resolves.toHaveProperty(
         "TenantModuleHostBridges",
       );
-      await expect(
-        import("@mms/mod-attendance/frontend/tenant/AttendancePage"),
-      ).resolves.toHaveProperty("default");
-      await expect(import("@mms/mod-tasks/frontend/tenant/TasksPage")).resolves.toHaveProperty(
-        "default",
+      await expect(import("@mms/mod-attendance/frontend/tenant")).resolves.toHaveProperty(
+        "AttendancePage",
       );
+      await expect(
+        import("@mms/mod-attendance/frontend/tenant/hooks/index"),
+      ).resolves.toHaveProperty("useAttendancePageController");
+      await expect(import("@mms/mod-tasks/frontend/tenant")).resolves.toHaveProperty("TasksPage");
     } finally {
       vi.unstubAllEnvs();
     }
+  });
+
+  it("renders TasksPage and AttendancePage under TenantModuleHostBridges without hitting ErrorBoundary", async () => {
+    const [{ TenantModuleHostBridges: FreshHostBridges }, { TasksPage }, { AttendancePage }] =
+      await Promise.all([
+        import("./TenantModuleHostBridges"),
+        import("@mms/mod-tasks/frontend/tenant"),
+        import("@mms/mod-attendance/frontend/tenant"),
+      ]);
+    const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+    container = document.createElement("div");
+    document.body.appendChild(container);
+    root = createRoot(container);
+
+    await act(async () => {
+      root!.render(
+        <QueryClientProvider client={qc}>
+          <MemoryRouter>
+            <FreshHostBridges>
+              <TasksPage />
+              <AttendancePage />
+            </FreshHostBridges>
+          </MemoryRouter>
+        </QueryClientProvider>,
+      );
+    });
+
+    expect(container.textContent).not.toContain("Something went wrong");
+    expect(container.textContent).not.toContain("Application error");
+    expect(container.querySelectorAll("h1").length).toBeGreaterThanOrEqual(2);
   });
 });

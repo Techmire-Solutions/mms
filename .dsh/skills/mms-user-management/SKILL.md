@@ -21,7 +21,7 @@ metadata:
 ## 1. Domain Invariants & Security Boundaries
 
 - **Tenant Isolation**: Users managed here operate within the active tenant boundary. Superadmins or apex platform administrators are managed separately under the Platform Console (`mms-platform-console`).
-- **Self-Admin Lockout Protection**: An administrator cannot reset their own password or revoke their own permissions through administrative endpoints (`apps/api/src/routes/tenant/users.ts`).
+- **Self-Admin Lockout Protection**: An administrator cannot reset their own password or revoke their own permissions through administrative endpoints (`packages/modules/iam/src/backend/tenant/users.router.ts`).
 - **Least Privilege RBAC**: Role changes must validate that the granting user possesses equivalent or higher administrative capabilities.
 - **Audit Logging**: Every invitation, role promotion/demotion, or credential reset logs an RFC 8785 tamper-evident audit event (`mms-audit-trail`).
 
@@ -33,7 +33,7 @@ metadata:
 | Users Controller | `apps/tenant-web/src/tenant/features/users/hooks/useUsersPageController.ts` |
 | Users Work Tier | `apps/tenant-web/src/tenant/features/users/components/UsersWorkTier.tsx` |
 | Users Setup Tier | `apps/tenant-web/src/tenant/features/users/components/UsersSetupTier.tsx` |
-| Users Backend Routes | `apps/api/src/routes/tenant/users.ts` |
+| Users Backend Routes | `packages/modules/iam/src/backend/tenant/users.router.ts` |
 | Users Query Facade | `apps/tenant-web/src/tenant/hooks/collections/users.ts` |
 
 ## 3. Verification Checklist

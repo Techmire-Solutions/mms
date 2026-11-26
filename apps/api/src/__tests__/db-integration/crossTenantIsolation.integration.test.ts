@@ -9,13 +9,13 @@ import {
   listTenantUsersByIds,
   listTenantUsersByIdsGlobal,
   countTenantUsersByWorkspace,
-} from "../../db/repositories/tenantUserRepositoryHydrate.js";
+} from "@mms/mod-iam/backend/tenant/repository";
 import {
   softDeleteTenantUserRow,
   restoreTenantUserRow,
   verifyTenantUserEmailRow,
   resetTenantUserPasswordRow,
-} from "../../db/repositories/tenantUserRepositoryPersist.js";
+} from "@mms/mod-iam/backend/tenant/repository";
 import { runWithTenant } from "../../lib/tenantContext.js";
 
 /**
@@ -174,7 +174,7 @@ describe("cross-tenant tenant_users isolation (exploit reproduction, real Postgr
   });
 
   it("scopes the users use-cases to the request workspace", async () => {
-    const { usersUseCases } = await import("../../users/use-cases/usersUseCases.js");
+    const { usersUseCases } = await import("@mms/mod-iam/backend/tenant/use-cases");
 
     // The routes wrap their work in the request tenant, exactly as here.
     const seenFromAttacker = await runWithTenant(ATTACKER, () =>

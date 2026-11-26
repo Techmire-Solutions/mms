@@ -1,21 +1,16 @@
 import { and, asc, eq, ilike, isNull, or, sql, type SQL } from "drizzle-orm";
-import {
-  DEFAULT_WORKSPACE_ROLES,
-  type PlatformUserProfile,
-  type WorkspaceRole,
-} from "@mms/contracts";
+import { type PlatformUserProfile } from "@mms/contracts";
 import { withGlobalTenant, withTenant } from "@mms/db/context";
 import { tenantUsers, workspaces } from "@mms/db/schema";
 import type { IamPorts } from "@mms/mod-iam/backend/tenant";
+import { createTenantIamPort } from "@mms/mod-iam/backend/tenant/iamPort";
+import { usersUseCases } from "@mms/mod-iam/backend/tenant/use-cases";
 import { IamError } from "@mms/mod-iam/shared";
 import type {
   IamMemberSummary,
-  IamTenantContext,
   PlatformIamOrgResult,
   PlatformIamUserResult,
 } from "@mms/mod-iam/shared";
-import { usersUseCases } from "../../users/use-cases/usersUseCases.js";
-import { getTenantUsersSettings } from "../../services/users/usersSettingsService.js";
 import {
   listPlatformUsers,
   insertPlatformActivityLog,
@@ -65,56 +60,7 @@ function toMember(row: {
 }
 
 export const iamPorts: IamPorts = {
-  tenant: {
-    listMembers: async (_ctx: IamTenantContext, query) =>
-      usersUseCases.loadUsersPage(query as Parameters<typeof usersUseCases.loadUsersPage>[0]),
-    inviteMember: (_ctx, input) =>
-      usersUseCases.inviteWorkspaceUser(
-        input,
-        String(_ctx.actor.id),
-        _ctx.actor.role,
-        _ctx.ip,
-        _ctx.origin,
-      ),
-    createMember: (_ctx, input) =>
-      usersUseCases.createWorkspaceUser(
-        input,
-        String(_ctx.actor.id),
-        _ctx.actor.role,
-        _ctx.ip,
-        _ctx.origin,
-      ),
-    updateMember: (_ctx, id, input) =>
-      usersUseCases.updateWorkspaceUser(id, input, String(_ctx.actor.id), _ctx.actor.role, _ctx.ip),
-    removeMember: (_ctx, id) =>
-      usersUseCases.deleteUserById(id, String(_ctx.actor.id), _ctx.actor.role, _ctx.ip),
-    restoreMember: (_ctx, id) =>
-      usersUseCases.restoreUserById(id, _ctx.actor.role, String(_ctx.actor.id), _ctx.ip),
-    resetMemberPassword: (_ctx, id, temporaryPassword) =>
-      usersUseCases.resetUserPasswordById(
-        id,
-        temporaryPassword,
-        _ctx.actor.role,
-        String(_ctx.actor.id),
-        _ctx.ip,
-      ),
-    loadMembers: async () => {
-      const users = await usersUseCases.loadWorkspaceUsers();
-      return users.map((user) => ({
-        id: String(user.id),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        status: user.status ?? "active",
-        contactId: user.contactId,
-        deletedAt: user.deletedAt ?? null,
-      }));
-    },
-    listRoles: async (): Promise<WorkspaceRole[]> => {
-      const settings = await getTenantUsersSettings();
-      return settings.workspaceRoles ?? [...DEFAULT_WORKSPACE_ROLES];
-    },
-  },
+  tenant: createTenantIamPort(),
   platform: {
     verifyActorPassword: (actorId, password) => verifyPlatformUserPassword(actorId, password),
     listAdmins: () => listPlatformUsers() as Promise<PlatformUserProfile[]>,

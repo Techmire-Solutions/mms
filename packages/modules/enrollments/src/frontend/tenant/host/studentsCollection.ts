@@ -1,17 +1,19 @@
 import { getEnrollmentsHost } from "../host.js";
 
-const host = () => (getEnrollmentsHost() as any).studentsCollection;
+const host = () => getEnrollmentsHost().studentsCollection;
 
-export function useStudentsCollection(..._args: any[]): any {
-  return host();
+export function useStudentsCollection(...args: unknown[]): unknown[] {
+  const fn = host()?.useStudentsCollection;
+  const result = typeof fn === "function" ? fn(...args) : [];
+  return Array.isArray(result) ? result : [];
 }
 
-export function useStudentsByIds(...args: any[]): any {
+export function useStudentsByIds(...args: unknown[]) {
   const fn = host()?.useStudentsByIds;
   return typeof fn === "function" ? fn(...args) : { data: [], isLoading: false };
 }
 
-export function useStudentsContractList(...args: any[]): any {
+export function useStudentsContractList(...args: unknown[]) {
   const fn = host()?.useStudentsContractList;
   return typeof fn === "function"
     ? fn(...args)

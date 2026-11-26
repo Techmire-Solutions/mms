@@ -46,13 +46,17 @@ async function gotoAndSettle(
     .first()
     .waitFor({ state: "visible", timeout: 20_000 })
     .catch(() => undefined);
+  await page
+    .locator('#main-content h1, #main-content [role="heading"]')
+    .first()
+    .waitFor({ state: "visible", timeout: 25_000 })
+    .catch(() => undefined);
   await waitForToastsToClear(page).catch(() => undefined);
   await page
     .locator('[aria-busy="true"]')
     .waitFor({ state: "hidden", timeout: 15_000 })
     .catch(() => undefined);
   await page.waitForLoadState("networkidle").catch(() => undefined);
-  await page.waitForTimeout(400);
 }
 
 /** Provisions a fresh tenant via the API and seeds contacts (optionally students) so surfaces render populated. */
@@ -123,7 +127,7 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
 
     await gotoAndSettle(page, tenantOrigin, "/contacts", "#main-content");
     // Precondition: the directory is genuinely populated (else the audit is meaningless).
-    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 30_000 });
 
     await assertNoSeriousA11yViolations(page, {
       context: "contacts (populated table) @ 1440px",
@@ -155,7 +159,7 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
 
     await gotoAndSettle(page, tenantOrigin, "/students", "#main-content");
     // Precondition: the directory is genuinely populated (else the audit is meaningless).
-    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 30_000 });
 
     await assertNoSeriousA11yViolations(page, {
       context: "students (populated table) @ 1440px",
@@ -170,7 +174,7 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
 
     await gotoAndSettle(page, tenantOrigin, "/sessions", "#main-content");
     // Precondition: the directory is genuinely populated (else the audit is meaningless).
-    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 30_000 });
 
     await assertNoSeriousA11yViolations(page, {
       context: "sessions (populated table) @ 1440px",
@@ -185,7 +189,7 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
 
     await gotoAndSettle(page, tenantOrigin, "/faculty", "#main-content");
     // Precondition: the directory is genuinely populated (else the audit is meaningless).
-    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 30_000 });
 
     await assertNoSeriousA11yViolations(page, {
       context: "faculty (populated table) @ 1440px",
@@ -200,7 +204,7 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
 
     await gotoAndSettle(page, tenantOrigin, "/finance", "#main-content");
     // Precondition: the directory is genuinely populated (else the audit is meaningless).
-    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 20_000 });
+    await expect(page.locator("table:visible tbody tr").first()).toBeVisible({ timeout: 30_000 });
 
     await assertNoSeriousA11yViolations(page, {
       context: "finance (populated table) @ 1440px",

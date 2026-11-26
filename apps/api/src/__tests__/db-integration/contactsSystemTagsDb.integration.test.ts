@@ -603,6 +603,62 @@ describe("automatic module role tags (Postgres)", () => {
       tx.select().from(contactTags).where(eq(contactTags.contactId, sameNameContact)),
     );
     expect(rows).toHaveLength(2);
-    expect(new Set(rows.map((row: any) => row.systemKey)).size).toBe(2);
+    expect(new Set(rows.map((row) => row.systemKey)).size).toBe(2);
+  });
+
+  it("completes concurrent contact relationship inference and non-inference tag writes without advisory-lock deadlock", async () => {
+    const lockTarget = "sys-tag-lock-target";
+    const lockGuardian = "sys-tag-lock-guardian";
+    const lockObserver = "sys-tag-lock-observer";
+
+    await runWithTenant(tenant, async () => {
+      await contactUseCases.upsertContact(baseContact(lockTarget, "LockTarget"));
+      await contactUseCases.upsertContact(baseContact(lockGuardian, "LockGuardian"));
+      await contactUseCases.upsertContact({
+        ...baseContact(lockObserver, "LockObserver"),
+        relationshipContacts: [{ contactId: lockTarget, relationship: "Guardian" }],
+      } as Contact);
+    });
+
+    for (let round = 0; round < 5; round += 1) {
+      const linkParent = round % 2 === 0;
+      await Promise.all([
+        runWithTenant(tenant, () =>
+          contactUseCases.updateContactById(
+            lockGuardian,
+            {
+              ...baseContact(lockGuardian, `LockGuardian-${round}`),
+              relationshipContacts: linkParent
+                ? [{ contactId: lockTarget, relationship: "Parent" }]
+                : [],
+            } as Contact,
+            { actorId: "lock-order-actor-1" },
+          ),
+        ),
+        runWithTenant(tenant, () =>
+          contactUseCases.updateContactById(
+            lockObserver,
+            {
+              ...baseContact(lockObserver, `LockObserver-${round}`),
+              relationshipContacts: [{ contactId: lockTarget, relationship: "Guardian" }],
+            } as Contact,
+            { actorId: "lock-order-actor-2", applyRelationshipInference: false },
+          ),
+        ),
+      ]);
+    }
+
+    const updatedGuardian = await contact(lockGuardian);
+    const updatedTarget = await contact(lockTarget);
+    expect(updatedGuardian?.relationshipContacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ contactId: lockTarget, relationship: "Parent" }),
+      ]),
+    );
+    expect(updatedTarget?.relationshipContacts).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ contactId: lockGuardian, inferred: true }),
+      ]),
+    );
   });
 });

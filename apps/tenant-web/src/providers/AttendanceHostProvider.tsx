@@ -25,7 +25,12 @@ import * as enrollmentData from "@/lib/data/enrollmentData";
 import * as attendanceStatusUi from "@mms/mod-attendance/frontend/tenant/lib/attendanceStatusUi";
 import * as BrandingPaletteContext from "@/lib/contexts/BrandingPaletteContext";
 import { SessionClassSectionSelect } from "@/components/common/SessionClassSectionSelect";
-import { ModuleReportsTier } from "@/tenant/components/moduleReports";
+import {
+  KPISummary,
+  ModuleReports,
+  ModuleReportsTier,
+  ReportChartCard,
+} from "@/tenant/components/moduleReports";
 import TenantMessageComposer from "@/tenant/components/messaging/TenantMessageComposer";
 import { WorkBatchTable } from "@mms/fe-core/components/WorkBatchTable";
 import { WorkTaskToolbar } from "@mms/fe-core/components/WorkTaskToolbar";
@@ -71,9 +76,10 @@ export function AttendanceHostBridge({
     BrandingPaletteContext: BrandingPaletteContext as unknown as Record<string, unknown>,
     SessionClassSectionSelect:
       SessionClassSectionSelect as unknown as unknown as React.ComponentType<Record<string, never>>,
-    ModuleReportsTier: ModuleReportsTier as unknown as unknown as React.ComponentType<
-      Record<string, never>
-    >,
+    ModuleReportsTier: ModuleReportsTier as unknown as React.ComponentType<Record<string, never>>,
+    ReportChartCard: ReportChartCard as unknown as React.ComponentType<Record<string, never>>,
+    KPISummary: KPISummary as unknown as React.ComponentType<Record<string, never>>,
+    ModuleReports: ModuleReports as unknown as React.ComponentType<Record<string, never>>,
     TenantMessageComposer: TenantMessageComposer as unknown as unknown as React.ComponentType<
       Record<string, never>
     >,

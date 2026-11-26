@@ -8,6 +8,7 @@ import { configureEnrollmentsAdapters } from "../modules/enrollments/adapters.js
 import { configureFacultyAccountDeletionGuard } from "../modules/faculty/adapters.js";
 import { configureAttendanceAdapters } from "../modules/attendance/adapters.js";
 import { configureTasksAdapters } from "../modules/tasks/adapters.js";
+import { configureIamUsersAdapters } from "../modules/iam/userAdapters.js";
 import "../modules/accounting/configure.js";
 import "../modules/examinations/configure.js";
 import "../modules/obligations/configure.js";
@@ -30,5 +31,6 @@ export function configureModuleAdapters(): void {
   configureFacultyAccountDeletionGuard();
   configureAttendanceAdapters();
   configureTasksAdapters();
+  configureIamUsersAdapters();
   configured = true;
 }

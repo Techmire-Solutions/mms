@@ -1,7 +1,7 @@
 import type { UserTransferEntity } from "@mms/contracts";
 import { registerModuleCsvImportJobRunner } from "../lib/registerModuleCsvImportJobRunner.js";
 import { throwIfBackgroundJobAborted } from "@mms/be-core/jobs/backgroundJobAbort";
-import { usersUseCases } from "../users/use-cases/usersUseCases.js";
+import { usersUseCases } from "@mms/mod-iam/backend/tenant/use-cases/usersUseCases";
 import { resolveCurrentTenantRole } from "../lib/currentTenantRole.js";
 
 /**

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { StoredPlatformUser } from "@mms/contracts";
 import type { Workspace } from "@mms/contracts";
-import type { TenantUserRow } from "../db/repositories/tenantUserRepositoryHydrate.js";
+import type { TenantUserRow } from "@mms/mod-iam/backend/tenant/repository";
 import { runWithTenant } from "../lib/tenantContext.js";
 import { hashPassword } from "../services/auth/passwordService.js";
 import {
@@ -9,7 +9,7 @@ import {
   syncPlatformSuperUserToTenants,
 } from "../services/platform/platformSuperUserTenantSyncService.js";
 import { createWorkspace } from "../services/workspaceService.js";
-import { listTenantUsersByWorkspace } from "../db/repositories/tenantUserRepository.js";
+import { listTenantUsersByWorkspace } from "@mms/mod-iam/backend/tenant/repository";
 import { updatePlatformUserPassword } from "../services/platform/platformUserServicePassword.js";
 import { validateCredentials } from "../services/auth/userServiceAuth.js";
 import {
@@ -43,7 +43,7 @@ vi.mock("@mms/db/context", async (importOriginal) => ({
           where: () => {
             if (!tenantId) return mockTenantUsers;
             return mockTenantUsers.filter(
-              (u) =>
+              (u: any) =>
                 (u.workspaceSubdomain || "").toLowerCase() === tenantId.toLowerCase() &&
                 !u.deletedAt,
             );
@@ -109,7 +109,7 @@ vi.mock("@mms/db/context", async (importOriginal) => ({
             mockTenantUsers.length = 0;
           } else {
             const rem = mockTenantUsers.filter(
-              (u) => (u.workspaceSubdomain || "").toLowerCase() !== tenantId.toLowerCase(),
+              (u: any) => (u.workspaceSubdomain || "").toLowerCase() !== tenantId.toLowerCase(),
             );
             mockTenantUsers.length = 0;
             mockTenantUsers.push(...rem);
@@ -123,15 +123,16 @@ vi.mock("@mms/db/context", async (importOriginal) => ({
 
 vi.mock("../db/repositories/platformUserRepository.js", () => ({
   findPlatformUserRowByRole: vi.fn().mockImplementation(async (role: string) => {
-    return mockPlatformUsers.find((u) => u.role === role) ?? null;
+    return mockPlatformUsers.find((u: any) => u.role === role) ?? null;
   }),
   findPlatformUserRowByEmail: vi.fn().mockImplementation(async (email: string) => {
     return (
-      mockPlatformUsers.find((u) => u.email.toLowerCase() === email.trim().toLowerCase()) ?? null
+      mockPlatformUsers.find((u: any) => u.email.toLowerCase() === email.trim().toLowerCase()) ??
+      null
     );
   }),
   findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => {
-    return mockPlatformUsers.find((u) => u.id === id) ?? null;
+    return mockPlatformUsers.find((u: any) => u.id === id) ?? null;
   }),
   listPlatformUsers: vi.fn().mockImplementation(async () => [...mockPlatformUsers]),
   countPlatformUserRows: vi.fn().mockImplementation(async () => mockPlatformUsers.length),
@@ -142,7 +143,7 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
   updatePlatformUserRow: vi
     .fn()
     .mockImplementation(async (id: string, patch: Partial<StoredPlatformUser>) => {
-      const idx = mockPlatformUsers.findIndex((u) => u.id === id);
+      const idx = mockPlatformUsers.findIndex((u: any) => u.id === id);
       if (idx === -1) return null;
       mockPlatformUsers[idx] = { ...mockPlatformUsers[idx], ...patch };
       return mockPlatformUsers[idx];
@@ -167,10 +168,10 @@ vi.mock("../db/repositories/workspaceRepository.js", () => ({
   getWorkspaceBranding: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("../db/repositories/tenantUserRepository.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/repository", () => ({
   listTenantUsersByWorkspace: vi.fn().mockImplementation(async (subdomain: string) => {
     return mockTenantUsers.filter(
-      (u) =>
+      (u: any) =>
         (u.workspaceSubdomain || "").toLowerCase() === subdomain.trim().toLowerCase() &&
         !u.deletedAt,
     );
@@ -182,13 +183,13 @@ vi.mock("../db/repositories/tenantUserRepository.js", () => ({
     const target = tenant.trim().toLowerCase();
     return (
       mockTenantUsers.find(
-        (u) => u.id === id && (u.workspaceSubdomain || "").toLowerCase() === target,
+        (u: any) => u.id === id && (u.workspaceSubdomain || "").toLowerCase() === target,
       ) ?? null
     );
   }),
   upsertTenantUserRow: vi.fn().mockImplementation(async (tenant: string, row: TenantUserRow) => {
     const scoped = { ...row, workspaceSubdomain: tenant.trim().toLowerCase() };
-    const idx = mockTenantUsers.findIndex((u) => u.id === scoped.id);
+    const idx = mockTenantUsers.findIndex((u: any) => u.id === scoped.id);
     if (idx >= 0) {
       mockTenantUsers[idx] = { ...mockTenantUsers[idx], ...scoped };
     } else {
@@ -200,7 +201,7 @@ vi.mock("../db/repositories/tenantUserRepository.js", () => ({
     .mockImplementation(async (tenant: string, id: string, deletedBy: string) => {
       const target = tenant.trim().toLowerCase();
       const idx = mockTenantUsers.findIndex(
-        (u) => u.id === id && (u.workspaceSubdomain || "").toLowerCase() === target,
+        (u: any) => u.id === id && (u.workspaceSubdomain || "").toLowerCase() === target,
       );
       if (idx >= 0) {
         mockTenantUsers[idx].deletedAt = new Date().toISOString();
@@ -214,7 +215,7 @@ vi.mock("../db/repositories/tenantUserRepository.js", () => ({
     .mockImplementation(async (tenant: string, id: string, passwordHash: string) => {
       const target = tenant.trim().toLowerCase();
       const idx = mockTenantUsers.findIndex(
-        (u) => u.id === id && (u.workspaceSubdomain || "").toLowerCase() === target,
+        (u: any) => u.id === id && (u.workspaceSubdomain || "").toLowerCase() === target,
       );
       if (idx >= 0) {
         mockTenantUsers[idx].passwordHash = passwordHash;
@@ -227,7 +228,7 @@ vi.mock("../db/repositories/tenantUserRepository.js", () => ({
   listTenantUsersByIds: vi.fn().mockImplementation(async (tenant: string, ids: string[]) => {
     const target = tenant.trim().toLowerCase();
     return mockTenantUsers.filter(
-      (u) => ids.includes(u.id) && (u.workspaceSubdomain || "").toLowerCase() === target,
+      (u: any) => ids.includes(u.id) && (u.workspaceSubdomain || "").toLowerCase() === target,
     );
   }),
 }));
@@ -281,7 +282,7 @@ vi.mock("../services/auth/userServiceList.js", () => ({
     mockTenantUsers.push(...users);
   }),
   getWorkspaceUserRow: vi.fn().mockImplementation(async (id: string) => {
-    return mockTenantUsers.find((u) => u.id === id);
+    return mockTenantUsers.find((u: any) => u.id === id);
   }),
   getLinkedContactId: vi.fn().mockResolvedValue(null),
 }));
@@ -411,12 +412,12 @@ describe("Platform Superuser to Tenant Synchronization", () => {
     const users1 = await listTenantUsersByWorkspace(sub1);
     const users2 = await listTenantUsersByWorkspace(sub2);
 
-    expect(users1.some((u) => u.loginEmail === testSuperEmail && u.role === "super_admin")).toBe(
-      true,
-    );
-    expect(users2.some((u) => u.loginEmail === testSuperEmail && u.role === "super_admin")).toBe(
-      true,
-    );
+    expect(
+      users1.some((u: any) => u.loginEmail === testSuperEmail && u.role === "super_admin"),
+    ).toBe(true);
+    expect(
+      users2.some((u: any) => u.loginEmail === testSuperEmail && u.role === "super_admin"),
+    ).toBe(true);
   });
 
   it("updates all tenant user records when platform superuser password changes", async () => {
@@ -456,7 +457,7 @@ describe("Platform Superuser to Tenant Synchronization", () => {
     await syncPlatformSuperUserToTenants();
 
     const tenantUsersList = await listTenantUsersByWorkspace(subdomain);
-    const superTenantUser = tenantUsersList.find((u) => u.loginEmail === testSuperEmail);
+    const superTenantUser = tenantUsersList.find((u: any) => u.loginEmail === testSuperEmail);
     expect(superTenantUser).toBeDefined();
 
     // An admin attempting to delete super_admin

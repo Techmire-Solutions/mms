@@ -8,6 +8,16 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
+vi.mock("@mms/be-core/rbac", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/be-core/rbac")>();
+  return {
+    ...actual,
+    canDeleteCollection: vi.fn((...args: Parameters<typeof actual.canDeleteCollection>) =>
+      actual.canDeleteCollection(...args),
+    ),
+  };
+});
+
 vi.mock("@mms/db/context", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@mms/db/context")>()),
 
@@ -61,7 +71,7 @@ const mockBulkSoftDeleteUsers = vi.fn();
 const mockBulkRestoreUsers = vi.fn();
 const mockResetUserPasswordById = vi.fn();
 
-vi.mock("../users/use-cases/usersUseCases.js", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/use-cases/usersUseCases", () => ({
   usersUseCases: {
     loadUsersPage: vi.fn().mockImplementation(async (query: { includeDeleted?: boolean }) => {
       const users = await mockLoadWorkspaceUsers(query);
@@ -240,8 +250,8 @@ describe("users REST routes", () => {
   });
 
   it("GET /api/users?includeDeleted=true returns 403 when user lacks delete permission", async () => {
-    const rbacService = await import("../services/rbacService.js");
-    const spy = vi.spyOn(rbacService, "canDeleteCollection").mockReturnValue(false);
+    const rbac = await import("@mms/be-core/rbac");
+    vi.mocked(rbac.canDeleteCollection).mockReturnValueOnce(false);
     const app = await buildApp();
     const res = await app.inject({
       method: "GET",
@@ -253,7 +263,6 @@ describe("users REST routes", () => {
     });
     expect(res.statusCode).toBe(403);
     expect(res.json()).toEqual({ type: "forbidden", message: "Insufficient permissions" });
-    spy.mockRestore();
     await app.close();
   });
 

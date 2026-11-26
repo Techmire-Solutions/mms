@@ -19,6 +19,11 @@ export function createCommitScope(): CommitScope {
   return { callbacks: [] };
 }
 
+/** True when executing inside an active {@link runCommitScopedTransaction} / {@link withTenant} scope. */
+export function hasCommitScope(): boolean {
+  return commitScopeStorage.getStore() !== undefined;
+}
+
 /** Runs `cb` (and everything it awaits) bound to `scope`, so nested helpers can enqueue effects. */
 export function runInCommitScope<T>(scope: CommitScope, cb: () => Promise<T>): Promise<T> {
   return commitScopeStorage.run(scope, cb);

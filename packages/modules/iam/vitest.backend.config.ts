@@ -7,5 +7,6 @@ export default defineConfig({
     maxWorkers: 4,
     environment: "node",
     include: ["src/shared/**/*.test.ts", "src/backend/**/*.test.ts"],
+    setupFiles: ["src/backend/__tests__/setup.ts"],
   },
 });

@@ -92,6 +92,9 @@ export async function restoreContactById(
       restoredBy: userId ?? "unknown",
       version: Date.now(),
     });
+    await reconcileContactSystemTags(tenant, [String(id)], {
+      actorId: userId,
+    });
     await recordModernAuditEvent({
       workspaceSubdomain: tenant,
       tableName: "contacts",
@@ -100,9 +103,6 @@ export async function restoreContactById(
       subjectId: String(id),
       newState: next,
       minimizeDelta: false,
-    });
-    await reconcileContactSystemTags(tenant, [String(id)], {
-      actorId: userId,
     });
     return next;
   });
@@ -248,6 +248,13 @@ export async function bulkRestoreContacts(
           },
         })),
       );
+      await reconcileContactSystemTags(
+        tenant,
+        toSave.map((c) => String(c.id)),
+        {
+          actorId: userId,
+        },
+      );
       for (const c of toSave) {
         await recordModernAuditEvent({
           workspaceSubdomain: tenant,
@@ -259,13 +266,6 @@ export async function bulkRestoreContacts(
           minimizeDelta: false,
         });
       }
-      await reconcileContactSystemTags(
-        tenant,
-        toSave.map((c) => String(c.id)),
-        {
-          actorId: userId,
-        },
-      );
     }
     return { succeeded, failed, conflicts };
   });

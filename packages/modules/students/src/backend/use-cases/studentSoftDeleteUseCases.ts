@@ -95,6 +95,16 @@ export async function bulkSoftDeleteStudents(
         new Date(now),
       );
 
+      await reconcileContactSystemTags(
+        tenant,
+        written.flatMap((s) => [
+          s.contactId,
+          s.fatherContactId,
+          s.motherContactId,
+          s.guardianContactId,
+        ]),
+        { actorId: deletedBy },
+      );
       for (const s of written) {
         await emitOutboxEvent("entity.soft_deleted", {
           entityType: "students",
@@ -116,16 +126,6 @@ export async function bulkSoftDeleteStudents(
           minimizeDelta: false,
         });
       }
-      await reconcileContactSystemTags(
-        tenant,
-        written.flatMap((s) => [
-          s.contactId,
-          s.fatherContactId,
-          s.motherContactId,
-          s.guardianContactId,
-        ]),
-        { actorId: deletedBy },
-      );
     }
     return { succeeded, failed };
   });

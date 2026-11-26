@@ -20,7 +20,7 @@ import {
   countTenantUsersByWorkspace,
   replaceTenantUsersForWorkspace,
   type TenantUserRow,
-} from "../repositories/tenantUserRepository.js";
+} from "@mms/mod-iam/backend/tenant/repository";
 
 type LegacyUserRow = Record<string, unknown>;
 

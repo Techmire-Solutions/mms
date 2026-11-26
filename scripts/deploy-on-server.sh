@@ -102,6 +102,21 @@ if [ ! -f "$ENV_FILE" ] && [ "$ENV_FILE" = "apps/api/.env" ] && [ -f "apps/backe
   fi
 fi
 
+# Migrate legacy apps/backend/uploads → apps/api/uploads (non-destructive: only copy missing
+# files so any newer uploads in apps/api/uploads win and apps/backend/uploads stays for rollback).
+if [ -d "${ROOT_DIR}/apps/backend/uploads" ]; then
+  mkdir -p "${ROOT_DIR}/apps/api/uploads"
+  if command -v rsync >/dev/null 2>&1; then
+    rsync -a --ignore-existing "${ROOT_DIR}/apps/backend/uploads/" "${ROOT_DIR}/apps/api/uploads/" \
+      && echo "Synced legacy apps/backend/uploads → apps/api/uploads." \
+      || echo "WARNING: failed to sync legacy apps/backend/uploads → apps/api/uploads."
+  else
+    cp -rn "${ROOT_DIR}/apps/backend/uploads/." "${ROOT_DIR}/apps/api/uploads/" 2>/dev/null \
+      && echo "Copied legacy apps/backend/uploads → apps/api/uploads." \
+      || echo "WARNING: failed to copy legacy apps/backend/uploads → apps/api/uploads."
+  fi
+fi
+
 if [ -f scripts/merge-backend-env.sh ] && [ ! -f "$ENV_FILE" ]; then
   echo "FATAL: ${ENV_FILE} is missing — cannot snapshot it before merging."
   fail_preflight

@@ -106,7 +106,8 @@ export async function loginUser(
   const user = await validateCredentials(email, password, workspaceSubdomain);
   if (!user) return null;
 
-  const { getTenantUsersSettings } = await import("../users/usersSettingsService.js");
+  const { getTenantUsersSettings } =
+    await import("@mms/mod-iam/backend/tenant/services/usersSettingsService");
   const usersSettings = await getTenantUsersSettings();
   if (usersSettings.requireEmailVerification && !user.emailVerifiedAt) {
     const err = new Error("Verify your email before signing in") as Error & {

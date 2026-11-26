@@ -28,12 +28,12 @@ import {
 import {
   getUserModulePreferencesByWorkspace,
   getUserModulePreferencesByWorkspaces,
-} from "../db/repositories/userModulePreferencesRepository.js";
+} from "@mms/mod-iam/backend/tenant/repository";
 import { normalizeSubdomainInput, invalidateWorkspaceCache } from "./workspaceService.js";
-import { getWorkspaceAdminEmailsMap } from "../db/repositories/workspaceAdminUserRepository.js";
+import { getWorkspaceAdminEmailsMap } from "@mms/mod-iam/backend/tenant/repository";
 import type { ProvisionedWorkspaceAdmin } from "../db/repositories/workspaceRowMappers.js";
 
-export * from "../db/repositories/workspaceAdminUserRepository.js";
+export * from "@mms/mod-iam/backend/tenant/repository";
 
 function mapWorkspaceSummaryRow(
   workspace: {

@@ -1,7 +1,58 @@
-import type { Contact } from "@mms/contracts";
+import type { Contact, RelationshipPair } from "@mms/contracts";
 import type { ContactsRepository } from "../repository/contactsRepository.js";
+import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
+import { applyContactRelationshipInference } from "./contactInferenceUseCases.js";
 
 type RelationshipOwner = Pick<Contact, "relationshipContacts"> | null | undefined;
+
+export interface InferAndReconcileOptions {
+  tenant: string;
+  contact: Contact;
+  previousContact?: Contact;
+  repo: ContactsRepository;
+  actorId?: string;
+  relationshipPairs?: RelationshipPair[];
+  applyInference?: boolean;
+  reconcileContactIds?: string[];
+  beforeReconcile?: () => Promise<void>;
+}
+
+/**
+ * Runs reciprocal relationship inference, reconciles `contact_tags` system role
+ * projections, and flushes the deferred inference audit event afterward so
+ * per-contact tag advisory locks are always acquired before the workspace-wide
+ * `audit:<tenant>` hash-chain lock.
+ */
+export async function inferAndReconcileContactSystemTags(
+  options: InferAndReconcileOptions,
+): Promise<void> {
+  const flushInferenceAudit =
+    options.applyInference !== false
+      ? await applyContactRelationshipInference(
+          options.tenant,
+          options.contact,
+          undefined,
+          options.repo,
+          {
+            actorId: options.actorId,
+            previousSource: options.previousContact,
+            relationshipPairs: options.relationshipPairs,
+            deferAudit: true,
+          },
+        )
+      : undefined;
+  if (options.beforeReconcile) {
+    await options.beforeReconcile();
+  }
+  if (options.reconcileContactIds && options.reconcileContactIds.length > 0) {
+    await reconcileContactSystemTags(options.tenant, options.reconcileContactIds, {
+      actorId: options.actorId,
+    });
+  }
+  if (typeof flushInferenceAudit === "function") {
+    await flushInferenceAudit();
+  }
+}
 
 /**
  * Normalized, de-duplicated ids of the contacts this contact links to.
