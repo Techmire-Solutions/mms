@@ -132,11 +132,11 @@ describe("workshop lifecycle journey (real Postgres)", () => {
     const before = await inTenant(() =>
       workshopsCompletionUseCases.evaluateCompletion("journey-flow"),
     );
-    expect(before.find((row) => row.participantId === first.id)).toMatchObject({
+    expect(before.find((row: any) => row.participantId === first.id)).toMatchObject({
       status: "completed",
       attendancePct: 100,
     });
-    expect(before.find((row) => row.participantId === second.id)?.status).toBe("registered");
+    expect(before.find((row: any) => row.participantId === second.id)?.status).toBe("registered");
 
     const completed = await complete("journey-flow");
     expect(completed.status).toBe("completed");
@@ -147,7 +147,7 @@ describe("workshop lifecycle journey (real Postgres)", () => {
     expect(issued.issued).toEqual([first.id]);
 
     const report = (await inTenant(() => workshopsCompletionUseCases.getReport())).find(
-      (row) => row.workshopId === "journey-flow",
+      (row: any) => row.workshopId === "journey-flow",
     );
     expect(report).toMatchObject({
       participants: 2,
@@ -257,8 +257,8 @@ describe("workshop lifecycle journey (real Postgres)", () => {
     );
     const active = await inTenant(() => workshopsUseCases.listWorkshops({}));
     const trash = await inTenant(() => workshopsUseCases.listWorkshops({ includeDeleted: true }));
-    expect(active.workshops.map((row) => row.id)).not.toContain("journey-archive");
-    expect(trash.workshops.map((row) => row.id)).toContain("journey-archive");
+    expect(active.workshops.map((row: any) => row.id)).not.toContain("journey-archive");
+    expect(trash.workshops.map((row: any) => row.id)).toContain("journey-archive");
     // The detail read intentionally serves archived rows (restore/trash draws them); writes must
     // still fail closed.
     const archived = await inTenant(() => workshopsUseCases.getWorkshop("journey-archive"));
@@ -304,7 +304,7 @@ describe("workshop lifecycle journey (real Postgres)", () => {
 
     await inTenant(() => workshopsUseCases.restoreWorkshop("journey-archive", "u-admin"));
     const restored = await inTenant(() => workshopsUseCases.getWorkshop("journey-archive"));
-    expect(restored.participants.map((row) => row.id)).toEqual([participant.id]);
+    expect(restored.participants.map((row: any) => row.id)).toEqual([participant.id]);
     expect(restored.attendance).toHaveLength(1);
     expect(restored.scores).toHaveLength(1);
   });

@@ -182,7 +182,7 @@ describe("students routes", () => {
     };
     expect(body.total).toBe(1);
     expect(body.students).toHaveLength(1);
-    expect(body.students.every((row) => Boolean(row.deletedAt))).toBe(true);
+    expect(body.students.every((row: any) => Boolean(row.deletedAt))).toBe(true);
     await app.close();
   });
 

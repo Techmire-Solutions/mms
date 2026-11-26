@@ -167,11 +167,11 @@ describe("examinations:marks-import", () => {
 
     const batch = upsertExamResults.mock.calls[0]?.[0] as Array<Record<string, unknown>>;
     // The concurrent-edit guard only works if the importer sends the token the grid would send.
-    expect(batch.find((row) => row.studentId === "s-1")).toMatchObject({
+    expect(batch.find((row: any) => row.studentId === "s-1")).toMatchObject({
       id: "er-stored",
       version: 4,
     });
-    const newMark = batch.find((row) => row.studentId === "s-2");
+    const newMark = batch.find((row: any) => row.studentId === "s-2");
     expect(newMark).toBeDefined();
     expect(newMark).not.toHaveProperty("version");
   });

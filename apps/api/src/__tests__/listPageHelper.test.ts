@@ -26,7 +26,7 @@ describe("runListPage - Cursor & Keyset Pagination", () => {
       orderBy: sql`id asc`,
       page: 1,
       limit: 1,
-      rowMapper: (row) => row,
+      rowMapper: (row: any) => row,
     });
 
     expect(result.items).toHaveLength(1);
@@ -58,7 +58,7 @@ describe("runListPage - Cursor & Keyset Pagination", () => {
       orderBy: sql`id asc`,
       afterId: "std-1",
       limit: 1,
-      rowMapper: (row) => row,
+      rowMapper: (row: any) => row,
     });
 
     expect(result.items).toHaveLength(1);
@@ -87,7 +87,7 @@ describe("runListPage - Cursor & Keyset Pagination", () => {
       orderBy: sql`id asc`,
       afterId: "std-1",
       limit: 10,
-      rowMapper: (row) => row,
+      rowMapper: (row: any) => row,
     });
 
     expect(result.items).toHaveLength(1);
@@ -122,7 +122,7 @@ describe("runListPage - Cursor & Keyset Pagination", () => {
       afterId: "std-1",
       limit: 10,
       skipCount: true,
-      rowMapper: (row) => row,
+      rowMapper: (row: any) => row,
     });
 
     expect(countCalled).toBe(false);

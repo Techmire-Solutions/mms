@@ -101,12 +101,12 @@ describe("workshop waitlist (real Postgres)", () => {
     expect(queued.waitlistedAt).toBeTruthy();
     const after = await detail("wl-on");
     expect(after.participants).toHaveLength(1);
-    expect(after.waitlisted.map((row) => row.contactId)).toEqual([CONTACTS[1]]);
+    expect(after.waitlisted.map((row: any) => row.contactId)).toEqual([CONTACTS[1]]);
     expect(after.waitlistCount).toBe(1);
 
     // Queued rows are not participants: no completion standing, no certificate eligibility.
     const rows = await inTenant(() => workshopsCompletionUseCases.getCompletion("wl-on"));
-    expect(rows.map((row) => row.participantId)).not.toContain(queued.id);
+    expect(rows.map((row: any) => row.participantId)).not.toContain(queued.id);
   });
 
   it("promotes the oldest queued participant into a freed seat", async () => {
@@ -120,8 +120,8 @@ describe("workshop waitlist (real Postgres)", () => {
     expect(promoted?.id).toBe(firstQueued.id);
     expect(promoted?.waitlistedAt).toBeNull();
     const after = await detail("wl-promote");
-    expect(after.participants.map((row) => row.id)).toEqual([firstQueued.id]);
-    expect(after.waitlisted.map((row) => row.id)).toEqual([secondQueued.id]);
+    expect(after.participants.map((row: any) => row.id)).toEqual([firstQueued.id]);
+    expect(after.waitlisted.map((row: any) => row.id)).toEqual([secondQueued.id]);
   });
 
   it("promotes nobody when a queued row is withdrawn", async () => {
@@ -133,7 +133,7 @@ describe("workshop waitlist (real Postgres)", () => {
 
     expect(promoted).toBeNull();
     const after = await detail("wl-queued-withdraw");
-    expect(after.participants.map((row) => row.id)).toEqual([seated.id]);
+    expect(after.participants.map((row: any) => row.id)).toEqual([seated.id]);
     expect(after.waitlisted).toHaveLength(0);
   });
 
@@ -174,7 +174,7 @@ describe("workshop waitlist (real Postgres)", () => {
     expect(after.participants).toHaveLength(2);
     expect(after.waitlisted).toHaveLength(0);
     // Promotion kept queue order: the two oldest queued rows took the seats.
-    expect(after.participants.map((row) => row.contactId).sort()).toEqual(
+    expect(after.participants.map((row: any) => row.contactId).sort()).toEqual(
       [CONTACTS[2], CONTACTS[3]].sort(),
     );
   });
@@ -196,7 +196,7 @@ describe("workshop waitlist (real Postgres)", () => {
     const after = await detail("wl-race-promote");
     expect(after.participants).toHaveLength(1);
     expect(after.participants[0]?.contactId).toBe(queued.contactId);
-    expect(after.waitlisted.map((row) => row.contactId)).toEqual([CONTACTS[2]]);
+    expect(after.waitlisted.map((row: any) => row.contactId)).toEqual([CONTACTS[2]]);
     expect(after.workshop.participantCount).toBe(1);
   });
 
@@ -211,10 +211,10 @@ describe("workshop waitlist (real Postgres)", () => {
 
     const after = await detail("wl-capacity");
     expect(after.participants).toHaveLength(3);
-    expect(after.participants.map((row) => row.contactId).sort()).toEqual(
+    expect(after.participants.map((row: any) => row.contactId).sort()).toEqual(
       [CONTACTS[0], CONTACTS[1], CONTACTS[2]].sort(),
     );
-    expect(after.waitlisted.map((row) => row.contactId)).toEqual([CONTACTS[3]]);
+    expect(after.waitlisted.map((row: any) => row.contactId)).toEqual([CONTACTS[3]]);
   });
 
   it("does not promote once the workshop's last day has passed", async () => {
@@ -239,7 +239,7 @@ describe("workshop waitlist (real Postgres)", () => {
     expect(promoted).toBeNull();
     const after = await detail("wl-ended");
     expect(after.participants).toHaveLength(0);
-    expect(after.waitlisted.map((row) => row.id)).toEqual([queued.id]);
+    expect(after.waitlisted.map((row: any) => row.id)).toEqual([queued.id]);
   });
 
   it("skips a queued contact that was archived after joining", async () => {
@@ -312,8 +312,8 @@ describe("workshop waitlist (real Postgres)", () => {
       ]),
     );
 
-    expect(result.added.map((row) => row.contactId)).toEqual([CONTACTS[0], CONTACTS[1]]);
-    expect(result.waitlisted.map((row) => row.contactId)).toEqual([CONTACTS[2], CONTACTS[3]]);
+    expect(result.added.map((row: any) => row.contactId)).toEqual([CONTACTS[0], CONTACTS[1]]);
+    expect(result.waitlisted.map((row: any) => row.contactId)).toEqual([CONTACTS[2], CONTACTS[3]]);
     const after = await detail("wl-batch");
     expect(after.participants).toHaveLength(2);
     expect(after.waitlisted).toHaveLength(2);

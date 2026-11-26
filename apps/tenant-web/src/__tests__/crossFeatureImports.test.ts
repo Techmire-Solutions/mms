@@ -64,7 +64,7 @@ describe("no-cross-feature-imports", () => {
       expect(
         lint(
           // A feature-internal target: module packages (`@mms/mod-*`) are out of this rule's scope.
-          `import { f } from "@/tenant/features/attendance/hooks/useAttendanceApi";`,
+          `import { f } from "@/tenant/features/examinations/hooks/useExaminationsApi";`,
           STUDENT_HOOK,
         ),
       ).toEqual(["crossFeature"]);
@@ -154,7 +154,7 @@ describe("no-cross-feature-imports", () => {
       const messages = lint(
         [
           ...SANCTIONED_IMPORTS,
-          `import { b } from "@/tenant/features/attendance/hooks/useAttendanceApi";`,
+          `import { b } from "@/tenant/features/examinations/hooks/useExaminationsApi";`,
         ].join("\n"),
         baselinedFile,
       );
@@ -165,7 +165,7 @@ describe("no-cross-feature-imports", () => {
     it("flags a baselined file that imports nothing baselined", () => {
       if (!baselinedFile) return;
       const messages = lint(
-        `import { a } from "@/tenant/features/attendance/hooks/useAttendanceApi";`,
+        `import { a } from "@/tenant/features/examinations/hooks/useExaminationsApi";`,
         baselinedFile,
       );
       expect(messages).toContain("sharedLayer");

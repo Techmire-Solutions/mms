@@ -136,8 +136,8 @@ function createHarness(
     listFiscalYears: async () => options.years ?? [FY2026_OPEN],
     lockPostableAccounts: async (_tenant, ids) =>
       (options.accounts ?? [account("office"), account("cash")])
-        .filter((row) => ids.includes(row.id))
-        .map((row) => ({ id: row.id, isActive: row.isActive, hasChildren: false })),
+        .filter((row: any) => ids.includes(row.id))
+        .map((row: any) => ({ id: row.id, isActive: row.isActive, hasChildren: false })),
     saveEntry: async (_tenant, entry) => {
       // Let a concurrent request interleave here, as a real DB round-trip would.
       await new Promise((resolve) => setImmediate(resolve));

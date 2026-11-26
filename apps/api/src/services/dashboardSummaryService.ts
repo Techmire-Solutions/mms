@@ -17,12 +17,12 @@ import { studentUseCases } from "@mms/mod-students/backend/use-cases";
 import { facultyUseCases } from "@mms/mod-faculty/backend/use-cases";
 import { contactUseCases } from "@mms/mod-contacts/backend/use-cases";
 import { loadSessionsCommandMetrics } from "@mms/mod-sessions/backend/services";
-import { aggregateAttendanceCommandMetrics } from "../db/repositories/attendanceRepositoryList.js";
+import { aggregateAttendanceCommandMetrics } from "@mms/mod-attendance/backend/repository";
 import { loadFinanceCommandMetrics } from "@mms/mod-billing/backend/services";
 import { loadHasanatCommandMetrics } from "@mms/mod-hasanat/backend/services";
 import { loadAccountingCommandMetrics } from "@mms/mod-accounting/backend/services";
 import { loadQuestionBankCommandMetrics } from "@mms/mod-question-bank/backend/services";
-import { tasksUseCases } from "../tasks/use-cases/tasksUseCases.js";
+import { tasksUseCases } from "@mms/mod-tasks/backend/use-cases";
 
 export interface DashboardSummaryResponse {
   students?: StudentsCommandMetricsSnapshot;

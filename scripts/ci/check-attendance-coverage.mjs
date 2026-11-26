@@ -40,6 +40,7 @@ let files = 0;
 
 for (const [file, entry] of Object.entries(data)) {
   if (
+    !file.includes("packages/modules/attendance/src/backend/") &&
     !file.includes("src/attendance/") &&
     !file.includes("src/db/repositories/attendance") &&
     !file.includes("src/routes/tenant/attendance/")

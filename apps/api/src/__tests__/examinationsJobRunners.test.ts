@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 
 const upsertExams = vi.hoisted(() => vi.fn(async (_records: unknown[]): Promise<unknown[]> => []));
 vi.mock("@mms/mod-examinations/backend/use-cases", () => ({
@@ -41,6 +42,7 @@ const exportOptions: ExaminationsCsvExportOptions = { viewerRole: "admin" };
 const CLASSES = new Map([["class 5 - a", "cls-1"]]);
 
 beforeEach(() => {
+  configureModuleAdapters();
   vi.clearAllMocks();
   listExamsByWorkspace.mockResolvedValue([]);
 });

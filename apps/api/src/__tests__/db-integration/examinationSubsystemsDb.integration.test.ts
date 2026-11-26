@@ -221,9 +221,9 @@ describe("eligibility batch", () => {
     expect(roster[0]?.studentId).toBe(STUDENT);
     // Both exams share the class/enrollment window: the grouped attendance aggregate must produce
     // the same roster for each exam.
-    expect(batch.get(EXAM_B)?.rows.map((row) => row.studentId)).toEqual([STUDENT]);
+    expect(batch.get(EXAM_B)?.rows.map((row: any) => row.studentId)).toEqual([STUDENT]);
     // Withdrawn enrollments are not on the roster — the grid and the gate now agree.
-    expect(roster.some((row) => row.studentId === WITHDRAWN)).toBe(false);
+    expect(roster.some((row: any) => row.studentId === WITHDRAWN)).toBe(false);
   });
 
   it("reports a student with no attendance as unknown, not eligible", async () => {
@@ -456,7 +456,7 @@ describe("publication-aware marks read", () => {
     expect(all.results).toHaveLength(2);
 
     const published = await listExamResultsPage(TENANT, { publishedOnly: true });
-    expect(published.results.map((row) => row.id)).toEqual(["er-pub-1"]);
+    expect(published.results.map((row: any) => row.id)).toEqual(["er-pub-1"]);
   });
 });
 
@@ -743,7 +743,7 @@ describe("enrollment archive keeps the historical evidence", () => {
       // Archived enrollment: no longer markable, but the result is not destroyed.
       expect(await loadExamRoster(TENANT, EXAM)).toHaveLength(0);
       const page = await listExamResultsPage(TENANT, { examId: EXAM });
-      expect(page.results.map((row) => row.studentId)).toContain(STUDENT);
+      expect(page.results.map((row: any) => row.studentId)).toContain(STUDENT);
     } finally {
       await withTenant(TENANT, (tx) =>
         tx
@@ -756,7 +756,7 @@ describe("enrollment archive keeps the historical evidence", () => {
     }
 
     const restored = await loadExamRoster(TENANT, EXAM);
-    expect(restored.map((row) => row.studentId)).toContain(STUDENT);
+    expect(restored.map((row: any) => row.studentId)).toContain(STUDENT);
   });
 });
 
@@ -805,7 +805,9 @@ describe("student archive and purge around exam evidence", () => {
       ]),
     );
 
-    expect((await loadExamRoster(TENANT, EXAM)).map((row) => row.studentId)).toContain(STUDENT);
+    expect((await loadExamRoster(TENANT, EXAM)).map((row: any) => row.studentId)).toContain(
+      STUDENT,
+    );
   });
 
   it("hides an archived exam from analytics but keeps its marks for restore", async () => {

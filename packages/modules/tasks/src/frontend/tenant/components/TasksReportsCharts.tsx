@@ -1,0 +1,148 @@
+/**
+ * @file TasksReportsCharts.tsx
+ * @description Recharts status / priority / overdue series for Tasks Reports.
+ */
+
+import React from "react";
+import { BarChart2 } from "lucide-react";
+import { Bar, BarChart, Cell, Legend, Pie, PieChart, Tooltip, XAxis, YAxis } from "recharts";
+import { chartAxisTick, chartTooltipStyle } from "@mms/ui/app/ChartGrid";
+import { EmptyState } from "@mms/ui";
+import { ReportChartCard } from "../host/ModuleReportsTier";
+import { useBrandPalette } from "../host/BrandingPaletteContext";
+import { useTranslation } from "@mms/fe-core/i18n";
+import type { TaskMetricsResponse } from "../hooks/useTasksApi";
+import {
+  buildTasksOverdueChartData,
+  buildTasksPriorityChartData,
+  buildTasksStatusChartData,
+  hasChartValues,
+} from "../lib/tasksReportsChartData";
+
+interface TasksReportsChartsProps {
+  metrics: TaskMetricsResponse;
+}
+
+export function TasksReportsCharts({ metrics }: TasksReportsChartsProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const palette = useBrandPalette();
+  const colors = [
+    palette.primary,
+    palette.secondary,
+    palette.charts[0],
+    palette.charts[1],
+    palette.charts[2],
+    palette.charts[3],
+  ];
+
+  const statusData = buildTasksStatusChartData(metrics, {
+    todo: t("tasks.status.todo"),
+    inProgress: t("tasks.status.in_progress"),
+    inReview: t("tasks.status.in_review"),
+    blocked: t("tasks.status.blocked"),
+    completed: t("tasks.status.completed"),
+    cancelled: t("tasks.status.cancelled"),
+  });
+  const priorityData = buildTasksPriorityChartData(metrics, {
+    low: t("tasks.priority.low"),
+    medium: t("tasks.priority.medium"),
+    high: t("tasks.priority.high"),
+    urgent: t("tasks.priority.urgent"),
+  });
+  const overdueData = buildTasksOverdueChartData(metrics, {
+    overdue: t("tasks.metrics.overdue"),
+    onTrack: t("tasks.reports.onTrack"),
+  });
+
+  const emptyNode = (
+    <EmptyState title={t("tasks.reports.noData")} compact icon={BarChart2} className="h-chart-md" />
+  );
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <ReportChartCard
+        title={t("tasks.reports.statusDistribution")}
+        accentColor="primary"
+        heightClass="h-chart-md"
+        empty={!hasChartValues(statusData)}
+        emptyNode={emptyNode}
+        accessibleSummary={
+          <ul>
+            {statusData.map((row) => (
+              <li key={row.name}>{`${row.name}: ${row.value}`}</li>
+            ))}
+          </ul>
+        }
+      >
+        <PieChart>
+          <Pie
+            data={statusData}
+            dataKey="value"
+            nameKey="name"
+            cx="50%"
+            cy="50%"
+            outerRadius={70}
+            paddingAngle={3}
+          >
+            {statusData.map((row, index) => (
+              <Cell key={row.name} fill={colors[index % colors.length]} />
+            ))}
+          </Pie>
+          <Tooltip contentStyle={chartTooltipStyle()} />
+          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: "11px" }} />
+        </PieChart>
+      </ReportChartCard>
+
+      <ReportChartCard
+        title={t("tasks.reports.priorityDistribution")}
+        accentColor="info"
+        heightClass="h-chart-md"
+        empty={!hasChartValues(priorityData)}
+        emptyNode={emptyNode}
+        accessibleSummary={
+          <ul>
+            {priorityData.map((row) => (
+              <li key={row.name}>{`${row.name}: ${row.value}`}</li>
+            ))}
+          </ul>
+        }
+      >
+        <BarChart data={priorityData} barSize={20}>
+          <XAxis dataKey="name" tick={chartAxisTick(10)} tickLine={false} />
+          <YAxis allowDecimals={false} tick={chartAxisTick(10)} tickLine={false} axisLine={false} />
+          <Tooltip contentStyle={chartTooltipStyle()} />
+          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+            {priorityData.map((row, index) => (
+              <Cell key={row.name} fill={colors[index % colors.length]} />
+            ))}
+          </Bar>
+        </BarChart>
+      </ReportChartCard>
+
+      <ReportChartCard
+        title={t("tasks.reports.overdueBreakdown")}
+        accentColor="warning"
+        heightClass="h-chart-md"
+        empty={!hasChartValues(overdueData)}
+        emptyNode={emptyNode}
+        accessibleSummary={
+          <ul>
+            {overdueData.map((row) => (
+              <li key={row.name}>{`${row.name}: ${row.value}`}</li>
+            ))}
+          </ul>
+        }
+      >
+        <BarChart data={overdueData} barSize={28}>
+          <XAxis dataKey="name" tick={chartAxisTick(10)} tickLine={false} />
+          <YAxis allowDecimals={false} tick={chartAxisTick(10)} tickLine={false} axisLine={false} />
+          <Tooltip contentStyle={chartTooltipStyle()} />
+          <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+            <Cell fill="hsl(var(--destructive))" />
+            <Cell fill="hsl(var(--success))" />
+          </Bar>
+        </BarChart>
+      </ReportChartCard>
+    </div>
+  );
+}

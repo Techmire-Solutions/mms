@@ -5,7 +5,7 @@ import {
   type Workspace,
 } from "@mms/contracts";
 import { getCollectionByStorageName, listCollectionStorageNames } from "../database.js";
-import { bulkSaveAttendanceRecords } from "../repositories/attendanceRepository.js";
+import { bulkSaveAttendanceRecords } from "@mms/mod-attendance/backend/repository";
 import type { AttendanceRecord } from "@mms/contracts";
 
 async function discoverTenantSubdomains(): Promise<Set<string>> {

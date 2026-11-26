@@ -1,0 +1,462 @@
+/**
+ * Fastify inject coverage for tasks.assign / tasks.assign_anywhere route gates.
+ */
+import Fastify from "fastify";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import tasksRoutes from "../tenant.router.js";
+import { ConflictError, ValidationError } from "@mms/be-core/http/errors";
+
+const {
+  canPerformTaskAction,
+  mutateTask,
+  changeTaskStatus,
+  changeTasksBulkStatus,
+  listTasks,
+  findTaskById,
+  getTaskMetrics,
+  updateTaskStatus,
+  bulkUpdateTaskStatus,
+  getEligibleTaskAssignees,
+  getTenantTaskSettings,
+  updateTenantTaskSettings,
+} = vi.hoisted(() => ({
+  canPerformTaskAction: vi.fn(),
+  mutateTask: vi.fn(),
+  changeTaskStatus: vi.fn(),
+  changeTasksBulkStatus: vi.fn(),
+  listTasks: vi.fn(),
+  findTaskById: vi.fn(),
+  getTaskMetrics: vi.fn(),
+  updateTaskStatus: vi.fn(),
+  bulkUpdateTaskStatus: vi.fn(),
+  getEligibleTaskAssignees: vi.fn(),
+  getTenantTaskSettings: vi.fn(),
+  updateTenantTaskSettings: vi.fn(),
+}));
+
+vi.mock("../middleware/authenticate.js", () => ({ authenticateTenant: async () => {} }));
+vi.mock("../middleware/requireTenantModule.js", () => ({ registerModuleAccess: vi.fn() }));
+vi.mock("../services/taskPermissionService.js", () => ({
+  canPerformTaskAction: (...args: unknown[]) => canPerformTaskAction(...args),
+}));
+vi.mock("../services/taskMutationService.js", () => ({
+  mutateTask: (...args: unknown[]) => mutateTask(...args),
+  changeTaskStatus: (...args: unknown[]) => changeTaskStatus(...args),
+  changeTasksBulkStatus: (...args: unknown[]) => changeTasksBulkStatus(...args),
+  TaskDelegationError: class TaskDelegationError extends Error {},
+}));
+vi.mock("../repository/db/tasksRepository.js", () => ({
+  listTasks: (...args: unknown[]) => listTasks(...args),
+  findTaskById: (...args: unknown[]) => findTaskById(...args),
+  getTaskMetrics: (...args: unknown[]) => getTaskMetrics(...args),
+  createTask: vi.fn(),
+  updateTask: vi.fn(),
+  updateTaskStatus: (...args: unknown[]) => updateTaskStatus(...args),
+  deleteTask: vi.fn(),
+  restoreTask: vi.fn(),
+  bulkRestoreTasks: vi.fn(),
+}));
+vi.mock("../repository/db/tasksTrashRepository.js", () => ({}));
+vi.mock("../repository/db/tasksBulkRepository.js", () => ({
+  bulkUpdateTaskStatusBatch: (...args: unknown[]) => bulkUpdateTaskStatus(...args),
+  bulkDeleteTasksBatch: vi.fn(),
+  bulkRestoreTasksBatch: vi.fn(),
+}));
+vi.mock("../services/taskEligibleAssigneesService.js", () => ({
+  getEligibleTaskAssignees: (...args: unknown[]) => getEligibleTaskAssignees(...args),
+}));
+vi.mock("../services/taskSettingsService.js", () => ({
+  getTenantTaskSettings: (...args: unknown[]) => getTenantTaskSettings(...args),
+  updateTenantTaskSettings: (...args: unknown[]) => updateTenantTaskSettings(...args),
+}));
+vi.mock("../routes/tasksSoftDeleteRoutes.js", () => ({
+  registerTasksSoftDeleteRoutes: vi.fn(),
+}));
+
+const TASK_BODY = {
+  title: "Prepare report",
+  status: "todo",
+  priority: "medium",
+  assignees: [{ facultyId: "fac-1", userId: "u-target" }],
+};
+
+async function buildTasksApp(role = "teacher") {
+  const app = Fastify();
+  app.addHook("preHandler", async (request) => {
+    request.user = {
+      id: "u-actor",
+      name: "Actor",
+      email: "actor@example.test",
+      role,
+      workspaceSubdomain: "demo",
+    };
+    request.tenant = { id: "demo" };
+  });
+  await app.register(tasksRoutes);
+  return app;
+}
+
+describe("Tasks assign route gates (inject)", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mutateTask.mockResolvedValue({
+      id: "task-1",
+      title: TASK_BODY.title,
+      assignees: TASK_BODY.assignees,
+    });
+  });
+
+  it("denies POST /api/tasks with assignees when tasks.assign is missing", async () => {
+    canPerformTaskAction.mockImplementation(async (_req: unknown, permission: string) => {
+      if (permission === "tasks.write") return true;
+      if (permission === "tasks.assign") return false;
+      return false;
+    });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/tasks",
+        headers: { host: "demo.localhost" },
+        payload: TASK_BODY,
+      });
+      expect(response.statusCode).toBe(403);
+      expect(response.json()).toMatchObject({
+        type: "forbidden",
+        message: "Assignment permission required",
+      });
+      expect(mutateTask).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("allows POST /api/tasks with assignees when tasks.assign is granted", async () => {
+    canPerformTaskAction.mockImplementation(async (_req: unknown, permission: string) => {
+      if (permission === "tasks.write" || permission === "tasks.assign") return true;
+      if (permission === "tasks.assign_anywhere") return false;
+      return false;
+    });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/tasks",
+        headers: { host: "demo.localhost" },
+        payload: TASK_BODY,
+      });
+      expect(response.statusCode).toBe(201);
+      expect(mutateTask).toHaveBeenCalledWith(
+        "demo",
+        "u-actor",
+        false,
+        expect.objectContaining({ kind: "create" }),
+      );
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("passes assign_anywhere=true into mutateTask when capability is granted", async () => {
+    canPerformTaskAction.mockImplementation(async (_req: unknown, permission: string) => {
+      if (
+        permission === "tasks.write" ||
+        permission === "tasks.assign" ||
+        permission === "tasks.assign_anywhere"
+      ) {
+        return true;
+      }
+      return false;
+    });
+
+    const app = await buildTasksApp("admin");
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/tasks",
+        headers: { host: "demo.localhost" },
+        payload: TASK_BODY,
+      });
+      expect(response.statusCode).toBe(201);
+      expect(mutateTask).toHaveBeenCalledWith(
+        "demo",
+        "u-actor",
+        true,
+        expect.objectContaining({ kind: "create" }),
+      );
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("denies PATCH assignees update when tasks.assign is missing", async () => {
+    canPerformTaskAction.mockImplementation(async (_req: unknown, permission: string) => {
+      if (permission === "tasks.write") return true;
+      if (permission === "tasks.assign") return false;
+      return false;
+    });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "PATCH",
+        url: "/api/tasks/task-1",
+        headers: { host: "demo.localhost" },
+        payload: { assignees: TASK_BODY.assignees },
+      });
+      expect(response.statusCode).toBe(403);
+      expect(mutateTask).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("maps an illegal status transition to 400 instead of 500", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    changeTaskStatus.mockRejectedValueOnce(
+      new ValidationError("Invalid status transition: completed → todo"),
+    );
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "PATCH",
+        url: "/api/tasks/task-1/status",
+        headers: { host: "demo.localhost" },
+        payload: { status: "todo" },
+      });
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toMatchObject({
+        type: "validation_error",
+        message: "Invalid status transition: completed → todo",
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("denies POST /api/tasks/bulk-status without tasks.write or tasks.complete", async () => {
+    canPerformTaskAction.mockResolvedValue(false);
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/tasks/bulk-status",
+        headers: { host: "demo.localhost" },
+        payload: { ids: ["task-1"], status: "completed" },
+      });
+      expect(response.statusCode).toBe(403);
+      expect(bulkUpdateTaskStatus).not.toHaveBeenCalled();
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("allows a complete-only role to bulk-complete and returns skipped rows", async () => {
+    canPerformTaskAction.mockImplementation(async (_req: unknown, permission: string) => {
+      return permission === "tasks.complete";
+    });
+    changeTasksBulkStatus.mockResolvedValue({
+      updatedIds: ["task-1"],
+      skipped: [{ id: "task-2", reason: "illegal_transition" }],
+      changes: [],
+    });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/tasks/bulk-status",
+        headers: { host: "demo.localhost" },
+        payload: { ids: ["task-1", "task-2"], status: "completed" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(changeTasksBulkStatus).toHaveBeenCalledWith(
+        "demo",
+        "u-actor",
+        false,
+        ["task-1", "task-2"],
+        "completed",
+      );
+      expect(response.json()).toMatchObject({
+        updatedIds: ["task-1"],
+        skipped: [{ id: "task-2", reason: "illegal_transition" }],
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 400 for an invalid bulk-status payload", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "POST",
+        url: "/api/tasks/bulk-status",
+        headers: { host: "demo.localhost" },
+        payload: { ids: [], status: "todo" },
+      });
+      expect(response.statusCode).toBe(400);
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("parses dueFrom and dueTo query parameters on GET /api/tasks", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    listTasks.mockResolvedValue({ tasks: [], total: 0 });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks?dueFrom=2026-10-01&dueTo=2026-10-31",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(listTasks).toHaveBeenCalledWith(
+        "demo",
+        expect.objectContaining({
+          dueFrom: "2026-10-01",
+          dueTo: "2026-10-31",
+        }),
+      );
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns task by id on GET /api/tasks/:id", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    findTaskById.mockResolvedValueOnce({ id: "task-1", title: "Task 1" });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/task-1",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toMatchObject({ id: "task-1", title: "Task 1" });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns 404 on GET /api/tasks/:id when task does not exist", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    findTaskById.mockResolvedValueOnce(null);
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/missing-task",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(404);
+      expect(response.json()).toMatchObject({ type: "not_found" });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns metrics on GET /api/tasks/metrics", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    getTaskMetrics.mockResolvedValueOnce({ total: 10, todo: 4 });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/metrics",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toEqual({ total: 10, todo: 4 });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("passes directory filters into GET /api/tasks/metrics (m7)", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    getTaskMetrics.mockResolvedValueOnce({ total: 1, todo: 0 });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/metrics?status=in_progress&priority=high",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(getTaskMetrics).toHaveBeenCalledWith(
+        "demo",
+        expect.objectContaining({ status: "in_progress", priority: "high" }),
+      );
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("returns tenant task settings on GET /api/tasks/settings", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    getTenantTaskSettings.mockResolvedValueOnce({
+      delegationScope: "descendants",
+      allowSelfAssignment: true,
+      notifyOnAssignment: true,
+      notifyOnStatusChange: true,
+      notificationChannel: "in_app",
+    });
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/tasks/settings",
+        headers: { host: "demo.localhost" },
+      });
+      expect(response.statusCode).toBe(200);
+      expect(response.json()).toMatchObject({
+        delegationScope: "descendants",
+        allowSelfAssignment: true,
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("maps stale x-expected-updated-at ConflictError to 409 on PATCH /api/tasks/:id/status", async () => {
+    canPerformTaskAction.mockResolvedValue(true);
+    changeTaskStatus.mockRejectedValueOnce(
+      new ConflictError("This task was changed by someone else. Reload it and try again."),
+    );
+
+    const app = await buildTasksApp();
+    try {
+      const response = await app.inject({
+        method: "PATCH",
+        url: "/api/tasks/task-1/status",
+        headers: {
+          host: "demo.localhost",
+          "x-expected-updated-at": new Date(Date.now() - 60_000).toISOString(),
+        },
+        payload: { status: "in_progress" },
+      });
+      expect(response.statusCode).toBe(409);
+      expect(response.json()).toMatchObject({
+        type: "conflict",
+        message: "This task was changed by someone else. Reload it and try again.",
+      });
+    } finally {
+      await app.close();
+    }
+  });
+});

@@ -65,7 +65,7 @@ async function auditIdsFor(recordId: string): Promise<string[]> {
         ),
       ),
   );
-  return rows.map((row) => row.recordId);
+  return rows.map((row: any) => row.recordId);
 }
 
 beforeAll(async () => {

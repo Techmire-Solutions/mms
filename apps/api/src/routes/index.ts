@@ -35,7 +35,7 @@ import { workshopsRoutes } from "@mms/mod-workshops/backend/tenant";
 import { examinationsRoutes } from "@mms/mod-examinations/backend/tenant";
 import { questionBankRoutes } from "@mms/mod-question-bank/backend/tenant";
 import usersRoutes from "./tenant/users.js";
-import attendanceRoutes from "./tenant/attendance.js";
+import attendanceTenantRoutes from "@mms/mod-attendance/backend/tenant";
 import sessionsTenantRoutes from "@mms/mod-sessions/backend/tenant";
 import backgroundJobRoutes from "./common/backgroundJobs.js";
 import uploadRoutes from "./common/uploads.js";
@@ -49,7 +49,7 @@ import openapiRoutes from "./common/openapi.js";
 import { auditRoutes } from "@mms/mod-audit/backend/tenant";
 import { notificationsRoutes } from "@mms/mod-notifications/backend/tenant";
 import moduleAccessRoutes from "./tenant/moduleAccess.js";
-import tasksRoutes from "./tenant/tasksRoutes.js";
+import tasksTenantRoutes from "@mms/mod-tasks/backend/tenant";
 import { documentTemplatesRoutes } from "@mms/mod-documents/backend/tenant";
 import { tenantIamRoutes } from "@mms/mod-iam/backend/tenant";
 import { platformIamRoutes } from "@mms/mod-iam/backend/platform";
@@ -124,7 +124,11 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     registerModuleAccess(scope, "faculty");
     await scope.register(facultyTenantRoutes);
   });
-  await app.register(tasksRoutes);
+  await app.register(async (scope) => {
+    scope.addHook("preHandler", authenticateTenant);
+    registerModuleAccess(scope, "tasks");
+    await scope.register(tasksTenantRoutes);
+  });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     await scope.register(documentTemplatesRoutes);
@@ -192,7 +196,11 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
     });
   });
 
-  await app.register(attendanceRoutes);
+  await app.register(async (scope) => {
+    scope.addHook("preHandler", authenticateTenant);
+    registerModuleAccess(scope, "attendance");
+    await scope.register(attendanceTenantRoutes);
+  });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "sessions");

@@ -119,9 +119,9 @@ describe("workshop completion concurrency (real Postgres)", () => {
     expect(results.every((result) => result.status === "fulfilled")).toBe(true);
 
     const rows = await inTenant(() => workshopsCompletionUseCases.getCompletion("race-evaluate"));
-    expect(rows.map((row) => row.participantId).sort()).toEqual([...participantIds].sort());
-    expect(rows.every((row) => row.status === "completed")).toBe(true);
-    expect(new Set(rows.map((row) => row.completedAt)).size).toBe(1);
+    expect(rows.map((row: any) => row.participantId).sort()).toEqual([...participantIds].sort());
+    expect(rows.every((row: any) => row.status === "completed")).toBe(true);
+    expect(new Set(rows.map((row: any) => row.completedAt)).size).toBe(1);
   });
 
   it("certifies each completed participant exactly once under concurrent issue requests", async () => {
@@ -129,7 +129,7 @@ describe("workshop completion concurrency (real Postgres)", () => {
     const first = await inTenant(() =>
       workshopsCompletionUseCases.evaluateCompletion("race-issue"),
     );
-    expect(first.every((row) => row.status === "completed")).toBe(true);
+    expect(first.every((row: any) => row.status === "completed")).toBe(true);
 
     const results = await Promise.all([
       inTenant(() =>
@@ -144,7 +144,7 @@ describe("workshop completion concurrency (real Postgres)", () => {
     expect(new Set(issued).size).toBe(issued.length);
 
     const rows = await inTenant(() => workshopsCompletionUseCases.getCompletion("race-issue"));
-    expect(rows.every((row) => row.certificateIssuedAt !== null)).toBe(true);
+    expect(rows.every((row: any) => row.certificateIssuedAt !== null)).toBe(true);
   });
 
   it("completes the workshop while certificates are issued without a lost update", async () => {
@@ -174,7 +174,7 @@ describe("workshop completion concurrency (real Postgres)", () => {
     const rows = await inTenant(() =>
       workshopsCompletionUseCases.getCompletion("race-complete-issue"),
     );
-    expect(rows.every((row) => row.certificateIssuedAt !== null)).toBe(true);
+    expect(rows.every((row: any) => row.certificateIssuedAt !== null)).toBe(true);
   });
 
   it("serializes an attendance save against evaluation and keeps the committed mark", async () => {
@@ -206,7 +206,7 @@ describe("workshop completion concurrency (real Postgres)", () => {
     const rows = await inTenant(() =>
       workshopsCompletionUseCases.evaluateCompletion("race-attendance"),
     );
-    expect(rows.every((row) => row.status === "completed")).toBe(true);
+    expect(rows.every((row: any) => row.status === "completed")).toBe(true);
   });
 
   it("cancels while evaluation races and leaves no live participant or certificate", async () => {
@@ -231,6 +231,6 @@ describe("workshop completion concurrency (real Postgres)", () => {
     expect(after.workshop.status).toBe("cancelled");
     expect(after.participants).toHaveLength(0);
     const rows = await inTenant(() => workshopsCompletionUseCases.getCompletion("race-cancel"));
-    expect(rows.filter((row) => row.certificateIssuedAt !== null)).toHaveLength(0);
+    expect(rows.filter((row: any) => row.certificateIssuedAt !== null)).toHaveLength(0);
   });
 });

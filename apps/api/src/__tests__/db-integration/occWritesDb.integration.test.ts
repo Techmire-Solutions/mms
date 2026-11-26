@@ -9,8 +9,10 @@ import { students, tasks, workspaces } from "@mms/db/schema";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { ConflictError } from "../../lib/httpErrors.js";
 import { updateStudentById } from "@mms/mod-students/backend/use-cases";
-import { updateTask } from "../../db/repositories/tasksWriteRepository.js";
+import { updateTask } from "@mms/mod-tasks/backend/repository";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { configureAttendanceAdapters } from "../../modules/attendance/adapters.js";
+import { configureTasksAdapters } from "../../modules/tasks/adapters.js";
 
 const TENANT = `occ-${randomUUID().slice(0, 8)}`;
 
@@ -32,6 +34,8 @@ async function purge(): Promise<void> {
 }
 
 beforeAll(async () => {
+  configureAttendanceAdapters();
+  configureTasksAdapters();
   await requireDatabaseConnection();
   await applyDrizzleMigrations();
   await purge();

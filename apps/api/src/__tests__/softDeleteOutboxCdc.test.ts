@@ -230,7 +230,7 @@ describe("Outbox CDC — soft-delete / restore pipeline", () => {
       expect(valuesCall).toHaveBeenCalledTimes(1);
       const rows = valuesCall.mock.calls[0]?.[0] as Array<Record<string, unknown>>;
       expect(rows).toHaveLength(2);
-      expect(rows.map((row) => row.entityId)).toEqual(["con-1", "con-2"]);
+      expect(rows.map((row: any) => row.entityId)).toEqual(["con-1", "con-2"]);
     });
 
     it("emitOutboxEvents is a no-op for an empty batch", async () => {

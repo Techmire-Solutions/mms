@@ -151,7 +151,7 @@ describe("section merge / split / close (real Postgres)", () => {
     const history = await query<{ sectionId: string; endOn: string | null }>(sql`
       SELECT section_id AS "sectionId", end_on::text AS "endOn" FROM enrollment_placements
        WHERE workspace_subdomain = ${TENANT} AND enrollment_id = ${s3} ORDER BY start_on`);
-    expect(history.map((row) => row.sectionId)).toEqual(["sec-a", result.sectionId]);
+    expect(history.map((row: any) => row.sectionId)).toEqual(["sec-a", result.sectionId]);
     expect(history[1].endOn).toBeNull();
   });
 

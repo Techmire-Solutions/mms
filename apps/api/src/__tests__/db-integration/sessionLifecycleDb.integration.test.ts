@@ -127,7 +127,9 @@ describe("session lifecycle (real Postgres)", () => {
     const started = await runSessionAutoStart();
 
     // Assert
-    expect(started.filter((row) => row.workspace === TENANT).map((row) => row.id)).toEqual(["due"]);
+    expect(
+      started.filter((row: any) => row.workspace === TENANT).map((row: any) => row.id),
+    ).toEqual(["due"]);
     expect(await statusOf("due")).toBe("in_progress");
     expect(await statusOf("future")).toBe("open");
     expect(await statusOf("no-date")).toBe("open");

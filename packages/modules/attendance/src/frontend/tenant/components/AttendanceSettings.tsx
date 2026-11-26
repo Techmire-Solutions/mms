@@ -1,0 +1,51 @@
+import React, { useEffect } from "react";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ModuleSetupSaveFooter } from "@mms/fe-core/components/ModuleSetupSaveFooter";
+import { AttendanceSettingsPreferencesSection } from "./AttendanceSettingsPreferencesSection";
+import { useAttendanceSetupPanelState } from "../hooks/useAttendanceSetupPanelState";
+import { ModuleSetupContent } from "@mms/ui/app/ModuleSetupContent";
+
+export interface AttendanceSettingsProps {
+  /** Reports Preferences draft dirtiness to the Setup shell (leave-guard). */
+  onPrefsDirtyChange?: (isDirty: boolean) => void;
+}
+
+export const AttendanceSettings = function AttendanceSettings({
+  onPrefsDirtyChange,
+}: AttendanceSettingsProps = {}): React.JSX.Element {
+  const { t } = useTranslation();
+  const { settingsDraft, saved, saving, isPrefsDirty, upd, handleSave } =
+    useAttendanceSetupPanelState();
+
+  useEffect(() => {
+    onPrefsDirtyChange?.(isPrefsDirty);
+  }, [isPrefsDirty, onPrefsDirtyChange]);
+
+  const unsavedWarning = isPrefsDirty ? t("attendance.setup.unsavedPreferencesWarning") : undefined;
+
+  return (
+    <ModuleSetupContent>
+      <AttendanceSettingsPreferencesSection
+        settingsDraft={settingsDraft}
+        upd={upd}
+        isPrefsDirty={isPrefsDirty}
+        saving={saving}
+        saved={saved}
+        onSave={handleSave}
+      />
+
+      <ModuleSetupSaveFooter
+        dirty={isPrefsDirty}
+        saving={saving}
+        saved={saved}
+        unsavedWarning={unsavedWarning}
+        saveLabel={t("common.save")}
+        savedLabel={t("settings.savedBadge")}
+        footerClassName="sticky bottom-0 z-10 rounded-lg border border-border/60 bg-background/95 backdrop-blur"
+        onSave={handleSave}
+      />
+    </ModuleSetupContent>
+  );
+};
+
+export default AttendanceSettings;

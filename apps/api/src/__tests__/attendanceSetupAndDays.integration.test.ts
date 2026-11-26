@@ -27,9 +27,6 @@ vi.mock("@mms/mod-sessions/backend/use-cases", async (importOriginal) => ({
   assertTeacherClassScope: vi.fn().mockResolvedValue(undefined),
   assertTeacherAnyClassScope: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("../attendance/use-cases/instructionalDayGuard.js", () => ({
-  assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
-}));
 vi.mock("@mms/db/context", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@mms/db/context")>()),
 
@@ -64,7 +61,55 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
     ),
   };
 });
-vi.mock("../attendance/use-cases/attendanceUseCases.js", () => ({
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/use-cases/attendanceUseCases.js",
+  () => ({
+    attendanceUseCases: {
+      loadAttendanceRecords: vi.fn().mockResolvedValue([]),
+      loadAttendancePage: mocks.loadPage,
+      countAttendanceRecords: vi.fn().mockResolvedValue(0),
+      createAttendanceRecord: vi.fn(),
+      updateAttendanceRecordById: vi.fn(),
+      deleteAttendanceRecordById: vi.fn().mockResolvedValue(true),
+      restoreAttendanceRecordById: vi.fn().mockResolvedValue(true),
+      bulkSoftDeleteAttendance: vi.fn().mockResolvedValue(0),
+      bulkRestoreAttendance: vi.fn().mockResolvedValue(0),
+      upsertAttendanceRecords: vi.fn().mockResolvedValue([]),
+      replaceAttendanceRecords: vi.fn(),
+      loadAttendanceReportAggregates: vi.fn().mockResolvedValue({
+        overview: {
+          overallRate: 0,
+          totalRecords: 0,
+          lowAttendanceCount: 0,
+          classRates: [],
+          monthlyTrend: [],
+          studentRates: [],
+          topPerformers: [],
+          statusCounts: [],
+        },
+        comparison: { sessions: [], monthly: { a: [], b: [] } },
+      }),
+      loadAttendanceCommandMetrics: vi.fn().mockResolvedValue({}),
+      loadAttendanceWidgetAggregates: mocks.widgets,
+      ingestAttendanceCheckIns: mocks.ingest,
+      loadAttendanceRoster: mocks.loadRoster,
+      listMarkedAttendanceDates: mocks.markedDates,
+      countMatrixStudents: vi.fn().mockResolvedValue(0),
+    },
+  }),
+);
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/use-cases/attendanceLeaveUseCases.js",
+  () => ({
+    readSubmittedAttendanceDay: (...args: unknown[]) => mocks.readDay(...args),
+    reopenSubmittedAttendanceDay: (...args: unknown[]) => mocks.reopenDay(...args),
+    submitAttendanceDay: (...args: unknown[]) => mocks.submitDay(...args),
+  }),
+);
+vi.mock("@mms/mod-attendance/backend/use-cases", () => ({
+  streamAcademicCalendarCsv: vi.fn(),
+  streamAcademicCalendarIcs: vi.fn(),
+  recordApprovedLeave: vi.fn(),
   attendanceUseCases: {
     loadAttendanceRecords: vi.fn().mockResolvedValue([]),
     loadAttendancePage: mocks.loadPage,
@@ -97,21 +142,26 @@ vi.mock("../attendance/use-cases/attendanceUseCases.js", () => ({
     listMarkedAttendanceDates: mocks.markedDates,
     countMatrixStudents: vi.fn().mockResolvedValue(0),
   },
-}));
-vi.mock("../attendance/use-cases/attendanceLeaveUseCases.js", () => ({
+  copySessionCalendarEvents: vi.fn(),
+  assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
   submitAttendanceDay: mocks.submitDay,
   reopenSubmittedAttendanceDay: mocks.reopenDay,
   readSubmittedAttendanceDay: mocks.readDay,
-  recordApprovedLeave: vi.fn(),
 }));
-vi.mock("../services/attendanceLookupsService.js", () => ({
-  loadAttendanceLookupsMap: mocks.loadLookups,
-  replaceAttendanceLookupKind: mocks.replaceLookupKind,
-}));
-vi.mock("../services/attendancePreferencesService.js", () => ({
-  getAttendancePreferencesService: mocks.getPreferences,
-  updateAttendancePreferencesService: mocks.updatePreferences,
-}));
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/services/attendanceLookupsService.js",
+  () => ({
+    loadAttendanceLookupsMap: mocks.loadLookups,
+    replaceAttendanceLookupKind: mocks.replaceLookupKind,
+  }),
+);
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/services/attendancePreferencesService.js",
+  () => ({
+    getAttendancePreferencesService: mocks.getPreferences,
+    updateAttendancePreferencesService: mocks.updatePreferences,
+  }),
+);
 
 const HOST = { host: "demo.localhost" };
 const SUBMISSION = {

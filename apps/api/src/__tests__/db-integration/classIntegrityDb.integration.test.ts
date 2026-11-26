@@ -9,9 +9,11 @@ import { saveSession } from "@mms/mod-sessions/backend/repository";
 import { findSessionById } from "@mms/mod-sessions/backend/repository";
 import { listFeeStructures, saveFeeStructure } from "@mms/mod-billing/backend/repository";
 import { bulkEnrollStudentsIntoClass } from "@mms/mod-enrollments/backend/use-cases";
-import { attendanceUseCases } from "../../attendance/use-cases/attendanceUseCases.js";
+import { attendanceUseCases } from "@mms/mod-attendance/backend/use-cases";
 import { runWithTenant } from "../../lib/tenantContext.js";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { configureAttendanceAdapters } from "../../modules/attendance/adapters.js";
+import { configureTasksAdapters } from "../../modules/tasks/adapters.js";
 import { configureEnrollmentsAdapters } from "../../modules/enrollments/adapters.js";
 
 const TENANT = "class-integrity-test";
@@ -24,6 +26,8 @@ async function purgeTenant(): Promise<void> {
 }
 
 beforeAll(async () => {
+  configureAttendanceAdapters();
+  configureTasksAdapters();
   configureEnrollmentsAdapters();
   await requireDatabaseConnection();
   await applyDrizzleMigrations();

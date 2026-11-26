@@ -6,16 +6,36 @@ const h = vi.hoisted(() => ({
   save: vi.fn(),
 }));
 
-vi.mock("../lib/registerModuleCsvImportJobRunner.js", () => ({
+vi.mock("@mms/be-core/jobs", () => ({
   registerModuleCsvImportJobRunner: (o: { importBatch: unknown }) => {
     h.importBatch = o.importBatch as typeof h.importBatch;
   },
 }));
-vi.mock("../attendance/use-cases/academicCalendarUseCases.js", () => ({
-  academicCalendarUseCases: { save: h.save },
-}));
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/use-cases/academicCalendarUseCases.js",
+  async (importOriginal) => ({
+    ...(await importOriginal<
+      typeof import("../../../../packages/modules/attendance/dist/backend/use-cases/academicCalendarUseCases.js")
+    >()),
+    academicCalendarUseCases: {
+      ...(
+        await importOriginal<
+          typeof import("../../../../packages/modules/attendance/dist/backend/use-cases/academicCalendarUseCases.js")
+        >()
+      ).academicCalendarUseCases,
+      save: h.save,
+    },
+  }),
+);
+vi.mock("@mms/mod-attendance/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-attendance/backend/use-cases")>();
+  return {
+    ...actual,
+    academicCalendarUseCases: { ...actual.academicCalendarUseCases, save: h.save },
+  };
+});
 
-import { registerAcademicCalendarImportJobRunner } from "../attendance/use-cases/academicCalendarImportJob.js";
+import { registerAcademicCalendarImportJobRunner } from "@mms/mod-attendance/backend/use-cases";
 
 describe("academic calendar import runner", () => {
   beforeEach(() => {

@@ -98,7 +98,7 @@ async function outboxRowsFor(entityType: string): Promise<string[]> {
         and(eq(outboxEvents.workspaceSubdomain, TENANT), eq(outboxEvents.entityType, entityType)),
       ),
   );
-  return rows.map((row) => row.entityId);
+  return rows.map((row: any) => row.entityId);
 }
 
 async function auditRowsFor(recordId: string): Promise<string[]> {
@@ -114,7 +114,7 @@ async function auditRowsFor(recordId: string): Promise<string[]> {
         ),
       ),
   );
-  return rows.map((row) => row.action);
+  return rows.map((row: any) => row.action);
 }
 
 describe("workshop lifecycle (real Postgres)", () => {
@@ -294,7 +294,7 @@ describe("workshop lifecycle (real Postgres)", () => {
 
     const after = await inTenant(() => workshopsUseCases.getWorkshop("lc-rollback"));
     expect(after.workshop.status).toBe("open");
-    expect(after.participants.map((row) => row.id)).toContain(participant.id);
+    expect(after.participants.map((row: any) => row.id)).toContain(participant.id);
     expect(await outboxRowsFor("workshop_participants")).not.toContain(participant.id);
   });
 

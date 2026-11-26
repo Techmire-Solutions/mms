@@ -1,0 +1,147 @@
+import type React from "react";
+import { formatDate } from "@mms/contracts";
+import { TimePicker } from "@mms/ui/app/TimePicker";
+import { FORM_ERROR } from "@mms/ui";
+import { DirectoryCardMetaTile } from "@mms/ui/app/DirectoryCardMetaTile";
+import { EntityCard } from "@mms/fe-core/components/EntityCard";
+import { DirectoryEntityCard } from "@mms/fe-core/components/DirectoryEntityCard";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import type { AttendanceRecord, AttendanceStatus } from "../lib/attendanceData";
+import { AttendanceRecordStatusCell } from "./AttendanceRecordStatusCell";
+
+export interface AttendanceCardProps {
+  attendanceRecord: AttendanceRecord;
+  isColumnVisible: (key: string) => boolean;
+  editingRecord: AttendanceRecord | null;
+  /** Inline save/validation error for the record being edited (rendered under its inputs). */
+  editingRecordError?: string | null;
+  statuses: AttendanceStatus[];
+  updateDraft: <K extends keyof AttendanceRecord>(key: K, value: AttendanceRecord[K]) => void;
+  renderRowActions: (record: AttendanceRecord) => React.ReactNode;
+  classLabel: (classId: string) => string;
+  selectedIds: string[];
+  canDelete: boolean;
+  onToggleSelectedRecord: (id: string, checked: boolean) => void;
+  reducedMotion: boolean;
+  t: TranslationFunction;
+}
+
+const getAttendanceAccentClass = (status?: string): string => {
+  if (status === "present") return "bg-success/60 group-hover:bg-success";
+  if (status === "absent") return "bg-destructive/60 group-hover:bg-destructive";
+  if (status === "late") return "bg-warning/60 group-hover:bg-warning";
+  if (status === "excused") return "bg-info/60 group-hover:bg-info";
+  return "bg-primary/50 group-hover:bg-primary";
+};
+
+/** Work directory card — DirectoryEntityCard SSOT (do not hand-compose EntityCard). */
+export function AttendanceCard({
+  attendanceRecord,
+  isColumnVisible,
+  editingRecord,
+  editingRecordError = null,
+  statuses,
+  updateDraft,
+  renderRowActions,
+  classLabel,
+  selectedIds,
+  canDelete,
+  onToggleSelectedRecord,
+  reducedMotion,
+  t,
+}: AttendanceCardProps): React.JSX.Element {
+  const isEditing = editingRecord?.id === attendanceRecord.id;
+  return (
+    <DirectoryEntityCard
+      entity={attendanceRecord}
+      selectedIds={selectedIds}
+      canSelect={canDelete}
+      onToggleSelected={onToggleSelectedRecord}
+      reducedMotion={reducedMotion}
+      accentClassName={getAttendanceAccentClass(attendanceRecord.status)}
+      header={{
+        displayName: attendanceRecord.studentName,
+        subtitle: isColumnVisible("class") ? (
+          <p className="truncate text-xs text-muted-foreground">
+            {classLabel(attendanceRecord.classId)}
+          </p>
+        ) : undefined,
+      }}
+      metadataSlot={
+        <EntityCard.MetaGrid>
+          {isColumnVisible("date") && (
+            <DirectoryCardMetaTile label={t("attendance.columns.date")}>
+              <span className="font-mono">{formatDate(attendanceRecord.date, true)}</span>
+            </DirectoryCardMetaTile>
+          )}
+          {isColumnVisible("session") && (
+            <DirectoryCardMetaTile label={t("attendance.columns.session")}>
+              {attendanceRecord.sessionName || "—"}
+            </DirectoryCardMetaTile>
+          )}
+          {isColumnVisible("status") && (
+            <DirectoryCardMetaTile label={t("attendance.columns.status")}>
+              <AttendanceRecordStatusCell
+                attendanceRecord={attendanceRecord}
+                editingRecord={editingRecord}
+                statuses={statuses}
+                updateDraft={updateDraft}
+              />
+            </DirectoryCardMetaTile>
+          )}
+          {isColumnVisible("timeIn") && (
+            <DirectoryCardMetaTile label={t("attendance.columns.timeIn")}>
+              {isEditing ? (
+                <div className="flex flex-col gap-1">
+                  <TimePicker
+                    id={`attendance-mobile-time-in-${attendanceRecord.id}`}
+                    name="timeIn"
+                    value={editingRecord.timeIn}
+                    onChange={(nextValue) => updateDraft("timeIn", nextValue)}
+                    aria-label={t("attendance.columns.timeIn")}
+                    className="w-full min-w-0 text-xs"
+                  />
+                  {editingRecordError ? (
+                    <p role="alert" className={`${FORM_ERROR} text-start`}>
+                      {editingRecordError}
+                    </p>
+                  ) : null}
+                </div>
+              ) : (
+                <span className="font-mono text-xs text-muted-foreground">
+                  {attendanceRecord.timeIn || "—"}
+                </span>
+              )}
+            </DirectoryCardMetaTile>
+          )}
+          {isColumnVisible("timeOut") && (
+            <DirectoryCardMetaTile label={t("attendance.columns.timeOut")}>
+              {editingRecord?.id === attendanceRecord.id ? (
+                <TimePicker
+                  id={`attendance-mobile-time-out-${attendanceRecord.id}`}
+                  name="timeOut"
+                  value={editingRecord.timeOut}
+                  onChange={(nextValue) => updateDraft("timeOut", nextValue)}
+                  aria-label={t("attendance.columns.timeOut")}
+                  className="w-full min-w-0 text-xs"
+                />
+              ) : (
+                <span className="font-mono text-xs text-muted-foreground">
+                  {attendanceRecord.timeOut || "—"}
+                </span>
+              )}
+            </DirectoryCardMetaTile>
+          )}
+          {isColumnVisible("notes") && (
+            <DirectoryCardMetaTile label={t("attendance.columns.notes")}>
+              <span className="break-words text-xs text-muted-foreground">
+                {attendanceRecord.notes || "—"}
+              </span>
+            </DirectoryCardMetaTile>
+          )}
+        </EntityCard.MetaGrid>
+      }
+      actions={renderRowActions(attendanceRecord)}
+    />
+  );
+}

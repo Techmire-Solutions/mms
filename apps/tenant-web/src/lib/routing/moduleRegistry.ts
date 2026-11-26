@@ -133,7 +133,7 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "tasks",
     path: TENANT_PATHS.tasks,
     access: moduleAccess("tasks"),
-    loader: () => import("@/tenant/features/tasks/TasksPage"),
+    loader: () => import("@mms/mod-tasks/frontend/tenant").then((m) => ({ default: m.TasksPage })),
     nav: { labelKey: "nav.tasks", icon: CheckSquare, order: 4 },
     apexRedirectable: true,
   },
@@ -169,7 +169,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "attendance",
     path: TENANT_PATHS.attendance,
     access: moduleAccess("attendance"),
-    loader: () => import("@/tenant/features/attendance/AttendancePage"),
+    loader: () =>
+      import("@mms/mod-attendance/frontend/tenant").then((m) => ({ default: m.AttendancePage })),
     nav: { labelKey: "nav.attendance", icon: UserCheck, order: 3, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },

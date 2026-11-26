@@ -23,9 +23,6 @@ vi.mock("@mms/mod-sessions/backend/use-cases", async (importOriginal) => ({
   assertTeacherClassScope: vi.fn().mockResolvedValue(undefined),
   assertTeacherAnyClassScope: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("../attendance/use-cases/instructionalDayGuard.js", () => ({
-  assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
-}));
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
   pingDatabase: vi.fn().mockResolvedValue(true),
@@ -55,7 +52,51 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../attendance/use-cases/attendanceUseCases.js", () => ({
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/use-cases/attendanceUseCases.js",
+  () => ({
+    attendanceUseCases: {
+      loadAttendanceRecords: vi.fn().mockResolvedValue([]),
+      loadAttendancePage: vi.fn().mockResolvedValue({
+        records: [],
+        total: 0,
+        page: 1,
+        limit: 15,
+        hasMore: false,
+      }),
+      countAttendanceRecords: vi.fn().mockResolvedValue(0),
+      createAttendanceRecord: mocks.create,
+      updateAttendanceRecordById: mocks.update,
+      deleteAttendanceRecordById: vi.fn().mockResolvedValue(true),
+      restoreAttendanceRecordById: vi.fn().mockResolvedValue(true),
+      bulkSoftDeleteAttendance: vi.fn().mockResolvedValue(1),
+      bulkRestoreAttendance: vi.fn().mockResolvedValue(1),
+      upsertAttendanceRecords: mocks.bulk,
+      replaceAttendanceRecords: vi.fn(),
+      loadAttendanceReportAggregates: vi.fn().mockResolvedValue({
+        overview: {
+          overallRate: 0,
+          totalRecords: 0,
+          lowAttendanceCount: 0,
+          classRates: [],
+          monthlyTrend: [],
+          studentRates: [],
+          topPerformers: [],
+          statusCounts: [],
+        },
+        comparison: { sessions: [], monthly: { a: [], b: [] } },
+      }),
+      loadAttendanceCommandMetrics: vi.fn().mockResolvedValue({}),
+      loadAttendanceWidgetAggregates: vi.fn().mockResolvedValue({}),
+    },
+  }),
+);
+vi.mock("@mms/mod-attendance/backend/use-cases", () => ({
+  streamAcademicCalendarCsv: vi.fn(),
+  streamAcademicCalendarIcs: vi.fn(),
+  recordApprovedLeave: vi.fn(),
+  copySessionCalendarEvents: vi.fn(),
+  assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
   attendanceUseCases: {
     loadAttendanceRecords: vi.fn().mockResolvedValue([]),
     loadAttendancePage: vi.fn().mockResolvedValue({

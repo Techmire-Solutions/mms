@@ -35,6 +35,7 @@ export default defineConfig({
     setupFiles: ["./src/__tests__/dbIntegrationSetup.ts"],
     include: [
       "src/__tests__/db-integration/**/*.{test,spec}.ts",
+      "../../packages/modules/attendance/src/backend/__tests__/db-integration/**/*Db.integration.test.ts",
       "../../packages/modules/sessions/src/backend/__tests__/db-integration/**/*.integration.test.ts",
       "../../packages/modules/enrollments/src/backend/__tests__/db-integration/**/*Db.integration.test.ts",
       "../../packages/modules/billing/src/backend/__tests__/db-integration/**/*.integration.test.ts",

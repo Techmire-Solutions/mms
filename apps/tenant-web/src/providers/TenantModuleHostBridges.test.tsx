@@ -12,6 +12,9 @@ import { useMessagingHost } from "@mms/mod-messaging/frontend/tenant/host";
 import { getStudentsHost } from "@mms/mod-students/frontend/tenant/host";
 import { getSessionsHost } from "@mms/mod-sessions/frontend/tenant/host";
 import { getEnrollmentsHost } from "@mms/mod-enrollments/frontend/tenant/host";
+import { getAttendanceHost } from "@mms/mod-attendance/frontend/tenant/host";
+import { getTasksHost } from "@mms/mod-tasks/frontend/tenant/host";
+import { usePermissions } from "@/tenant/hooks/usePermissions";
 
 vi.mock("@mms/fe-core/tenant", async (importOriginal) => {
   const actual = await importOriginal<typeof import("@mms/fe-core/tenant")>();
@@ -47,6 +50,8 @@ function HostProbe() {
   const students = getStudentsHost();
   const sessions = getSessionsHost();
   const enrollments = getEnrollmentsHost();
+  const attendance = getAttendanceHost();
+  const tasks = getTasksHost();
   return (
     <div data-testid="probe">
       {[
@@ -58,6 +63,8 @@ function HostProbe() {
         Boolean(students),
         Boolean(sessions),
         Boolean(enrollments),
+        attendance.usePermissions === usePermissions,
+        tasks.usePermissions === usePermissions,
       ].every(Boolean)
         ? "ALL_HOSTS_READY"
         : "MISSING_HOST"}
@@ -76,7 +83,7 @@ describe("TenantModuleHostBridges", () => {
     container = null;
   });
 
-  it("mounts all 8 vertical module hosts so child pages resolve every host context and singleton", () => {
+  it("mounts all 10 vertical module hosts so child pages resolve every host context and singleton", () => {
     const qc = new QueryClient();
     container = document.createElement("div");
     document.body.appendChild(container);
@@ -93,5 +100,23 @@ describe("TenantModuleHostBridges", () => {
       );
     });
     expect(container.textContent).toContain("ALL_HOSTS_READY");
+  });
+
+  it("evaluates module imports cleanly under production mode before host bridges render", async () => {
+    vi.resetModules();
+    vi.stubEnv("MODE", "production");
+    try {
+      await expect(import("./TenantModuleHostBridges")).resolves.toHaveProperty(
+        "TenantModuleHostBridges",
+      );
+      await expect(
+        import("@mms/mod-attendance/frontend/tenant/AttendancePage"),
+      ).resolves.toHaveProperty("default");
+      await expect(import("@mms/mod-tasks/frontend/tenant/TasksPage")).resolves.toHaveProperty(
+        "default",
+      );
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });

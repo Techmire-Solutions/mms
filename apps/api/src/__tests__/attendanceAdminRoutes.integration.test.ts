@@ -27,9 +27,6 @@ vi.mock("@mms/mod-sessions/backend/use-cases", async (importOriginal) => ({
   assertTeacherClassScope: vi.fn().mockResolvedValue(undefined),
   assertTeacherAnyClassScope: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("../attendance/use-cases/instructionalDayGuard.js", () => ({
-  assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
-}));
 vi.mock("@mms/db/context", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@mms/db/context")>()),
 
@@ -64,7 +61,74 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
     ),
   };
 });
-vi.mock("../attendance/use-cases/attendanceUseCases.js", () => ({
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/use-cases/attendanceUseCases.js",
+  () => ({
+    attendanceUseCases: {
+      loadAttendanceRecords: vi.fn().mockResolvedValue([]),
+      loadAttendancePage: vi.fn().mockResolvedValue({
+        records: [],
+        total: 0,
+        page: 1,
+        limit: 15,
+        hasMore: false,
+      }),
+      countAttendanceRecords: vi.fn().mockResolvedValue(0),
+      createAttendanceRecord: vi.fn(),
+      updateAttendanceRecordById: vi.fn(),
+      deleteAttendanceRecordById: vi.fn().mockResolvedValue(true),
+      restoreAttendanceRecordById: vi.fn().mockResolvedValue(true),
+      bulkSoftDeleteAttendance: vi.fn().mockResolvedValue(0),
+      bulkRestoreAttendance: mocks.bulkRestore,
+      upsertAttendanceRecords: vi.fn().mockResolvedValue([]),
+      replaceAttendanceRecords: vi.fn(),
+      loadAttendanceRoster: vi.fn().mockResolvedValue({ students: [], records: [], marks: [] }),
+      listMarkedAttendanceDates: vi.fn().mockResolvedValue([]),
+      countMatrixStudents: vi.fn().mockResolvedValue(0),
+      loadAttendanceReportAggregates: vi.fn().mockResolvedValue({
+        overview: {
+          overallRate: 0,
+          totalRecords: 0,
+          lowAttendanceCount: 0,
+          classRates: [],
+          monthlyTrend: [],
+          studentRates: [],
+          topPerformers: [],
+          statusCounts: [],
+        },
+        comparison: { sessions: [], monthly: { a: [], b: [] } },
+      }),
+      loadAttendanceCommandMetrics: vi.fn().mockResolvedValue({}),
+      loadAttendanceWidgetAggregates: vi.fn().mockResolvedValue({}),
+      ingestAttendanceCheckIns: vi.fn().mockResolvedValue({ applied: 0, skipped: 0, errors: [] }),
+    },
+  }),
+);
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/use-cases/attendanceEscalationUseCases.js",
+  () => ({
+    attendanceEscalationUseCases: {
+      listAlerts: mocks.listAlerts,
+      resolveAlert: mocks.resolveAlert,
+      scan: vi.fn(),
+    },
+  }),
+);
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/use-cases/attendanceExcuseUseCases.js",
+  () => ({
+    attendanceExcuseUseCases: {
+      listExcuses: mocks.listExcuses,
+      submitExcuse: vi.fn(),
+      reviewExcuse: mocks.reviewExcuse,
+      cancelExcuse: mocks.cancelExcuse,
+    },
+  }),
+);
+vi.mock("@mms/mod-attendance/backend/use-cases", () => ({
+  streamAcademicCalendarCsv: vi.fn(),
+  streamAcademicCalendarIcs: vi.fn(),
+  recordApprovedLeave: vi.fn(),
   attendanceUseCases: {
     loadAttendanceRecords: vi.fn().mockResolvedValue([]),
     loadAttendancePage: vi.fn().mockResolvedValue({
@@ -103,26 +167,27 @@ vi.mock("../attendance/use-cases/attendanceUseCases.js", () => ({
     loadAttendanceWidgetAggregates: vi.fn().mockResolvedValue({}),
     ingestAttendanceCheckIns: vi.fn().mockResolvedValue({ applied: 0, skipped: 0, errors: [] }),
   },
-}));
-vi.mock("../attendance/use-cases/attendanceExcuseUseCases.js", () => ({
   attendanceExcuseUseCases: {
     listExcuses: mocks.listExcuses,
     submitExcuse: vi.fn(),
     reviewExcuse: mocks.reviewExcuse,
     cancelExcuse: mocks.cancelExcuse,
   },
-}));
-vi.mock("../attendance/use-cases/attendanceEscalationUseCases.js", () => ({
+  copySessionCalendarEvents: vi.fn(),
+  assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
   attendanceEscalationUseCases: {
     listAlerts: mocks.listAlerts,
     resolveAlert: mocks.resolveAlert,
     scan: vi.fn(),
   },
 }));
-vi.mock("../services/attendanceLookupsService.js", () => ({
-  loadAttendanceLookupsMap: mocks.loadLookups,
-  replaceAttendanceLookupKind: vi.fn(),
-}));
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/services/attendanceLookupsService.js",
+  () => ({
+    loadAttendanceLookupsMap: mocks.loadLookups,
+    replaceAttendanceLookupKind: vi.fn(),
+  }),
+);
 vi.mock("../services/backgroundJobWorkerService.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/backgroundJobWorkerService.js")>();
   return {
@@ -134,10 +199,13 @@ vi.mock("../services/backgroundJobWorkerService.js", async (importOriginal) => {
 vi.mock("@mms/be-core/audit", () => ({
   recordModernAuditEvent: vi.fn().mockResolvedValue(undefined),
 }));
-vi.mock("../services/attendanceConfigService.js", () => ({
-  getAttendanceFieldConfigService: mocks.fieldConfig,
-  updateAttendanceFieldConfigService: vi.fn(),
-}));
+vi.mock(
+  "../../../../packages/modules/attendance/dist/backend/services/attendanceConfigService.js",
+  () => ({
+    getAttendanceFieldConfigService: mocks.fieldConfig,
+    updateAttendanceFieldConfigService: vi.fn(),
+  }),
+);
 
 const HOST = { host: "demo.localhost" };
 const LEAVE = {

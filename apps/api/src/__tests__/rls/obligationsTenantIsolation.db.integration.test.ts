@@ -182,7 +182,7 @@ describe("obligations tenant isolation", () => {
     const rows = await withTenantRead(TENANT_A, (tx) =>
       tx.select({ id: obligationCollections.id }).from(obligationCollections),
     );
-    expect(rows.map((row) => row.id)).toEqual([`oc-${TENANT_A}`]);
+    expect(rows.map((row: any) => row.id)).toEqual([`oc-${TENANT_A}`]);
   });
 
   it("cannot read another tenant's receipt even with an explicit id", async () => {
@@ -242,7 +242,7 @@ describe("obligations tenant isolation", () => {
       ),
     ]);
     for (const rows of [types, mujtahidsRows, reps, wakalas, distributions, prefs]) {
-      expect(rows.map((row) => row.ws)).toEqual([TENANT_A]);
+      expect(rows.map((row: any) => row.ws)).toEqual([TENANT_A]);
     }
   });
 
@@ -278,7 +278,7 @@ describe("obligations RLS policy inventory", () => {
           `SELECT policyname AS policy FROM pg_policies WHERE schemaname = 'public' AND tablename = $1`,
           [table],
         );
-        expect(policies.rows.map((row) => row.policy)).toEqual([expectedPolicy]);
+        expect(policies.rows.map((row: any) => row.policy)).toEqual([expectedPolicy]);
 
         const forced = await client.query<{ forced: boolean }>(
           `SELECT relforcerowsecurity AS forced FROM pg_class WHERE oid = format('public.%I', $1::text)::regclass`,

@@ -92,7 +92,7 @@ describe("fiscal-year ranges must not overlap", () => {
       year(FIRST, "A", "2026-01-01", "2026-12-31"),
       year(SECOND, "B", "2026-06-01", "2026-12-31"),
     ]);
-    expect(overlapping?.map((row) => row.label)).toEqual(["A", "B"]);
+    expect(overlapping?.map((row: any) => row.label)).toEqual(["A", "B"]);
   });
 
   it("still refuses overlaps at the database level", async () => {

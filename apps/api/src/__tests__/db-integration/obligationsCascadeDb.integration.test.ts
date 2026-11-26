@@ -162,7 +162,7 @@ describe("obligation receipt parent lifecycle", () => {
       `);
       return result.rows as Array<{ conname: string; confdeltype: string }>;
     });
-    const byName = new Map(actions.map((row) => [row.conname, row.confdeltype]));
+    const byName = new Map(actions.map((row: any) => [row.conname, row.confdeltype]));
     expect(byName.get("obligation_collections_sender_fk")).toBe("r");
     expect(byName.get("obligation_collections_rep_fk")).toBe("c");
     expect(byName.get("obligation_collections_obligation_type_fk")).toBe("c");

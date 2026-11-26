@@ -40,7 +40,7 @@ describe("Count-free CSV pagination", () => {
             skipCount: true,
             conditions: [],
             orderBy: sql`${faculty.id} asc`,
-            rowMapper: (row) => row,
+            rowMapper: (row: any) => row,
           });
           return { rows: result.items, hasMore: result.hasMore };
         },
@@ -51,7 +51,7 @@ describe("Count-free CSV pagination", () => {
       let csv = "";
       for await (const chunk of chunks) csv += chunk;
       // Assert
-      expect(csv.split("\n").slice(1)).toEqual(records.map((row) => row.id));
+      expect(csv.split("\n").slice(1)).toEqual(records.map((row: any) => row.id));
     },
   );
 });

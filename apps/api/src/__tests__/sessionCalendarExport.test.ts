@@ -4,7 +4,7 @@ import { streamTimetableCsv, streamTimetableIcs } from "@mms/mod-sessions/backen
 import {
   streamAcademicCalendarCsv,
   streamAcademicCalendarIcs,
-} from "../attendance/use-cases/academicCalendarExport.js";
+} from "@mms/mod-attendance/backend/use-cases";
 
 function session(): Session {
   return {

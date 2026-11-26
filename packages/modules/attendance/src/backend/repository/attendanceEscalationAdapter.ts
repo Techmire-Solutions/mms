@@ -1,0 +1,25 @@
+import type { AttendanceEscalationRepository } from "./attendanceEscalationPort.js";
+
+export type { AbsenceAlertRow } from "./attendanceEscalationPort.js";
+import {
+  listAbsenceAlerts,
+  listClassMarkedDays,
+  listCountableMarks,
+  markAbsenceAlertNotified,
+  claimAbsenceAlertNotification,
+  releaseAbsenceAlertNotification,
+  resolveAbsenceAlert,
+  upsertAbsenceAlert,
+} from "../repository/db/attendanceEscalationRepository.js";
+
+/** Drizzle-backed adapter for {@link AttendanceEscalationRepository}. */
+export const attendanceEscalationRepository: AttendanceEscalationRepository = {
+  listClassMarkedDays,
+  listCountableMarks,
+  upsertAbsenceAlert,
+  markAbsenceAlertNotified,
+  claimAbsenceAlertNotification,
+  releaseAbsenceAlertNotification,
+  listAbsenceAlerts,
+  resolveAbsenceAlert,
+};

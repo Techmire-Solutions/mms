@@ -13,7 +13,7 @@ import { restoreStudentById, bulkRestoreStudents } from "@mms/mod-students/backe
 import { StudentRestoreRaceError } from "@mms/mod-students/backend/use-cases";
 import { createEnrollmentsUseCases } from "@mms/mod-enrollments/backend/use-cases";
 import { createFinanceUseCases } from "@mms/mod-billing/backend/use-cases";
-import { createAttendanceUseCases } from "../attendance/use-cases/attendanceUseCases.js";
+import { createAttendanceUseCases } from "@mms/mod-attendance/backend/use-cases";
 
 const ACTOR = { id: "user-test", role: "admin" } as unknown as User;
 import { createSessionsUseCases } from "@mms/mod-sessions/backend/use-cases";
@@ -32,12 +32,21 @@ import {
 } from "@mms/mod-sessions/backend/repository";
 import { findPaymentsByIds } from "@mms/mod-billing/backend/repository";
 import { findEnrollmentsByIds } from "@mms/mod-enrollments/backend/repository";
-vi.mock("../attendance/use-cases/attendanceSectionStamp.js", () => ({
-  stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => ({
-    records,
-    rejected: [],
-  })),
-}));
+vi.mock("@mms/mod-attendance/backend/use-cases", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-attendance/backend/use-cases")>();
+  return {
+    ...actual,
+    copySessionCalendarEvents: vi.fn(),
+    streamAcademicCalendarCsv: vi.fn(),
+    streamAcademicCalendarIcs: vi.fn(),
+    recordApprovedLeave: vi.fn(),
+    assertInstructionalDays: vi.fn().mockResolvedValue(undefined),
+    stampAttendanceSections: vi.fn(async (_tenant: string, records: unknown[]) => ({
+      records,
+      rejected: [],
+    })),
+  };
+});
 
 vi.mock("../db/database.js", () => ({
   runInTransaction: vi.fn((cb: () => unknown) => cb()),

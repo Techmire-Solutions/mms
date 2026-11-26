@@ -3,7 +3,7 @@ import { withGlobalTenant } from "@mms/db/context";
 import { outboxEvents } from "@mms/db/schema/outboxEvents";
 import { redisGet, redisSet, redisDelPattern, redisKeys } from "../../lib/redis.js";
 import { logger } from "../../lib/logger.js";
-import { deliverTaskNotification } from "../../services/taskNotificationDeliveryService.js";
+import { deliverTaskNotification } from "@mms/mod-tasks/backend/services";
 import type { SearchIndexAdapter } from "../adapters/searchIndexAdapter.js";
 
 const BATCH_SIZE = 100;

@@ -17,7 +17,7 @@ import {
   settleEnrollmentWithdrawal,
   maybeGenerateInvoiceForEnrollment,
 } from "@mms/mod-billing/backend/use-cases";
-import { recordApprovedLeave } from "../../attendance/use-cases/attendanceLeaveUseCases.js";
+import { recordApprovedLeave } from "@mms/mod-attendance/backend/use-cases";
 import * as workspaceService from "../../services/workspaceService.js";
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
 import { sendTenantSms } from "../../services/sms/smsService.js";

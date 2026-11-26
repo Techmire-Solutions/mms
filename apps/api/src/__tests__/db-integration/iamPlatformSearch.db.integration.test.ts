@@ -89,18 +89,18 @@ describe("platform IAM adapter (real Postgres)", () => {
 
   it("paginates cross-tenant users in deterministic name order", async () => {
     const pageOne = await iamPorts.platform.searchUsers(TOKEN, 2, 0);
-    expect(pageOne.map((row) => row.user.name)).toEqual([`${TOKEN} Alpha`, `${TOKEN} Delta`]);
-    expect(new Set(pageOne.map((row) => row.tenant))).toEqual(new Set([TENANT_A, TENANT_B]));
+    expect(pageOne.map((row: any) => row.user.name)).toEqual([`${TOKEN} Alpha`, `${TOKEN} Delta`]);
+    expect(new Set(pageOne.map((row: any) => row.tenant))).toEqual(new Set([TENANT_A, TENANT_B]));
 
     const pageTwo = await iamPorts.platform.searchUsers(TOKEN, 2, 2);
-    expect(pageTwo.map((row) => row.user.name)).toEqual([`${TOKEN} Gamma`]);
+    expect(pageTwo.map((row: any) => row.user.name)).toEqual([`${TOKEN} Gamma`]);
   });
 
   it("counts exactly the rows the page query can return (soft-deleted excluded)", async () => {
     expect(await iamPorts.platform.countUsers(TOKEN)).toBe(3);
     const all = await iamPorts.platform.searchUsers(TOKEN, 50, 0);
     expect(all).toHaveLength(3);
-    expect(all.some((row) => row.user.id === USER_A2)).toBe(false);
+    expect(all.some((row: any) => row.user.id === USER_A2)).toBe(false);
   });
 
   it("searches and counts organizations with the same offset semantics", async () => {

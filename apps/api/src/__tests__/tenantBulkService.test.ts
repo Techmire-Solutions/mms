@@ -19,8 +19,8 @@ describe("tenantBulkService helpers", () => {
       { id: "1", deletedAt: null },
       { id: "2", deletedAt: "2026-01-01T00:00:00.000Z" },
     ];
-    expect(scopeDeleted(rows, false).map((row) => row.id)).toEqual(["1"]);
-    expect(scopeDeleted(rows, true).map((row) => row.id)).toEqual(["2"]);
+    expect(scopeDeleted(rows, false).map((row: any) => row.id)).toEqual(["1"]);
+    expect(scopeDeleted(rows, true).map((row: any) => row.id)).toEqual(["2"]);
   });
 
   it("upsertWithBroadcast bulk-saves without replace", async () => {

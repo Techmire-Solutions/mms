@@ -17,16 +17,16 @@ import {
   listRolloverCandidates,
 } from "@mms/mod-enrollments/backend/use-cases";
 import { bulkEnrollStudentsIntoClass } from "@mms/mod-enrollments/backend/use-cases";
-import { copySessionCalendarEvents } from "../../attendance/use-cases/academicCalendarCopyUseCases.js";
+import { copySessionCalendarEvents } from "@mms/mod-attendance/backend/use-cases";
 import {
   streamAcademicCalendarCsv,
   streamAcademicCalendarIcs,
-} from "../../attendance/use-cases/academicCalendarExport.js";
+} from "@mms/mod-attendance/backend/use-cases";
 import {
   loadCountableAttendanceSql,
   loadWorkspaceWeekdays,
-} from "../../db/repositories/attendanceCountableSql.js";
-import { isPresentOrLateSql } from "../../db/repositories/attendanceReportOverview.js";
+} from "@mms/mod-attendance/backend/repository";
+import { isPresentOrLateSql } from "@mms/mod-attendance/backend/repository";
 import { findFacultyByIds } from "@mms/mod-faculty/backend/repository";
 import {
   syncEnrolledSessionsTx,

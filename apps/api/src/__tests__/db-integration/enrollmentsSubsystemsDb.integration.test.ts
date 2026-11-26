@@ -23,7 +23,7 @@ import {
 import { bulkEnrollStudentsIntoClass } from "@mms/mod-enrollments/backend/use-cases";
 import { offerFreedSeat } from "@mms/mod-enrollments/backend/use-cases";
 import { expireWaitlistOffers } from "@mms/mod-enrollments/backend/use-cases";
-import { stampAttendanceSections } from "../../attendance/use-cases/attendanceSectionStamp.js";
+import { stampAttendanceSections } from "@mms/mod-attendance/backend/use-cases";
 import { runWithTenant } from "@mms/be-core/http";
 import { todayInTimeZone } from "@mms/be-core/http";
 import { enrollmentsUseCases } from "@mms/mod-enrollments/backend/use-cases";
@@ -32,6 +32,8 @@ import { loadEnrollmentsReportAggregatesSql } from "@mms/mod-enrollments/backend
 import { importEnrollmentRows } from "@mms/mod-enrollments/backend/use-cases";
 import { preflightEnrollmentImport } from "@mms/mod-enrollments/backend/use-cases";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
+import { configureAttendanceAdapters } from "../../modules/attendance/adapters.js";
+import { configureTasksAdapters } from "../../modules/tasks/adapters.js";
 import { configureEnrollmentsAdapters } from "../../modules/enrollments/adapters.js";
 
 const TENANT = "enrollments-subsystems-test";
@@ -92,6 +94,8 @@ async function purgeTenant(): Promise<void> {
 }
 
 beforeAll(async () => {
+  configureAttendanceAdapters();
+  configureTasksAdapters();
   configureEnrollmentsAdapters();
   await requireDatabaseConnection();
   await applyDrizzleMigrations();
@@ -371,7 +375,7 @@ describe("enrollment domain subsystems (real Postgres)", () => {
       WHERE workspace_subdomain = ${TENANT} AND student_id = 's1'`);
 
     const s3Rows = await listEnrollmentsPage(TENANT, { studentId: "s3", page: 1, limit: 10 });
-    expect(s3Rows.enrollments.map((row) => row.studentId)).toEqual(["s3"]);
+    expect(s3Rows.enrollments.map((row: any) => row.studentId)).toEqual(["s3"]);
     expect(s3Rows.enrollments[0]?.sectionId).toBe("sec-2");
 
     const secOneRows = await listEnrollmentsPage(TENANT, {
@@ -379,7 +383,7 @@ describe("enrollment domain subsystems (real Postgres)", () => {
       page: 1,
       limit: 10,
     });
-    expect(secOneRows.enrollments.map((row) => row.studentId).sort()).toEqual(["s1", "s4"]);
+    expect(secOneRows.enrollments.map((row: any) => row.studentId).sort()).toEqual(["s1", "s4"]);
 
     const withNotes = await listEnrollmentsPage(TENANT, { studentId: "s1", page: 1, limit: 10 });
     expect(withNotes.enrollments[0]?.notes).toBe("Needs a Quran folder");
@@ -432,26 +436,26 @@ describe("enrollment domain subsystems (real Postgres)", () => {
        ORDER BY transaction_timestamp, id`);
     expect(rows.length).toBeGreaterThanOrEqual(4);
 
-    const parsed = rows.map((row) => ({
+    const parsed = rows.map((row: any) => ({
       actionType: row.actionType,
       oldState: row.oldState ? (JSON.parse(row.oldState) as Record<string, unknown>) : null,
       newState: JSON.parse(row.newState) as Record<string, unknown>,
     }));
     const statusChange = parsed.find(
-      (row) => row.actionType === "UPDATE" && row.newState.reasonCode === "status_change",
+      (row: any) => row.actionType === "UPDATE" && row.newState.reasonCode === "status_change",
     );
     expect(statusChange?.oldState).toMatchObject({ status: "pending" });
     expect(statusChange?.newState).toMatchObject({ status: "confirmed" });
     expect(
       parsed.some(
-        (row) =>
+        (row: any) =>
           row.actionType === "UPDATE" &&
           row.newState.reasonCode === "details_edit" &&
           row.newState.notesChanged === true,
       ),
     ).toBe(true);
-    expect(parsed.some((row) => row.actionType === "DELETE")).toBe(true);
-    expect(parsed.some((row) => row.actionType === "RESTORE")).toBe(true);
+    expect(parsed.some((row: any) => row.actionType === "DELETE")).toBe(true);
+    expect(parsed.some((row: any) => row.actionType === "RESTORE")).toBe(true);
 
     // Bulk/approval-created enrollments carry one CREATE row each.
     const created = await query<{ count: number }>(sql`
@@ -581,7 +585,7 @@ describe("enrollment domain subsystems (real Postgres)", () => {
 
   it("computes class fill, seat demand and trailing retention", async () => {
     const report = await loadEnrollmentsReportAggregatesSql(TENANT);
-    const importClass = report.classFillRates?.find((row) => row.classId === "cls-import");
+    const importClass = report.classFillRates?.find((row: any) => row.classId === "cls-import");
     expect(importClass).toMatchObject({ capacity: 10, enrolled: 1, fillPct: 10, seatsLeft: 9 });
     expect(importClass?.demand).toBeGreaterThanOrEqual(0);
     expect(report.retention?.started).toBeGreaterThan(0);

@@ -49,8 +49,8 @@ describe("exam result upsert planner", () => {
       { ...mark({ studentId: "stu-1" }), version: 3 },
       mark({ studentId: "stu-2" }),
     ]);
-    expect(plan.withToken.map((row) => row.studentId)).toEqual(["stu-1"]);
-    expect(plan.withoutToken.map((row) => row.studentId)).toEqual(["stu-2"]);
+    expect(plan.withToken.map((row: any) => row.studentId)).toEqual(["stu-1"]);
+    expect(plan.withoutToken.map((row: any) => row.studentId)).toEqual(["stu-2"]);
   });
 
   it("orders the batch by business key so concurrent saves take locks in one order", () => {
@@ -59,7 +59,7 @@ describe("exam result upsert planner", () => {
       mark({ examId: "ex-1", studentId: "stu-2" }),
       mark({ examId: "ex-1", studentId: "stu-1" }),
     ]);
-    expect(plan.withoutToken.map((row) => examResultNaturalKey(row))).toEqual([
+    expect(plan.withoutToken.map((row: any) => examResultNaturalKey(row))).toEqual([
       "ex-1|stu-1",
       "ex-1|stu-2",
       "ex-2|stu-1",

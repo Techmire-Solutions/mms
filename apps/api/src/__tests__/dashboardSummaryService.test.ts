@@ -32,6 +32,9 @@ vi.mock("@mms/mod-faculty/backend/use-cases", async (importOriginal) => ({
     loadFacultyCommandMetrics: mocks.faculty,
   },
 }));
+vi.mock("@mms/mod-tasks/backend/use-cases", () => ({
+  tasksUseCases: { getTaskMetrics: (...args: unknown[]) => mocks.tasks(...args) },
+}));
 vi.mock("@mms/mod-contacts/backend/use-cases", () => ({
   contactUseCases: { loadContactsCommandMetrics: mocks.contacts },
 }));
@@ -39,7 +42,7 @@ vi.mock("@mms/mod-sessions/backend/services", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@mms/mod-sessions/backend/services")>()),
   loadSessionsCommandMetrics: mocks.sessions,
 }));
-vi.mock("../db/repositories/attendanceRepositoryList.js", () => ({
+vi.mock("@mms/mod-attendance/backend/repository", () => ({
   aggregateAttendanceCommandMetrics: mocks.attendance,
 }));
 vi.mock("@mms/mod-billing/backend/services", () => ({

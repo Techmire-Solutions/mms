@@ -15,11 +15,21 @@ const mocks = vi.hoisted(() => ({
   findUnstaffedSectionDates: vi.fn(),
 }));
 
-vi.mock("@mms/mod-sessions/backend/repository", () => ({
-  sessionsAcademicRepository: {
-    findUntaughtClassDates: mocks.findUntaughtClassDates,
-    findUnstaffedSectionDates: mocks.findUnstaffedSectionDates,
-  },
+vi.mock("@mms/mod-sessions/backend/repository", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@mms/mod-sessions/backend/repository")>();
+  return {
+    ...actual,
+    sessionsAcademicRepository: {
+      ...actual.sessionsAcademicRepository,
+      findUntaughtClassDates: (...args: unknown[]) => mocks.findUntaughtClassDates(...args),
+      findUnstaffedSectionDates: (...args: unknown[]) => mocks.findUnstaffedSectionDates(...args),
+    },
+  };
+});
+vi.mock("@mms/mod-sessions/backend/deps", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/mod-sessions/backend/deps")>()),
+  findUntaughtClassDates: (...args: unknown[]) => mocks.findUntaughtClassDates(...args),
+  findUnstaffedSectionDates: (...args: unknown[]) => mocks.findUnstaffedSectionDates(...args),
 }));
 
 const TEACHER = { id: "u-teacher", role: "teacher" } as unknown as User;

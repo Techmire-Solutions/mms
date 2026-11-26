@@ -7,9 +7,11 @@ import { StudentsHostBridge } from "@/providers/StudentsHostProvider";
 import { SessionsHostBridge } from "@/providers/SessionsHostProvider";
 import { EnrollmentsHostBridge } from "@/providers/EnrollmentsHostProvider";
 import { MessagingHostBridge } from "@/providers/MessagingHostProvider";
+import { AttendanceHostBridge } from "@/providers/AttendanceHostProvider";
+import { TasksHostBridge } from "@/providers/TasksHostProvider";
 
 /**
- * Composes all 8 vertical-module host bridges inside the lazy authenticated shell (`AppLayout`)
+ * Composes all 10 vertical-module host bridges inside the lazy authenticated shell (`AppLayout`)
  * so every module route has its host configured without bloating the public entry bundle.
  */
 export function TenantModuleHostBridges({
@@ -25,7 +27,11 @@ export function TenantModuleHostBridges({
             <StudentsHostBridge>
               <SessionsHostBridge>
                 <EnrollmentsHostBridge>
-                  <MessagingHostBridge>{children}</MessagingHostBridge>
+                  <MessagingHostBridge>
+                    <AttendanceHostBridge>
+                      <TasksHostBridge>{children}</TasksHostBridge>
+                    </AttendanceHostBridge>
+                  </MessagingHostBridge>
                 </EnrollmentsHostBridge>
               </SessionsHostBridge>
             </StudentsHostBridge>
