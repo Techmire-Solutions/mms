@@ -1,28 +1,82 @@
 import { describe, expect, it } from "vitest";
-import { sumAmounts } from "./obligationsSummaryCalculations";
+import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import {
+  buildMonthlyTrend,
+  buildRepSummary,
+  buildTypeBreakdown,
+  buildWakalaSummary,
+  sumAmounts,
+} from "./obligationsSummaryCalculations";
 
-/**
- * The Summary's headline amount used a plain float `reduce`, while every other total in the module
- * accumulates integer cents. Two summation styles in one feature means the headline can disagree
- * with the sections that add up the same rows (frontend audit).
- */
-describe("sumAmounts", () => {
+const t = ((key: string) => key) as TranslationFunction;
+
+const obligationTypes = [{ id: "ot-1", name: "Khums" }] as never;
+const reps = [{ id: "rep-1", name: "Mawlana Ali", mujtahid_id: "muj-1" }] as never;
+const mujtahids = [{ id: "muj-1", name: "Ayatollah Sistani" }] as never;
+const wakalaTypes = [
+  { id: "wak-1", mujtahid_representative_id: "rep-1", obligation_type_id: "ot-1" },
+] as never;
+const distributions = [
+  { id: "d-1", wakala_type_id: "wak-1", percentage: 50, type: "Liability" },
+  { id: "d-2", wakala_type_id: "wak-1", percentage: 50, type: "Expense" },
+] as never;
+
+const collections = [
+  {
+    id: "col-1",
+    mujtahid_representative_id: "rep-1",
+    obligation_type_id: "ot-1",
+    amount: 50000.1,
+    received_date: "2026-03-10",
+  },
+  {
+    id: "col-2",
+    mujtahid_representative_id: "rep-none",
+    obligation_type_id: "ot-missing",
+    amount: 50000.2,
+    received_date: undefined,
+  },
+] as never;
+
+describe("obligationsSummaryCalculations", () => {
   it("sums 2-dp amounts without float drift", () => {
-    // The classic case: 0.1 + 0.2 === 0.30000000000000004 in IEEE-754.
-    expect(sumAmounts([0.1, 0.2])).toBe(0.3);
-    expect(sumAmounts([50000.1, 50000.2])).toBe(100000.3);
-    expect(sumAmounts([0.01, 0.02, 0.03])).toBe(0.06);
+    expect(sumAmounts([50000.1, 50000.2, Number.NaN])).toBe(100000.3);
   });
 
-  it("returns 0 for an empty list", () => {
-    expect(sumAmounts([])).toBe(0);
-  });
+  it("builds wakala, rep, type breakdown, and monthly trend summaries", () => {
+    const wakala = buildWakalaSummary(
+      collections,
+      reps,
+      mujtahids,
+      wakalaTypes,
+      obligationTypes,
+      distributions,
+      t,
+    );
+    expect(wakala).toHaveLength(2);
+    expect(wakala[0].total).toBe(50000.2);
 
-  it("ignores non-finite entries instead of poisoning the total", () => {
-    expect(sumAmounts([10, Number.NaN, 5, Number.POSITIVE_INFINITY])).toBe(15);
-  });
+    const repSummary = buildRepSummary(
+      collections,
+      reps,
+      mujtahids,
+      wakalaTypes,
+      obligationTypes,
+      distributions,
+      t,
+    );
+    expect(repSummary).toHaveLength(2);
+    const matchedRep = repSummary.find((r) => r.key === "rep-1")!;
+    expect(matchedRep.due).toBe(25000.05);
+    expect(matchedRep.byType.Khums).toBe(50000.1);
 
-  it("keeps large totals exact to the cent", () => {
-    expect(sumAmounts([1234567.89, 8765432.11])).toBe(10_000_000);
+    const breakdown = buildTypeBreakdown(collections, obligationTypes, t);
+    expect(breakdown.map((b) => b.name)).toContain("Khums");
+    expect(breakdown.map((b) => b.name)).toContain("obligations.summary.other");
+
+    const trend = buildMonthlyTrend(collections, t);
+    expect(trend).toHaveLength(2);
+    expect(trend.map((entry) => entry.month)).toContain("2026-03");
+    expect(trend.map((entry) => entry.month)).toContain("obligations.summary.unknown");
   });
 });

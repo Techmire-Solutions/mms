@@ -6,7 +6,7 @@ import {
   FINANCE_INVOICES_QUERY_KEY,
   FINANCE_METRICS_QUERY_KEY,
   FINANCE_PAYMENTS_QUERY_KEY,
-} from "@/tenant/features/finance/hooks/financeQueryKeys";
+} from "@mms/mod-billing/frontend/tenant/hooks/financeQueryKeys";
 import { DASHBOARD_SUMMARY_QUERY_KEY_ROOT } from "@/tenant/hooks/collections/dashboard";
 import { DYNAMIC_WIDGET_AGGREGATES_QUERY_KEY } from "@mms/fe-core/query/dynamicWidgetAggregatesQueryKey";
 

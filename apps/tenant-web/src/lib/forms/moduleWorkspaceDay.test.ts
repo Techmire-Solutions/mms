@@ -13,6 +13,11 @@ import { describe, expect, it } from "vitest";
  */
 const APP_ROOT = join(import.meta.dirname, "..", "..", "..");
 const REPO_ROOT = join(APP_ROOT, "..", "..");
+// Both consoles share this guard, so resolve against both app roots as well as the repo root
+// (the platform app carries no tenant tree after the P14 prune).
+const CONSOLE_SRC = ["tenant-web", "platform-web"].map((app) =>
+  join(REPO_ROOT, "apps", app, "src"),
+);
 
 const FILES = [
   "packages/modules/hasanat/src/frontend/tenant/components/DistributeModal.tsx",
@@ -22,9 +27,11 @@ const FILES = [
 ];
 
 function resolve(file: string): string {
-  const candidate = [join(APP_ROOT, "src", file), join(REPO_ROOT, file)].find((path) =>
-    existsSync(path),
-  );
+  const candidate = [
+    join(APP_ROOT, "src", file),
+    ...CONSOLE_SRC.map((src) => join(src, file)),
+    join(REPO_ROOT, file),
+  ].find((candidatePath) => existsSync(candidatePath));
   if (!candidate) {
     throw new Error(`workspace-day guard: source not found for ${file}`);
   }

@@ -2,7 +2,7 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AcademicCatalogItem } from "@mms/contracts";
-import { CatalogItemFormModal } from "@/components/common/catalog/CatalogItemFormModal";
+import { CatalogItemFormModal } from "@mms/mod-sessions/frontend/components/CatalogItemFormModal";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

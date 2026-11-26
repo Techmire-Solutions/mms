@@ -7,7 +7,7 @@ export {
   ENROLLMENTS_METRICS_QUERY_KEY,
   ENROLLMENTS_REPORT_AGGREGATES_QUERY_KEY,
   ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY,
-} from "@/tenant/features/enrollments/hooks/enrollmentsQueryKeys";
+} from "@mms/mod-enrollments/frontend/tenant/hooks/enrollmentsQueryKeys";
 export {
   enrollmentsCommandMetricsQueryOptions,
   useEnrollments,
@@ -17,14 +17,14 @@ export {
   useEnrollmentsMetrics,
   useEnrollmentsReportAggregates,
   useEnrollmentsWidgetAggregates,
-} from "@/tenant/features/enrollments/hooks/useEnrollmentsApi";
-export { invalidateEnrollmentsQueries } from "@/tenant/features/enrollments/hooks/invalidateEnrollmentsQueries";
+} from "@mms/mod-enrollments/frontend/tenant/hooks/useEnrollmentsApi";
+export { invalidateEnrollmentsQueries } from "@mms/mod-enrollments/frontend/tenant/hooks/invalidateEnrollmentsQueries";
 export {
   useComposedEnrollmentsSettings,
   useEnrollmentPreferencesMutation,
   useEnrollmentPreferencesQuery,
   ENROLLMENTS_PREFERENCES_QUERY_KEY,
-} from "@/tenant/features/enrollments/hooks/useEnrollmentSetupConfig";
+} from "@mms/mod-enrollments/frontend/tenant/hooks/useEnrollmentSetupConfig";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   enrollmentsListQueryOptions,
@@ -35,6 +35,6 @@ export {
   useEnrollmentsContractDelete,
   useEnrollmentsContractBulkDelete,
   useEnrollmentsContractBulkRestore,
-} from "@/tenant/features/enrollments/hooks/useEnrollmentsQueries";
+} from "@mms/mod-enrollments/frontend/tenant/hooks/useEnrollmentsQueries";
 
-export { applyEnrollmentsWorkDrillDown } from "@/tenant/features/enrollments/hooks/enrollmentsWorkDrillDown";
+export { applyEnrollmentsWorkDrillDown } from "@mms/mod-enrollments/frontend/tenant/hooks/enrollmentsWorkDrillDown";

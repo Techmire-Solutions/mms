@@ -23,7 +23,7 @@ import {
 import { SafeResponsiveContainer } from "@mms/ui/app/SafeResponsiveContainer";
 import { ChartGrid, ChartPolarGrid, chartAxisTick, chartTooltipStyle } from "@mms/ui/app/ChartGrid";
 import { capitalize, type AppTranslationKey } from "@mms/contracts";
-import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
+import { getBrandingChartPalette } from "@mms/fe-core/ui/brandingChartPalette";
 import type {
   AggregatedItem,
   ChartOperation,

@@ -227,6 +227,10 @@
     "./auth/artifacts": {
       "import": "./dist/auth/artifacts/index.js",
       "types": "./dist/auth/artifacts/index.d.ts"
+    },
+    "./integrations/edtech": {
+      "types": "./dist/integrations/edtech/index.d.ts",
+      "import": "./dist/integrations/edtech/index.js"
     }
   },
   "scripts": {

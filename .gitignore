@@ -77,8 +77,8 @@ nightly-playwright-html-report/
 playwright/.cache/
 # Playwright browser binaries (local cache; ~500MB)
 .playwright-browsers/
-# Generated UI-audit report (apps/frontend/scripts/ui-audit.js)
-apps/frontend/scripts/ui-audit-report.json
+# Generated UI-audit report (apps/tenant-web/scripts/ui-audit.js)
+apps/tenant-web/scripts/ui-audit-report.json
 
 # 7. Local Uploads & Media Storage
 /apps/api/uploads/

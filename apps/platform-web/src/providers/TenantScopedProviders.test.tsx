@@ -1,7 +1,6 @@
 import React from "react";
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import TenantScopedProviders from "./TenantScopedProviders";
 import { useContactConfig } from "@mms/mod-contacts/frontend/tenant/components/ContactConfigContext";
 
@@ -9,8 +8,9 @@ vi.mock("@/lib/host/useIsTenantHost", () => ({
   useIsTenantHost: vi.fn(),
 }));
 
+const mockUseTenantDatabaseUpdates = vi.fn();
 vi.mock("@/hooks/useTenantDatabaseUpdates", () => ({
-  useTenantDatabaseUpdates: vi.fn(),
+  useTenantDatabaseUpdates: () => mockUseTenantDatabaseUpdates(),
 }));
 
 vi.mock("@mms/fe-core/auth/AuthContext", () => ({
@@ -23,19 +23,8 @@ vi.mock("@/tenant/hooks/useBranding", () => ({
   useBranding: vi.fn(),
 }));
 
-// The bridges bind the app's hooks into the module hosts. They are mounted here (tenant branch) rather
-// than in AppProviders so the entry closure stays small; the marker components keep these tests focused
-// on provider composition instead of executing the whole hook stack.
-vi.mock("@/providers/ContactsHostProvider", () => ({
-  ContactsHostBridge: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="contacts-host-bridge">{children}</div>
-  ),
-}));
-
-vi.mock("@/providers/HasanatHostProvider", () => ({
-  HasanatHostBridge: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="hasanat-host-bridge">{children}</div>
-  ),
+vi.mock("@/tenant/hooks/useGlobalSettings", () => ({
+  useGlobalSettings: () => ({ dateFormat: "YYYY-MM-DD" }),
 }));
 
 vi.mock("@mms/contracts", async (importOriginal) => {
@@ -65,11 +54,11 @@ describe("TenantScopedProviders", () => {
     vi.clearAllMocks();
   });
 
-  it("renders children directly when not on tenant host", () => {
+  it("renders children directly without live-push subscription when not on tenant host", () => {
     vi.mocked(useIsTenantHost).mockReturnValue(false);
     vi.mocked(useAuth).mockReturnValue({
-      isAuthenticated: false,
-      user: null,
+      isAuthenticated: true,
+      user: { id: "u1", mustChangePassword: false },
       authChecked: true,
     } as ReturnType<typeof useAuth>);
 
@@ -80,12 +69,10 @@ describe("TenantScopedProviders", () => {
     );
 
     expect(html).toContain("Child Content");
-    // Host bridges are tenant-only; an apex render must not mount them.
-    expect(html).not.toContain("contacts-host-bridge");
-    expect(html).not.toContain("hasanat-host-bridge");
+    expect(mockUseTenantDatabaseUpdates).not.toHaveBeenCalled();
   });
 
-  it("mounts ContactConfigProvider on tenant host even when unauthenticated or setup incomplete", () => {
+  it("subscribes to live push only when authenticated and setup is complete", () => {
     vi.mocked(useIsTenantHost).mockReturnValue(true);
     vi.mocked(useAuth).mockReturnValue({
       isAuthenticated: false,
@@ -94,23 +81,27 @@ describe("TenantScopedProviders", () => {
     } as ReturnType<typeof useAuth>);
     vi.mocked(isInstitutionSetupComplete).mockReturnValue(false);
 
-    const queryClient = new QueryClient();
-    let html = "";
-    expect(() => {
-      html = renderToStaticMarkup(
-        <QueryClientProvider client={queryClient}>
-          <TenantScopedProviders>
-            <TestContactConsumer />
-          </TenantScopedProviders>
-        </QueryClientProvider>,
-      );
-    }).not.toThrow();
+    renderToStaticMarkup(
+      <TenantScopedProviders>
+        <div data-testid="child">Unauthenticated Child</div>
+      </TenantScopedProviders>,
+    );
+    expect(mockUseTenantDatabaseUpdates).not.toHaveBeenCalled();
 
-    expect(html).toContain("ready");
-    expect(html).toContain("true");
-    // Module host bridges live inside the tenant branch, wrapping the children.
-    expect(html).toContain("contacts-host-bridge");
-    expect(html).toContain("hasanat-host-bridge");
+    vi.mocked(useAuth).mockReturnValue({
+      isAuthenticated: true,
+      user: { id: "u1", mustChangePassword: false },
+      authChecked: true,
+    } as ReturnType<typeof useAuth>);
+    vi.mocked(isInstitutionSetupComplete).mockReturnValue(true);
+
+    const html = renderToStaticMarkup(
+      <TenantScopedProviders>
+        <div data-testid="child">Authenticated Child</div>
+      </TenantScopedProviders>,
+    );
+    expect(html).toContain("Authenticated Child");
+    expect(mockUseTenantDatabaseUpdates).toHaveBeenCalledTimes(1);
   });
 
   it("useContactConfig gracefully degrades outside provider without throwing", () => {

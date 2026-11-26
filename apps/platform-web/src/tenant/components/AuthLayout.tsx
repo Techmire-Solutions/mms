@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { DEFAULT_BRANDING_SETTINGS, type PublicBranding, getInitials } from "@mms/contracts";
-import { useTenant } from "@/lib/contexts/TenantContext";
+import { useTenant } from "@mms/fe-core/tenant";
 import { applyTenantEntryTheme } from "@mms/fe-core/lib/tenantEntryTheme";
 import { applyTenantDocumentFavicon } from "@/lib/documentFavicon";
 import { LOGO_IMAGE } from "@mms/fe-core/ui/semanticTone";

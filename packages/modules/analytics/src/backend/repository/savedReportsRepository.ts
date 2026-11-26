@@ -5,7 +5,7 @@
  * Use-cases depend on this interface — never on the concrete Drizzle functions in
  * `db/repositories/*`. The Drizzle-backed adapter is the only implementation.
  */
-type SavedReportsModule = typeof import("../../db/repositories/savedReportsRepository.js");
+type SavedReportsModule = typeof import("@mms/be-core/data/saved-reports");
 
 export interface SavedReportsRepository {
   listSavedReportsByOwner: SavedReportsModule["listSavedReportsByOwner"];

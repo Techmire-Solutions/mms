@@ -29,7 +29,7 @@ import {
   deleteSavedReportByOwner,
   listSavedReportsByOwner,
   touchSavedReportRunByOwner,
-} from "../../savedReports/use-cases/savedReportsUseCases.js";
+} from "@mms/mod-analytics/backend/use-cases";
 
 const s = initServer();
 

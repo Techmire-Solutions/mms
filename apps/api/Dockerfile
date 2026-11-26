@@ -45,6 +45,7 @@ COPY --from=builder /app/packages/contracts/dist ./packages/contracts/dist
 COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY --from=builder /app/packages/be-core/dist ./packages/be-core/dist
 COPY --from=builder /app/packages/modules/accounting/dist ./packages/modules/accounting/dist
+COPY --from=builder /app/packages/modules/analytics/dist ./packages/modules/analytics/dist
 COPY --from=builder /app/packages/modules/audit/dist ./packages/modules/audit/dist
 COPY --from=builder /app/packages/modules/billing/dist ./packages/modules/billing/dist
 COPY --from=builder /app/packages/modules/contacts/dist ./packages/modules/contacts/dist

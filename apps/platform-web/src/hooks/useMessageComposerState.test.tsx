@@ -7,8 +7,11 @@ const { permissions, notifyError } = vi.hoisted(() => ({
   notifyError: vi.fn(),
 }));
 
-vi.mock("@/tenant/hooks/usePermissions", () => ({
+// The hook lives in @mms/mod-messaging and reads the module's own host bridge, so the gate must be
+// mocked there — mocking the app wrapper (`@/tenant/hooks/usePermissions`) no longer reaches it.
+vi.mock("@mms/mod-messaging/frontend/tenant/host/usePermissions", () => ({
   useModulePermissions: () => ({ canWrite: permissions.canWrite }),
+  usePermissions: () => ({ canWrite: permissions.canWrite }),
 }));
 vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),

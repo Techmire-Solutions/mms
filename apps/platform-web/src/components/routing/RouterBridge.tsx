@@ -4,7 +4,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { registerAppNavigate, unregisterAppNavigate } from "@mms/fe-core/routing/appNavigate";
 import { revertSettingsPreviews } from "@mms/fe-core/lib/settingsPreview";
 import { useScrollToTopOnNavigate } from "@/lib/routing/useScrollToTopOnNavigate";
-import { useTenant } from "@/lib/contexts/TenantContext";
+import { useTenant } from "@mms/fe-core/tenant";
 import { shouldForcePlatformEnglish } from "@mms/fe-core/i18n/platformThemeConfig";
 import { RouteAnnouncer } from "./RouteAnnouncer";
 

@@ -9,6 +9,7 @@ import { compression } from "vite-plugin-compression2";
 import { VitePWA } from "vite-plugin-pwa";
 import { manualVendorChunk, rolldownChunkGroups } from "./src/lib/vendorChunks";
 import { createEntryClosureTransform } from "./src/lib/pwa/entryClosurePrecache";
+import { createStaticAssetMimeGuardPlugin } from "./src/lib/pwa/staticAssetCacheGuard";
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -241,8 +242,9 @@ export default defineConfig({
                 maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
               },
               cacheableResponse: {
-                statuses: [0, 200],
+                statuses: [200],
               },
+              plugins: [createStaticAssetMimeGuardPlugin()],
             },
           },
           {

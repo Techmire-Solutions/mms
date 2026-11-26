@@ -3,7 +3,8 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@mms/fe-core/auth/AuthContext";
 import { BrandingPaletteProvider } from "@/lib/contexts/BrandingPaletteContext";
-import { TenantProvider } from "@/lib/contexts/TenantContext";
+import { TenantProvider } from "@mms/fe-core/tenant";
+import { cachePublicBranding } from "@mms/fe-core/lib/dbObjects";
 import { TranslationProvider } from "@/lib/contexts/TranslationContext";
 import { DirectionProvider } from "@/providers/DirectionProvider";
 import { queryClientInstance } from "@mms/fe-core/query/queryClient";
@@ -59,7 +60,7 @@ export function AppProviders({ children }: AppProvidersProps): React.JSX.Element
         <QueryClientProvider client={queryClientInstance}>
           <Router>
             <BrandingPaletteProvider>
-              <TenantProvider>
+              <TenantProvider cacheBranding={cachePublicBranding}>
                 <TranslationProvider>
                   <UiConfigBridge>
                     <DirectionProvider>{children}</DirectionProvider>

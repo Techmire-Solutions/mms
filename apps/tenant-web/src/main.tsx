@@ -5,7 +5,9 @@ import ReactDOM from "react-dom/client";
 import App from "@/App";
 import "@/index.css";
 import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
+import { applyAppTheme } from "@mms/fe-core/lib/brandingTheme";
 import { installChunkLoadRecovery } from "@/lib/chunkLoadRecovery";
+import { applyTenantDocumentFavicon } from "@/lib/documentFavicon";
 import { runAfterFirstPaint } from "@/lib/runAfterFirstPaint";
 
 // Hashed chunk names change on every deploy while the PWA service worker keeps
@@ -24,12 +26,11 @@ runAfterFirstPaint(() => {
 
 /**
  * Tenant-host chrome: tenant favicon + theme before React mounts.
- * The apex/platform chrome lives in `apps/platform-web`.
+ * Statically imported so Workbox's entry-closure precache includes them for
+ * cold offline starts and never triggers an extra pre-mount chunk fetch.
  */
-async function applyBootChrome(): Promise<void> {
-  const { applyTenantDocumentFavicon } = await import("@/lib/documentFavicon");
+function applyBootChrome(): void {
   applyTenantDocumentFavicon({});
-  const { applyAppTheme } = await import("@mms/fe-core/lib/brandingTheme");
   applyAppTheme();
 }
 
@@ -60,8 +61,12 @@ const app = (
   </ErrorBoundary>
 );
 
-async function bootstrap(): Promise<void> {
-  await applyBootChrome();
+function bootstrap(): void {
+  try {
+    applyBootChrome();
+  } catch {
+    // Non-fatal: never block root mount on initial chrome setup.
+  }
   ReactDOM.createRoot(rootElement as HTMLElement).render(
     import.meta.env.DEV ? <React.StrictMode>{app}</React.StrictMode> : app,
   );
@@ -72,4 +77,4 @@ async function bootstrap(): Promise<void> {
   });
 }
 
-void bootstrap();
+bootstrap();

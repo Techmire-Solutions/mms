@@ -1,9 +1,8 @@
 import globals from "globals";
 import { createReactConfig, REACT_COMPILER_RULE_NAMES } from "@mms/eslint-config";
 
-// Transitional: `apps/platform-web` currently carries a shared shell copy while
-// the tenant/platform audience split is finalized, so it uses `appKind: "app"`.
-// Once the tenant copy is gone it switches to `appKind: "platform"`.
+// Transitional: `apps/platform-web` still carries a few shared shell files while
+// the platform/tenant split is finalized, so it keeps `appKind: "app"`.
 export default createReactConfig({
   appKind: "app",
   files: ["src/**/*.{ts,tsx}"],

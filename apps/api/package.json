@@ -68,6 +68,7 @@
     "@mms/contracts": "workspace:*",
     "@mms/db": "workspace:*",
     "@mms/mod-accounting": "workspace:*",
+    "@mms/mod-analytics": "workspace:*",
     "@mms/mod-audit": "workspace:*",
     "@mms/mod-billing": "workspace:*",
     "@mms/mod-contacts": "workspace:*",

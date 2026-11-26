@@ -1146,6 +1146,65 @@ unchanged.
 > (**75 entries: P1 21, P4 54** after the sessions/students/enrollments extraction caught up in P12e).
 > Future extractions must add their entry in the same change.
 
+### P15 — stale-dist diagnosis and the platform suite re-greened (landed)
+
+> Closed out the P14 incident:
+> - **Rebuilt every package** (`pnpm --filter './packages/**' run build`, all Done) → `mms-platform-web` and
+>   `mms-tenant-web` typecheck **0**, confirming the 190 errors were stale `dist`, not lost work (see the P14
+>   correction above).
+> - **Platform suite back to green:** 1,017 files / 3,698 tests, 0 failed. Four fixes, all test-layer:
+>   - dropped four leftovers whose subjects are gone or deduped — the three `eslint-rules/*` unit tests (the rule
+>     files now live only in `apps/tenant-web/eslint-rules/`, which is their canonical home; tenant-web keeps the
+>     identical tests) and `themeInitPrelanguage` (the platform app ships `public/` icons but no `theme-init.js`;
+>     the tenant console keeps that asset and its test);
+>   - `useMessageComposerModel.test.tsx` now mocks `@mms/fe-core/auth/AuthContext` and wraps the hook in the shared
+>     test `QueryClient` — the chain reads the authenticated user and TanStack Query, which the app mounts but the
+>     unit test did not.
+> - **Tenant suite:** 700 files / 2,840 tests, 0 failed.
+> - Also re-pruned one stale shard-timing key (platform-web 394 → 393).
+
+### P14 — ABORTED: the platform-web tenant prune and its recovery (read this before pruning again)
+
+> **What was attempted.** Delete `apps/platform-web/src/tenant/**`'s duplicate tenant console (1,853 files, only 3
+> in the live graph), after a clean pre-flight (`--quiet-window 15 --require-quiet` → 0 files changed).
+> **The first stage worked**: 1,850 files deleted, the 3 live hooks kept, and typecheck showed exactly the
+> expected fallout — dead shell files importing the removed paths.
+>
+> **What broke.** The cascade stage compared paths inconsistently: the reachability BFS produced **absolute**
+> paths (`path.resolve`), the error list produced **relative** ones, so `seen.has(abs)` was always false and every
+> erroring importer looked "unreachable" — including **live files such as `src/main.tsx`**. Four passes deleted 87
+> files before the BFS crashed on the now-missing entry.
+>
+> **Recovery.** `git ls-files -d` listed 2,262 deleted tracked files (1,850 intended + 412 accidental); the 412
+> were restored with `git checkout`, but a follow-up loop that tried to re-add missing modules from
+> `apps/tenant-web`/`packages`/HEAD cascaded instead (typecheck errors 290 → 615), so it was stopped and the whole
+> app reset with `git checkout -- apps/platform-web`. `apps/platform-web` is now **exactly at HEAD `982f2fe1a`**
+> — 2,075 files, `report:dead-sources` back to 1,661 unrouted / 55 dead.
+>
+> **Correction (P15): the "190 errors" were a stale-build artifact, and no source was lost.** Every
+> `packages/modules/*/dist` was hundreds of files behind its `src` (sessions 238, students 218, enrollments 177,
+> billing 158, faculty 270, contacts 346), and the app resolves newly added exports through `exports` → `dist/*.d.ts`
+> — e.g. `useFinanceInvoicesPaginated` exists in `packages/modules/billing/src/**` and was absent from billing's
+> `dist`. `turbo.json`'s `typecheck` has `dependsOn: ["^build"]`, so CI always rebuilds first; a bare
+> `pnpm --filter <app> typecheck` does not. After `pnpm --filter './packages/**' run build`, **both apps typecheck
+> 0 errors**, and `apps/platform-web` sits cleanly at HEAD ⇒ the P14 reset discarded nothing that was not already
+> committed. The lesson is procedural, not a data loss: build the packages (or use `pnpm typecheck`) before
+> trusting a local typecheck.
+>
+> **Everything else is intact:** tenant-web typecheck 0; 16/18 gates green (the artifact gates are green with the
+> current `dist`); `verify:rules` green; `check:docs` and the move ledger green; the only new red is
+> `test:scripts` `apps/api/Dockerfile` missing a `COPY` for the new `analytics` module (the concurrent
+> extraction's change).
+>
+> **Rules this produced, for any future prune:**
+> 1. Normalise **every** path through one `path.resolve(root, …)` before putting it in a set or comparing it.
+> 2. Abort immediately if the entry file (`src/main.tsx`) or `App.tsx` ever enters the delete set — that is a
+>    guaranteed walker bug, not a finding.
+> 3. Never `git checkout` a tree that may hold uncommitted work: `git stash create`/`git diff` a snapshot first, or
+>    run the prune in a throwaway `git worktree`.
+> 4. Delete in one verified batch, then re-measure — do not iterate deletes while a typecheck is the oracle, since
+>    each pass invalidates the next oracle.
+
 ### P13c — sessions host invalidators wired in the app (landed)
 
 > `providers/SessionsHostProvider.tsx` bound four invalidation seams as `undefined`:

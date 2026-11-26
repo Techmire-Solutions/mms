@@ -7,7 +7,12 @@ import { LOG_REDACTION_OPTIONS } from "@mms/db";
 import { loadServerConfig } from "./config/serverConfig.js";
 import { initDb } from "./db/database.js";
 import { createPlatformBootServices } from "./bootstrap/bootServices.js";
-import { registerWebApps } from "./plugins/registerWebApps.js";
+import {
+  defaultWebAppsRootDirs,
+  isNonSpaFallbackPath,
+  registerWebApps,
+  sendNonSpaNotFound,
+} from "./plugins/registerWebApps.js";
 import { registerPlugins } from "./plugins/index.js";
 import { registerRoutes } from "./routes/index.js";
 import { registerDefaultBackgroundJobRunners } from "./services/backgroundJobRunnerService.js";
@@ -80,13 +85,18 @@ export async function buildApp(): Promise<FastifyInstance> {
   // In production with a built SPA, serve index.html for non-API routes so
   // client-side routing works. Otherwise return a stable JSON 404 shape.
   if (spaActive) {
+    const webRoots = defaultWebAppsRootDirs();
     app.setNotFoundHandler(async (request, reply) => {
       const pathname = request.url.split("?")[0] ?? "";
-      if (pathname.startsWith("/api") || pathname.startsWith("/uploads")) {
-        return reply.status(404).send({ type: "not_found", message: "Not found" });
+      if (isNonSpaFallbackPath(pathname)) {
+        return sendNonSpaNotFound(reply);
       }
+      const host = (request.hostname ?? "").toLowerCase().split(":")[0];
+      const domain = (config.appDomain ?? "").toLowerCase().trim();
+      const apex =
+        !domain || host === domain || host === `www.${domain}` || !host.endsWith(`.${domain}`);
       setStaticAssetHeaders(reply, "index.html");
-      return reply.sendFile("index.html");
+      return reply.sendFile("index.html", apex ? webRoots.platformDist : webRoots.tenantDist);
     });
   } else {
     app.setNotFoundHandler((_request, reply) => {

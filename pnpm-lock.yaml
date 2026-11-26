@@ -118,6 +118,9 @@ importers:
       '@mms/mod-accounting':
         specifier: workspace:*
         version: link:../../packages/modules/accounting
+      '@mms/mod-analytics':
+        specifier: workspace:*
+        version: link:../../packages/modules/analytics
       '@mms/mod-audit':
         specifier: workspace:*
         version: link:../../packages/modules/audit
@@ -272,9 +275,15 @@ importers:
       '@mms/mod-accounting':
         specifier: workspace:*
         version: link:../../packages/modules/accounting
+      '@mms/mod-billing':
+        specifier: workspace:*
+        version: link:../../packages/modules/billing
       '@mms/mod-contacts':
         specifier: workspace:*
         version: link:../../packages/modules/contacts
+      '@mms/mod-enrollments':
+        specifier: workspace:*
+        version: link:../../packages/modules/enrollments
       '@mms/mod-faculty':
         specifier: workspace:*
         version: link:../../packages/modules/faculty
@@ -284,6 +293,15 @@ importers:
       '@mms/mod-iam':
         specifier: workspace:*
         version: link:../../packages/modules/iam
+      '@mms/mod-messaging':
+        specifier: workspace:*
+        version: link:../../packages/modules/messaging
+      '@mms/mod-sessions':
+        specifier: workspace:*
+        version: link:../../packages/modules/sessions
+      '@mms/mod-students':
+        specifier: workspace:*
+        version: link:../../packages/modules/students
       '@mms/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1037,6 +1055,58 @@ importers:
       zod:
         specifier: 'catalog:'
         version: 4.6.7
+    devDependencies:
+      '@mms/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@types/node':
+        specifier: ^26.6.6
+        version: 26.6.6
+      '@types/react':
+        specifier: ^19.3.0
+        version: 19.3.0
+      '@types/react-dom':
+        specifier: ^19.3.0
+        version: 19.3.0(@types/react@19.3.0)
+      eslint:
+        specifier: ^10.15.0
+        version: 10.15.0(jiti@2.7.0)(supports-color@7.2.0)
+      fastify:
+        specifier: 'catalog:'
+        version: 5.12.8
+      happy-dom:
+        specifier: '>=21.0.4'
+        version: 21.0.4
+      react:
+        specifier: 'catalog:'
+        version: 19.3.1
+      react-dom:
+        specifier: 'catalog:'
+        version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: ~7.0.2
+        version: 7.0.2
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0)
+      vitest:
+        specifier: 5.1.1
+        version: 5.1.1(@types/node@26.6.6)(@vitest/coverage-v8@5.1.1)(happy-dom@21.0.4)(vite@8.3.8(@types/node@26.6.6)(esbuild@0.25.12)(jiti@2.7.0)(terser@5.51.2)(tsx@4.23.15)(yaml@2.9.0))
+
+  packages/modules/analytics:
+    dependencies:
+      '@mms/be-core':
+        specifier: workspace:*
+        version: link:../../be-core
+      '@mms/contracts':
+        specifier: workspace:*
+        version: link:../../contracts
+      '@mms/db':
+        specifier: workspace:*
+        version: link:../../db
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
     devDependencies:
       '@mms/eslint-config':
         specifier: workspace:*

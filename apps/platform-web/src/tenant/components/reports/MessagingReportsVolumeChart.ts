@@ -1,1 +1,1 @@
-export { MessagingReportsVolumeChart } from "@/tenant/features/messaging/components/MessagingReportsVolumeChart";
+export { MessagingReportsVolumeChart } from "@mms/mod-messaging/frontend/tenant/components/MessagingReportsVolumeChart";

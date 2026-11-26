@@ -61,7 +61,7 @@ assertScanDirs(
  */
 const BASELINE = {
   anyAnnotations: 0,
-  hexColourFiles: 24,
+  hexColourFiles: 19,
   arbitraryColourExpressions: 0,
   filesOverHardLimit: 4,
 };

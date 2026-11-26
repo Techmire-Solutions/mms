@@ -49,6 +49,17 @@ const mockDeleteSavedReportByOwner = vi.fn();
 const mockTouchSavedReportRunByOwner = vi.fn();
 const mockRecordAudit = vi.fn();
 
+vi.mock(
+  "../../../../packages/modules/analytics/dist/backend/repository/savedReportsRepositoryAdapter.js",
+  () => ({
+    savedReportsRepositoryAdapter: {
+      listSavedReportsByOwner: (...args: unknown[]) => mockListSavedReportsByOwner(...args),
+      createSavedReportForOwner: (...args: unknown[]) => mockCreateSavedReportForOwner(...args),
+      deleteSavedReportByOwner: (...args: unknown[]) => mockDeleteSavedReportByOwner(...args),
+      touchSavedReportRunByOwner: (...args: unknown[]) => mockTouchSavedReportRunByOwner(...args),
+    },
+  }),
+);
 vi.mock("../db/repositories/savedReportsRepository.js", async (importOriginal) => {
   const actual =
     await importOriginal<typeof import("../db/repositories/savedReportsRepository.js")>();

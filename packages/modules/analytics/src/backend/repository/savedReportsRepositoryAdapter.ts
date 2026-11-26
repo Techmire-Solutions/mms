@@ -3,7 +3,7 @@ import {
   deleteSavedReportByOwner,
   listSavedReportsByOwner,
   touchSavedReportRunByOwner,
-} from "../../db/repositories/savedReportsRepository.js";
+} from "@mms/be-core/data/saved-reports";
 import type { SavedReportsRepository } from "./savedReportsRepository.js";
 
 /**

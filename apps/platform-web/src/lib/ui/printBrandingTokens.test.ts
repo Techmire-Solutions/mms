@@ -1,13 +1,13 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { getPrintBrandingTokens, PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
 import { getScopedBrandingSettings } from "@mms/fe-core/lib/settingsPreviewStore";
-import { getBrandingChartPalette } from "@/lib/ui/brandingChartPalette";
+import { getBrandingChartPalette } from "@mms/fe-core/ui/brandingChartPalette";
 
 vi.mock("@mms/fe-core/lib/settingsPreviewStore", () => ({
   getScopedBrandingSettings: vi.fn(),
 }));
 
-vi.mock("@/lib/ui/brandingChartPalette", () => ({
+vi.mock("@mms/fe-core/ui/brandingChartPalette", () => ({
   getBrandingChartPalette: vi.fn(),
 }));
 

@@ -1,6 +1,8 @@
 import React from "react";
-import { FacultyHostProvider } from "@mms/mod-faculty/frontend/tenant/host";
+import { FacultyHostProvider, type FacultyHostValue } from "@mms/mod-faculty/frontend/tenant/host";
 import { configureFacultyCrossModuleKeys } from "@mms/mod-faculty/frontend/tenant/crossModuleKeys";
+import { configureFacultyUsersInvalidator } from "@mms/mod-faculty/frontend/tenant/host/usersInvalidation";
+import { STUDENTS_QUERY_KEY } from "@mms/mod-students/frontend/tenant/hooks/studentsQueryKeys";
 import { useFacultyConfig } from "@/hooks/useStandardModuleConfig";
 import { usePermissions, useModulePermissions } from "@/tenant/hooks/usePermissions";
 import { useWorkspaceRoles } from "@/tenant/hooks/useWorkspaceRoles";
@@ -10,10 +12,8 @@ import { useIndustryTerminology } from "@/tenant/hooks/useIndustryTerminology";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
 import * as users from "@/tenant/hooks/collections/users";
-import { configureFacultyUsersInvalidator } from "@mms/mod-faculty/frontend/tenant/host/usersInvalidation";
 import * as sessions from "@/tenant/hooks/collections/sessions";
 import * as contacts from "@/tenant/hooks/collections/contacts";
-import * as students from "@/tenant/hooks/collections/students";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { ModuleTierPage } from "@/components/app/ModuleTierPage";
 import { ModuleReports, KPISummary } from "@/tenant/components/moduleReports";
@@ -23,7 +23,7 @@ configureFacultyUsersInvalidator(users.invalidateUsersQueries);
 
 configureFacultyCrossModuleKeys({
   contacts: contacts.CONTACTS_QUERY_KEY,
-  students: students.STUDENTS_QUERY_KEY,
+  students: STUDENTS_QUERY_KEY,
 });
 
 /** Binds the app's RBAC + cross-feature collections into the faculty module host. */
@@ -43,18 +43,19 @@ export function FacultyHostBridge({ children }: { children: React.ReactNode }): 
         users: {
           useUsersContractList: users.useUsersContractList,
           useCreateWorkspaceRole: users.useCreateWorkspaceRole,
-          RoleFormModal: users.RoleFormModal,
+          RoleFormModal: users.RoleFormModal as FacultyHostValue["users"]["RoleFormModal"],
         },
         sessions: {
           useSessions: sessions.useSessions,
           useSessionsCollection: sessions.useSessionsCollection,
         },
         contacts: { useContactById: contacts.useContactById },
-        ContactPicker: ContactPicker,
-        ModuleTierPage: ModuleTierPage,
-        ModuleReports: ModuleReports,
-        KPISummary: KPISummary,
-        TenantMessageComposer: TenantMessageComposer,
+        ContactPicker: ContactPicker as unknown as FacultyHostValue["ContactPicker"],
+        ModuleTierPage: ModuleTierPage as unknown as FacultyHostValue["ModuleTierPage"],
+        ModuleReports: ModuleReports as unknown as FacultyHostValue["ModuleReports"],
+        KPISummary: KPISummary as unknown as FacultyHostValue["KPISummary"],
+        TenantMessageComposer:
+          TenantMessageComposer as unknown as FacultyHostValue["TenantMessageComposer"],
       }}
     >
       {children}

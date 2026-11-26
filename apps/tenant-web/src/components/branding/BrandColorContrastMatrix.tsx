@@ -1,6 +1,7 @@
 import React from "react";
 import { Sparkles } from "lucide-react";
 import {
+  BRAND_FOREGROUND_WHITE_HEX,
   brandingTokenToHex,
   buildBrandingCssVariables,
   ensureAccessibleBrandColor,
@@ -30,25 +31,34 @@ export function BrandColorContrastMatrix({
   const darkTokens = (() => buildBrandingCssVariables(primaryColor, secondaryColor, "dark"))();
 
   const lightPrimaryBg = brandingTokenToHex(lightTokens["--primary"] ?? "", primaryColor);
-  const lightPrimaryFg = brandingTokenToHex(lightTokens["--primary-foreground"] ?? "", "#ffffff");
+  const lightPrimaryFg = brandingTokenToHex(
+    lightTokens["--primary-foreground"] ?? "",
+    BRAND_FOREGROUND_WHITE_HEX,
+  );
   const lightPrimaryContrast = getContrastRatio(lightPrimaryFg, lightPrimaryBg);
   const lightPrimaryPasses = meetsWcagAaTextContrast(lightPrimaryContrast);
 
   const lightSecondaryBg = brandingTokenToHex(lightTokens["--secondary"] ?? "", secondaryColor);
   const lightSecondaryFg = brandingTokenToHex(
     lightTokens["--secondary-foreground"] ?? "",
-    "#ffffff",
+    BRAND_FOREGROUND_WHITE_HEX,
   );
   const lightSecondaryContrast = getContrastRatio(lightSecondaryFg, lightSecondaryBg);
   const lightSecondaryPasses = meetsWcagAaTextContrast(lightSecondaryContrast);
 
   const darkPrimaryBg = brandingTokenToHex(darkTokens["--primary"] ?? "", primaryColor);
-  const darkPrimaryFg = brandingTokenToHex(darkTokens["--primary-foreground"] ?? "", "#ffffff");
+  const darkPrimaryFg = brandingTokenToHex(
+    darkTokens["--primary-foreground"] ?? "",
+    BRAND_FOREGROUND_WHITE_HEX,
+  );
   const darkPrimaryContrast = getContrastRatio(darkPrimaryFg, darkPrimaryBg);
   const darkPrimaryPasses = meetsWcagAaTextContrast(darkPrimaryContrast);
 
   const darkSecondaryBg = brandingTokenToHex(darkTokens["--secondary"] ?? "", secondaryColor);
-  const darkSecondaryFg = brandingTokenToHex(darkTokens["--secondary-foreground"] ?? "", "#ffffff");
+  const darkSecondaryFg = brandingTokenToHex(
+    darkTokens["--secondary-foreground"] ?? "",
+    BRAND_FOREGROUND_WHITE_HEX,
+  );
   const darkSecondaryContrast = getContrastRatio(darkSecondaryFg, darkSecondaryBg);
   const darkSecondaryPasses = meetsWcagAaTextContrast(darkSecondaryContrast);
 

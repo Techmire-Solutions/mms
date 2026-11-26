@@ -65,6 +65,14 @@ vi.mock("@/providers/MotionPreferences", () => ({
   MotionPreferences: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 }));
 
+vi.mock("@/providers/TenantModuleHostBridges", () => ({
+  TenantModuleHostBridges: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
+vi.mock("@mms/mod-contacts/frontend/tenant/components/ContactConfigContext", () => ({
+  ContactConfigProvider: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 vi.mock("@/tenant/components/layout/Sidebar", () => ({
   default: () => <aside data-testid="sidebar">Sidebar</aside>,
 }));

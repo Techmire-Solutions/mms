@@ -51,7 +51,7 @@ describe("pickShard", () => {
 // Keys must match `timingKey()` on CI or every file falls back to the median
 // weight. Stale keys (deleted/renamed tests) silently unbalance the split, so the
 // file must name only existing tests — regenerate it with
-// `pnpm --filter mms-frontend test:shard-timings` after deleting or moving a test.
+// `pnpm --filter mms-tenant-web test:shard-timings` after deleting or moving a test.
 describe("shard-timings.json", () => {
   it("given the recorded keys, should all be POSIX paths relative to the frontend root", () => {
     // Arrange

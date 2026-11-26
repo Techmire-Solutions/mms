@@ -1,6 +1,5 @@
 import React from "react";
 import { cn } from "@mms/ui";
-import { useReducedMotion } from "@mms/fe-core/tenant";
 import { useTranslation } from "@mms/fe-core/i18n";
 
 export function AuthPageBackdrop(): React.JSX.Element {
@@ -18,16 +17,8 @@ export function AuthCardShell({
   footer?: React.ReactNode;
   className?: string;
 }): React.JSX.Element {
-  const reducedMotion = useReducedMotion();
-
   return (
-    <div
-      className={cn(
-        "relative z-elevated w-full max-w-toast",
-        !reducedMotion && "animate-fade-in",
-        className,
-      )}
-    >
+    <div className={cn("relative z-elevated w-full max-w-toast", className)}>
       <div className="relative overflow-hidden rounded-2xl border border-foreground/12 bg-card shadow-surface-lg">
         <div className="border-b border-border/50 bg-muted/10 px-6 py-6 text-center sm:px-8">
           {header}

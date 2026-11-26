@@ -20,7 +20,7 @@ vi.mock("@/lib/globalSettingsHydration", async (importOriginal) => {
 vi.mock("@mms/fe-core/auth/AuthContext", () => ({
   useAuth: () => ({ isAuthenticated: mocks.isAuthenticated, authChecked: mocks.authChecked }),
 }));
-vi.mock("@/lib/contexts/TenantContext", () => ({
+vi.mock("@mms/fe-core/tenant", () => ({
   useTenant: () => ({
     isApex: false,
     subdomain: mocks.subdomain,
