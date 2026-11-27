@@ -840,7 +840,9 @@ jobs:
     # module change cannot merge with its own tests skipped.
     if: ${{ needs.changes.outputs.backend_unit == 'true' || github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # 21 module suites at --concurrency=2 take ~15 min on a hosted runner (each
+    # runs backend + frontend Vitest); a 15-minute cap cancelled the last suite.
+    timeout-minutes: 30
     steps:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
