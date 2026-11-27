@@ -244,7 +244,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "profile",
     path: TENANT_PATHS.profile,
     access: { kind: "open", reason: "the signed-in user's own account" },
-    loader: () => import("@/tenant/features/profile/AccountProfilePage"),
+    loader: () =>
+      import("@mms/mod-iam/frontend/tenant").then((m) => ({ default: m.AccountProfilePage })),
     apexRedirectable: true,
   },
   {

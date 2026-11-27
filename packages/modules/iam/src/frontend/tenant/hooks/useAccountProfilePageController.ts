@@ -1,10 +1,10 @@
 import { useRef, useState, type ChangeEvent } from "react";
 import { calculateProfileCompleteness, type FieldConfig } from "@mms/contracts";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { useTenantProfile } from "@/tenant/hooks/useTenantProfile";
+import { useTenantProfile } from "../host/useTenantProfile";
 import { genderAvatarGradient } from "@mms/fe-core/ui/semanticTone";
-import { useAccountProfileContactActions } from "@/tenant/features/profile/hooks/useAccountProfileContactActions";
-import { useAccountProfileSecurityActions } from "@/tenant/features/profile/hooks/useAccountProfileSecurityActions";
+import { useAccountProfileContactActions } from "./useAccountProfileContactActions";
+import { useAccountProfileSecurityActions } from "./useAccountProfileSecurityActions";
 
 export function useAccountProfilePageController() {
   const { t } = useTranslation();

@@ -270,8 +270,6 @@
   "src/tenant/features/obligations/components/wakala/WakalaStepProgressBar.test.tsx": 807,
   "src/tenant/features/obligations/hooks/useObligationEntityDescriptor.test.tsx": 700,
   "src/tenant/features/obligations/hooks/useObligationsPageController.test.tsx": 1107,
-  "src/tenant/features/profile/components/AccountProfileLoginEmailCard.test.tsx": 1236,
-  "src/tenant/features/profile/AccountProfilePage.test.tsx": 1039,
   "src/lib/passwordStrength.test.ts": 566,
   "src/tenant/features/question-bank/components/QuestionBankCsvImportDialog.test.tsx": 1382,
   "src/tenant/features/question-bank/components/QuestionBankPageActions.test.tsx": 1139,

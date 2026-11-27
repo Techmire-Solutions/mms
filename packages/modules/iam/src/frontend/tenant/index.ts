@@ -14,3 +14,4 @@ export * from "../components/index";
 export { RoleBadge } from "../components/RoleBadge.js";
 export { default as UsersPage } from "./UsersPage.js";
 export * from "./lib/index.js";
+export { default as AccountProfilePage } from "./AccountProfilePage.js";

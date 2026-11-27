@@ -3,9 +3,9 @@ import { User } from "lucide-react";
 import { ModulePageShell } from "@mms/fe-core/components/ModulePageShell";
 import { ErrorState } from "@mms/fe-core/components/ErrorState";
 import { Skeleton } from "@mms/ui";
-import { AccountProfileHeaderCard } from "@/tenant/features/profile/components/AccountProfileHeaderCard";
-import { AccountProfileSettingsTabs } from "@/tenant/features/profile/components/AccountProfileSettingsTabs";
-import { useAccountProfilePageController } from "@/tenant/features/profile/hooks/useAccountProfilePageController";
+import { AccountProfileHeaderCard } from "./components/AccountProfileHeaderCard";
+import { AccountProfileSettingsTabs } from "./components/AccountProfileSettingsTabs";
+import { useAccountProfilePageController } from "./hooks/useAccountProfilePageController";
 
 const AvatarCropper = React.lazy(() =>
   import("@mms/fe-core/components/AvatarCropper").then((m) => ({ default: m.AvatarCropper })),

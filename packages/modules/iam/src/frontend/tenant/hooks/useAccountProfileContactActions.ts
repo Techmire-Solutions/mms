@@ -7,13 +7,14 @@ import {
   type PhoneNumber,
 } from "@mms/contracts";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { useTenantProfile, type TenantProfileData } from "@/tenant/hooks/useTenantProfile";
+import { useTenantProfile } from "../host/useTenantProfile";
+import type { TenantProfileData } from "../lib/profileTypes";
 
 import { getApiValidationMessage } from "@mms/fe-core/api/validationMessage";
 import { notify } from "@mms/fe-core/notify";
 import { useAuth } from "@mms/fe-core/auth/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
-import { TENANT_PROFILE_KEY } from "@/tenant/hooks/useTenantProfile";
+import { TENANT_PROFILE_KEY } from "../lib/profileTypes";
 import { tsrClient } from "@mms/fe-core/api/tsRest";
 import { assertContractOk } from "@mms/fe-core/api/contractError";
 

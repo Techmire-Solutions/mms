@@ -15,6 +15,7 @@ export interface IamHostValue {
   useMessageComposerState: IamHostHook;
   useContactById: IamHostHook;
   useUsersContractVerifyEmail: IamHostHook;
+  useTenantProfile: IamHostHook;
   reportDateUtils: { calculateReportDateRange: (...args: any[]) => any };
   ContactPicker: ComponentType<any>;
   TenantMessageComposerLauncher: ComponentType<any>;
@@ -57,6 +58,7 @@ const TEST_HOST: IamHostValue = {
   useMessageComposerState: () => ({}),
   useContactById: () => undefined,
   useUsersContractVerifyEmail: () => ({ mutate: allow, mutateAsync: allow, isPending: false }),
+  useTenantProfile: () => ({ data: null, isLoading: false, isError: false, refetch: allow }),
   reportDateUtils: { calculateReportDateRange: () => ({ from: "2026-01-01", to: "2026-01-31" }) },
   ContactPicker: T,
   TenantMessageComposerLauncher: T,

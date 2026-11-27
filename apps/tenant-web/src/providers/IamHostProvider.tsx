@@ -10,6 +10,7 @@ import { useWorkspaceToday } from "@/hooks/useWorkspaceToday";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { useUsersContractVerifyEmail } from "@/tenant/hooks/collections/users";
+import { useTenantProfile } from "@/tenant/hooks/useTenantProfile";
 import * as reportDateUtils from "@/lib/reports/reportDateUtils";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { TenantMessageComposerLauncher } from "@/tenant/components/messaging/TenantMessageComposerLauncher";
@@ -28,6 +29,7 @@ export function IamHostBridge({ children }: { children: React.ReactNode }): Reac
     useMessageComposerState,
     useContactById,
     useUsersContractVerifyEmail,
+    useTenantProfile,
     reportDateUtils: reportDateUtils as unknown as {
       calculateReportDateRange: (...args: unknown[]) => unknown;
     },

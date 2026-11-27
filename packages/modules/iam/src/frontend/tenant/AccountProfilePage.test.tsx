@@ -2,19 +2,10 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import AccountProfile from "./AccountProfilePage";
-import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
-
-const mockContext = {
-  language: "en",
-  t: ((key: string) => key) as TranslationFunction,
-  isLoading: false,
-  dir: "ltr" as const,
-  isRtl: false,
-};
 
 const mockController = vi.fn();
 
-vi.mock("@/tenant/features/profile/hooks/useAccountProfilePageController", () => ({
+vi.mock("./hooks/useAccountProfilePageController", () => ({
   useAccountProfilePageController: () => mockController(),
 }));
 
@@ -28,11 +19,7 @@ describe("AccountProfilePage", () => {
       refetch: vi.fn(),
     });
 
-    const html = renderToStaticMarkup(
-      <TranslationContext.Provider value={mockContext}>
-        <AccountProfile />
-      </TranslationContext.Provider>,
-    );
+    const html = renderToStaticMarkup(<AccountProfile />);
 
     // Skeleton pulse container should be present
     expect(html).toContain('role="status"');

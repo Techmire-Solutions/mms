@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { useTenantProfile, TENANT_PROFILE_KEY } from "@/tenant/hooks/useTenantProfile";
+import { useTenantProfile } from "../host/useTenantProfile";
+import { TENANT_PROFILE_KEY } from "../lib/profileTypes";
 import { notify } from "@mms/fe-core/notify";
 import { useAuth } from "@mms/fe-core/auth/AuthContext";
 import { useQueryClient } from "@tanstack/react-query";
@@ -10,7 +11,7 @@ import {
   confirmLoginEmailChangeBodySchema,
   validatePasswordPolicy,
 } from "@mms/contracts";
-import { useGlobalSettings } from "@/tenant/hooks/useGlobalSettings";
+import { useGlobalSettings } from "../host/useGlobalSettings";
 import { tsrClient } from "@mms/fe-core/api/tsRest";
 import { apiContractError, assertContractOk } from "@mms/fe-core/api/contractError";
 
