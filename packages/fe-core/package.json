@@ -346,7 +346,8 @@
     "./documentTemplates/*": [
       "./src/documentTemplates/*.ts",
       "./src/documentTemplates/*.tsx"
-    ]
+    ],
+    "./print/printHtmlDocument": "./src/print/printHtmlDocument.ts"
   },
   "scripts": {
     "build": "tsc --noEmit -p tsconfig.json",
