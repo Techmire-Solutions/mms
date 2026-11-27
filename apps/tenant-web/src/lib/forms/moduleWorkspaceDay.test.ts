@@ -23,7 +23,7 @@ const FILES = [
   "packages/modules/hasanat/src/frontend/tenant/components/DistributeModal.tsx",
   "packages/modules/hasanat/src/frontend/tenant/components/RedeemModal.tsx",
   "packages/modules/hasanat/src/frontend/tenant/components/StockAddBatchModal.tsx",
-  "tenant/features/attendance/components/AttendanceRegisterExport.tsx",
+  "packages/modules/attendance/src/frontend/tenant/components/AttendanceRegisterExport.tsx",
 ];
 
 function resolve(file: string): string {
