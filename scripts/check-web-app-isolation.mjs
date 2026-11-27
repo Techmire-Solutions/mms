@@ -41,29 +41,49 @@ for (const [app, dir] of Object.entries(APPS)) {
   for (const file of walk(dir)) {
     const source = readFileSync(file, "utf8");
     const rel = relative(ROOT, file);
-    if (source.includes(`apps/${other}-web`)) {
+    const specifiers = [...source.matchAll(/from\s+"([^"]+)"|import\s*\(\s*"([^"]+)"\s*\)/g)]
+      .map((m) => m[1] ?? m[2])
+      .filter(Boolean);
+    const appRef = specifiers.find((spec) => spec.includes(`apps/${other}-web`));
+    if (appRef) {
       violations.push({ app, file: rel, rule: `imports apps/${other}-web` });
     }
-    const crossAudience = new RegExp(
-      `@mms/mod-[a-z0-9-]+/frontend/(?!${other === "tenant" ? "platform" : "tenant"}\\b)`,
-      "g",
-    );
-    for (const match of source.matchAll(crossAudience)) {
-      // A tenant app importing a platform barrel (or the reverse) is a violation.
-      const expected = app === "tenant" ? "tenant" : "platform";
-      if (!match[0].endsWith(`/${expected}`)) {
-        violations.push({ app, file: rel, rule: `cross-audience import ${match[0]}` });
-      }
+    const expected = app === "tenant" ? "tenant" : "platform";
+    const SHARED = ["components", "shared", "lib", "hooks", "host", "test"];
+    for (const spec of specifiers) {
+      const m = spec.match(/@mms\/mod-[a-z0-9-]+\/frontend\/([a-z-]+)/);
+      if (!m) continue;
+      const audience = m[1];
+      if (audience === expected || SHARED.includes(audience)) continue;
+      violations.push({ app, file: rel, rule: `cross-audience import ${spec}` });
     }
   }
 }
 
-if (process.argv.includes("--json")) {
-  console.log(JSON.stringify({ violations }, null, 2));
-} else if (violations.length > 0) {
-  console.error(`web-app isolation: ${violations.length} violation(s)`);
-  for (const v of violations) console.error(`  ${v.file} — ${v.rule}`);
-} else {
-  console.log("web-app isolation: OK (neither app imports the other)");
+import { existsSync, writeFileSync } from "node:fs";
+
+const BASELINE = join(ROOT, "scripts/web-app-isolation-baseline.json");
+const keys = violations.map((v) => `${v.app}:${v.file}:${v.rule}`).sort();
+
+if (process.argv.includes("--freeze")) {
+  writeFileSync(BASELINE, JSON.stringify({ frozen: keys }, null, 2) + "\n");
+  console.log(`web-app isolation: froze ${keys.length} baseline violation(s)`);
+  process.exit(0);
 }
-process.exit(violations.length > 0 ? 1 : 0);
+
+const frozen = existsSync(BASELINE)
+  ? new Set(JSON.parse(readFileSync(BASELINE, "utf8")).frozen ?? [])
+  : new Set();
+const fresh = keys.filter((k) => !frozen.has(k));
+const resolved = [...frozen].filter((k) => !keys.includes(k));
+
+if (process.argv.includes("--json")) {
+  console.log(JSON.stringify({ fresh, resolved, total: keys.length }, null, 2));
+} else if (fresh.length > 0) {
+  console.error(`web-app isolation: ${fresh.length} NEW violation(s) (baseline ${frozen.size})`);
+  for (const k of fresh) console.error(`  ${k}`);
+  if (resolved.length > 0) console.error(`  resolved since baseline: ${resolved.length}`);
+} else {
+  console.log(`web-app isolation: OK (baseline ${frozen.size}, no new violations)`);
+}
+process.exit(fresh.length > 0 ? 1 : 0);

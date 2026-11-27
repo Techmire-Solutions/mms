@@ -59,7 +59,12 @@
     "check:money-safety": "node scripts/check-money-safety.mjs",
     "check:contracts": "node scripts/check-finance-contract-parity.mjs",
     "check:module-boundaries": "node scripts/check-module-boundaries.mjs",
-    "report:dead-sources": "node scripts/report-dead-sources.mjs"
+    "check:module-exports": "node scripts/check-module-exports.mjs",
+    "report:dead-sources": "node scripts/report-dead-sources.mjs",
+    "check:web-app-isolation": "node scripts/check-web-app-isolation.mjs",
+    "check:routes-inventory": "node scripts/check-routes-inventory.mjs",
+    "check:package-boundaries": "node scripts/check-package-boundaries.mjs",
+    "check:fe-core-boundaries": "node scripts/check-fe-core-boundaries.mjs"
   },
   "devDependencies": {
     "eslint-config-prettier": "^10.1.8",

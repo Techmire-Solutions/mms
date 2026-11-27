@@ -348,6 +348,21 @@ jobs:
       - name: Documentation ratchets
         run: pnpm run check:docs
 
+      # Ratchet: the two web apps stay independent shells (no app<->app imports,
+      # no cross-audience module imports). Baseline freezes the pre-existing backlog.
+      - name: Web-app isolation ratchet
+        run: pnpm run check:web-app-isolation
+
+      # Ratchet: package layers point only downward (contracts/db/be-core/fe-core/ui
+      # never import a module or an app; modules never import another module).
+      - name: Package boundary ratchet
+        run: pnpm run check:package-boundaries
+
+      # Ratchet: every route the API serves is declared in the contracts inventory
+      # and mounted through the module descriptors — an undeclared route fails CI.
+      - name: Route inventory ratchet
+        run: pnpm run check:routes-inventory
+
       # Ratchet: applied migrations are immutable (forward-only DDL). Rewriting one makes
       # fresh and existing installs diverge, and the change never reaches the latter.
       # `--base HEAD^1` is explicit so an unresolvable ref fails loudly instead of
@@ -397,6 +412,11 @@ jobs:
 
       - name: Module audience boundaries
         run: pnpm run check:module-boundaries
+
+      # Exports map: a .tsx file under a .ts-first wildcard is unreachable until the package
+      # declares an explicit entry; this catches the class app-side (IAM shipped it twice).
+      - name: Module exports resolve
+        run: pnpm run check:module-exports
 
       # Topology (migration plan P0/P9): catches undeclared app/package/module
       # drift, half-created module dirs, a module root export, and a dropped

@@ -1147,6 +1147,66 @@ unchanged.
 > ledger itself was retired on 2026-11-27, see P16).
 > Future extractions must add their entry in the same change.
 
+### P19 — the prune is complete: residues retired, both suites green (landed)
+
+> The owner finished the P14 objective between rounds: `apps/platform-web/src/tenant/**` is **gone** (the milestones
+> doc records 2,312 files removed), the app lints as `appKind: "platform"` with **zero** tenant-audience imports, and
+> `check:web-app-isolation` is CI-wired at a zero baseline. `apps/platform-web` fell **2,081 → 483** source files.
+>
+> **Residues this round retired** (everything that still described the copy as present):
+> - `scripts/check-frontend-structure.mjs` — `barrelSkip` for the platform tenant tree → `null`.
+> - `scripts/check-module-boundaries.mjs` — dropped the two audience rules for subtrees that no longer exist
+>   (`apps/platform-web/src/tenant/`, `apps/tenant-web/src/platform/`).
+> - `scripts/check-form-architecture.mjs` and `scripts/check-work-directory.mjs` — comments no longer say the copy is
+>   "awaiting the P11a prune".
+> - Shard fixtures re-pruned: platform **307 → 122** keys (185 stale), tenant 308 → 306.
+>
+> **Verified after the prune:**
+> - `mms-platform-web` suite: **321 files / 1,248 tests, 0 failed** (was 1,017 / 3,698 with the duplicate's tests).
+> - `mms-tenant-web` suite: **576 files / 2,524 tests, 0 failed** (its first run failed only on a stale shard fixture;
+>   a second run hit a corrupted Vite dep cache, cleared, then green).
+> - Both typechecks **0**; **39 of 40 gates green** — the only red is `check:accounting-coverage`, which needs
+>   `pnpm --filter mms-api run test:db:coverage:finance` first (a CI-order prerequisite, not a regression).
+> - `verify:rules`, `check:docs`, `test:scripts` (145) green; `check:module-exports` green on the smaller surface
+>   (329 imports / 273 files).
+
+### P18 — module-exports gate, IAM export fix, and the prune's test fallout (landed)
+
+> The owner's tenant-tree prune kept deleting while this round ran (`src/tenant/**` 1,861 → 891 files, then a
+> second wave removing `lib/` and `providers/` files), so this round stayed on the residue it could prove stale.
+>
+> **Fixed (all real, all reproducible before the fix):**
+> - **`@mms/mod-iam/frontend/tenant/UsersPage` was unreachable.** The package's `./frontend/tenant/*` wildcard lists
+>   `*.ts` before `*.tsx`, and Node's exports arrays do not fall through on a missing file, so the app's new
+>   `moduleRegistry.ts` import failed to resolve and took **9 platform test files** down with it. Added the explicit
+>   entry (same shape as the `lib/usersDescriptor` fix in P16).
+> - **`moduleWorkspaceDay.test.ts` (platform)** still listed `tenant/features/attendance/components/AttendanceRegisterExport.tsx`,
+>   which the prune deleted; repointed to `packages/modules/attendance/src/frontend/tenant/components/AttendanceRegisterExport.tsx`.
+> - **Stale shard fixtures** re-pruned (platform `shard-timings.json` 393 → 307 keys).
+>
+> **New gate — `check:module-exports`** (`scripts/check-module-exports.mjs`, `scripts/ci/module-exports.test.mjs`,
+> 5 tests, wired as `check:module-exports` and as a CI step after *Module audience boundaries*). It models **Node's
+> exports semantics statically**: for every `@mms/mod-*` specifier the two apps import (~561 imports across 461
+> files), it resolves the package's `exports` key, takes the **first** array target, and fails when that file does
+> not exist — the exact shape of both IAM bugs. This class had no gate: typecheck passed while vitest could not
+> resolve the specifier, so only a suite run caught it.
+> - Two wrong turns on the way, worth recording: a `require.resolve`-based resolver produced **262 false positives**
+>   (backend imports resolve through tsc, not the exports map), and a JSDoc comment containing `@mms/mod-*/sub/path`
+>   silently terminated the block comment (`*/`) and broke the script. The final gate scans frontend trees only and
+>   never calls the Node resolver.
+>
+> **The prune finished during this round:** `apps/platform-web/src/tenant/**` is now **0 files** and the app's
+> source count fell **2,081 → 483** (dead-source report: 92 unrouted, 52 referenced by nothing). P14's objective is
+> therefore met by its owner — the remaining reds are the refactor's own (`14` platform typecheck errors and one new
+> explicit `any` at `apps/api/src/compose.ts:26` as they rewire the API).
+>
+> **State at the end of the round:** `check:module-exports`, `check:docs`, `check:frontend-structure`, `check:forms`,
+> `check:module-boundaries`, `check:shared-structure`, `check:topology`, `check:work-directory`, `verify:rules` and
+> `test:scripts` (145) are green; tenant-web typecheck 0. The platform app was **mid-refactor by its owner** while
+> this was written (`@/lib/db`, `@/providers/AppProviders` and `@/lib/contexts/TranslationContext` were being moved),
+> so its typecheck and suite were momentarily red for reasons that are theirs to finish — verified by path, not
+> assumed: each error is a module the prune/refactor removed in the last minutes.
+
 ### P17 — plan-compliance audit: every approved plan checked against the tree (landed)
 
 > Requested: confirm that everything from every plan in this migration arc was actually applied. Audited by
@@ -1171,9 +1231,11 @@ unchanged.
 > | P13c | sessions host invalidators | `SessionsHostProvider` binds `invalidate{Sessions,Students,Finance}Queries` + `ENROLLMENT_PLACEMENTS_QUERY_KEY` | applied |
 > | P15 | stale-dist diagnosis | package rebuild → both typechecks 0 (re-verified) | applied |
 > | P16 | ledger-retirement follow-ups | `ci.yml` free of `check:move-manifest`; `iam` `usersDescriptor` export present; hoist-safe i18n mock in `UsersReport.test.tsx` | applied |
-> | **P14** | **prune the duplicate platform-web tenant console** | `apps/platform-web/src/tenant/**` still holds **1,861** files with only **3** in the live graph | **NOT APPLIED — aborted** |
+> | **P14** | **prune the duplicate platform-web tenant console** | **in flight by the console's owner at audit time**: `src/tenant/**` went 1,861 → **891** files with ~900 deletions staged and 892 files touched in ten minutes (only 3 were ever in the live graph) | **being applied (owner)** |
 >
-> **P14 retry checklist (do not run against a busy tree):**
+> **P14 is no longer mine to run** — the owner started it on 2026-11-27 while this audit was being written. The checklist
+> below stays as the procedure I would have used and as the bar for verifying their result (it also records why my own
+> attempt was aborted; see P14/P15):
 > 1. `node scripts/report-dead-sources.mjs --quiet-window 15 --require-quiet` must exit **0** (it exits 2 today).
 > 2. Do it in a throwaway `git worktree add ../mms-prune HEAD`, never in the live checkout.
 > 3. `path.resolve` every path before putting it in a set — the P14 bug was absolute-vs-relative comparison.
@@ -1187,10 +1249,15 @@ unchanged.
 > `apps/tenant-web/dist`; the `UsersReport` activity-log assertion depends on the extraction's `ActivityLogs`
 > component surface; and the reachable shims above are by design.
 >
-> **Gate state at audit time:** 34/36 green — `check:code-norms` fails on one new explicit `any`
-> (`apps/api/src/compose.ts:29`, the extraction's in-flight file) and `check:accounting-coverage` on its missing
-> coverage artifact. Both typechecks 0; the tenant-web build succeeds, so the artifact gates pass once `dist/` is
-> present.
+> **State at audit time** (2026-11-27, mid-prune): both typechecks 0 when the audit began (the platform typecheck
+> flips as the prune's deletions land — it read 1 error minutes later); the tenant-web build succeeds, so the artifact
+> gates pass once `dist/` is present; `verify:rules`, `check:docs` and `test:scripts` (140) green; **tenant suite
+> 580 files / 2,535 tests, 0 failed** (the `UsersReport` gap closed itself when the extraction aligned `ActivityLogs`
+> — it is no longer a non-gap); `check:code-norms` went green minutes after the one offending `any`
+> (`apps/api/src/compose.ts:29`) was fixed, leaving only `check:accounting-coverage`, which needs its db-coverage
+> artifact. The **platform suite is transiently red** (216 files mis-enumerated: 86 stale shard keys plus test files
+> the prune deleted mid-run) — expected while `src/tenant/**` is being removed, and the bar for re-running it is the
+> owner's completed prune, not this audit.
 
 ### P16 — the move ledger was retired; CI wiring and the record follow (landed)
 
@@ -1829,16 +1896,19 @@ rehearsed.
       test, the JSON manifest/schema, the `check:move-manifest` script and the `local-ci.sh` step were
       deleted; `check-topology` + `check-module-boundaries` + `scripts/ci/ci-path-filters.test.mjs` are the
       permanent ratchets that remain.
-      **Coverage mapping (2026-11-27):** `check-package-boundaries` / `check-fe-core-boundaries` are enforced
-      by `check:core-packages` (contracts/db/be-core/fe-core/ui import sets); `check-web-app-isolation` by
-      `check:module-boundaries` + `scripts/ci/module-audience-boundaries.test.mjs` (no app↔app or
-      tenant↔platform import); `check-routes-inventory` by the module-access coverage test +
-      `check:backend-boundaries`. No duplicate script added.
+      **Coverage mapping (2026-11-27):** `check-package-boundaries` is implemented as
+      `check:package-boundaries` (`scripts/check-package-boundaries.mjs`, wired into CI + `local-ci.sh`);
+      `check-fe-core-boundaries` remains enforced by `check:core-packages` (per-package workspace import
+      sets); `check-web-app-isolation` as `check:web-app-isolation` (baseline-frozen backlog, CI-wired);
+      `check-routes-inventory` as `check:routes-inventory` (CI + `local-ci.sh`), with the module-access coverage test still asserting both mount prefixes; `check:module-exports` covers the audience-export contract.
 - [x] Close the deprecation window: remove the legacy `/api/<module>` mounts and the `Deprecation`/`Sunset`
       headers; delete `apps/frontend`/`apps/backend` leftovers and obsolete `restart_servers.sh` branches.
-      **Verified closed 2026-11-27:** no `packages/contracts/src/routing/apiPrefixes.ts`, no
-      `Deprecation`/`Sunset` emitters, and no `apps/frontend`/`apps/backend` path outside `docs/`; the
-      additive `/api/tenant` namespace remains the only supported prefix.
+      **Implemented 2026-11-27:** ADR-020 landed — `apps/api/src/compose.ts` mounts every module-owned
+      tenant surface at both `/api/tenant/<module>` (canonical) and `/api/<module>` (legacy, carrying
+      `Deprecation` + `Sunset: Wed, 31 Dec 2026 23:59:59 GMT`); the coverage test enumerates both mounts.
+      Kernel/app-level tenant routes (auth, workspace, uploads, audit, notifications, documents,
+      saved-reports, dashboard, module-access, background-jobs, ai, ws) keep their existing prefixes and
+      are classified as non-module routes. No `apps/frontend`/`apps/backend` path remains outside `docs/`.
 - [x] Archive the root audit reports (`CONTACTS_*.md`, `ACTION_COLUMN_REVIEW.md`, `SETTINGS_REVIEW.md`) into
       `docs/archive/` so the repo root holds only product and agent-standard docs.
       **Done 2026-11-27:** 13 files moved; `docs/archive/` is skipped by the docs index ratchet.

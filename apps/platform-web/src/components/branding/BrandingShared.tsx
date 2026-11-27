@@ -7,7 +7,7 @@ import {
   mergeBrandingSettings,
   type BrandingSettings,
 } from "@mms/contracts";
-import { saveBrandingSettings } from "@/lib/db";
+import { saveBrandingSettings } from "@mms/fe-core/lib/dbObjects";
 import { getScopedBrandingSettings } from "@mms/fe-core/lib/settingsPreviewStore";
 import { reportClientError } from "@mms/fe-core/reporting/clientErrorReporting";
 

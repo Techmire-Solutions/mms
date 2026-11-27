@@ -2,7 +2,7 @@ import React, { useRef } from "react";
 import { Upload, X } from "lucide-react";
 import { Button } from "@mms/ui";
 import { Badge } from "@mms/ui";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { LogoColorProportion } from "@mms/contracts";
 import { notify } from "@mms/fe-core/notify";
 import { ThemeSettingsPaletteSection } from "./ThemeSettingsPaletteSection";

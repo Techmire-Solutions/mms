@@ -1,5 +1,5 @@
 import { resolveLlmModel, type LlmProviderType } from "@mms/contracts";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 export interface LlmConfigValidationInput {
   name: string;

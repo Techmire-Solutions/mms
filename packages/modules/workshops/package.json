@@ -35,7 +35,16 @@
     "./backend/domain": {
       "import": "./dist/backend/domain/index.js",
       "types": "./dist/backend/domain/index.d.ts"
-    }
+    },
+    "./frontend/tenant/*": [
+      "./src/frontend/tenant/*.ts",
+      "./src/frontend/tenant/*.tsx"
+    ],
+    "./frontend/tenant/host": "./src/frontend/tenant/host.ts",
+    "./frontend/tenant/host/*": [
+      "./src/frontend/tenant/host/*.ts",
+      "./src/frontend/tenant/host/*.tsx"
+    ]
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc --noEmit -p tsconfig.frontend.json",
@@ -53,7 +62,9 @@
     "@ts-rest/core": "^3.52.1",
     "@ts-rest/fastify": "^3.52.1",
     "drizzle-orm": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "framer-motion": "^14.14.0",
+    "lucide-react": "^1.78.0"
   },
   "peerDependencies": {
     "fastify": "^5.12.8",

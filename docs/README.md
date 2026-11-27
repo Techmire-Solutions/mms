@@ -11,6 +11,7 @@ Project-wide entry points live at the repo root:
 
 - [architecture.md](./architecture.md) — repository layout & layer boundaries.
 - [monorepo-migration-plan.md](./monorepo-migration-plan.md) — measured current→target layout mapping, coupling/cycle inventory, and the phased (P0–P9) migration checklist to the 3-tier monorepo.
+- [mms-migration-status.md](./mms-migration-status.md) — live P0–P9 status, enforced ratchets, and the ordered remaining work.
 - [soft-delete.md](./soft-delete.md) — soft-delete architecture.
 - [faculty.md](./faculty.md) — Faculty module engineering spec (production gold standard).
 - [automatic-role-tagging.md](./automatic-role-tagging.md) — Student/Faculty role-to-contact tag projection: sources, archival, read-only enforcement, backfill, and the hourly date sweep.

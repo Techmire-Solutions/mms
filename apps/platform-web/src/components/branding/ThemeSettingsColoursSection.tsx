@@ -3,7 +3,7 @@ import { Palette, ImageIcon, Loader2 } from "lucide-react";
 import { SectionCard } from "@mms/ui";
 import { Button } from "@mms/ui";
 import BrandColorPanel from "@/components/branding/BrandColorPanel";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { BrandingThemeMode, LogoColorProportion } from "@mms/contracts";
 import { ThemeSettingsLogoColourSource } from "./ThemeSettingsLogoColourSource";
 

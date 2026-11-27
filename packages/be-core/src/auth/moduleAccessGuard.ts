@@ -11,6 +11,7 @@ import {
   type ModuleAvailabilityMap,
   type User,
 } from "@mms/contracts";
+import { toLegacyApiUrl } from "@mms/contracts/routing";
 import { getRequestTenant } from "@mms/db/request-context";
 import { logger } from "../logger/index.js";
 import { getUserRoleCatalog } from "../rbac/userPermissionContext.js";
@@ -181,7 +182,7 @@ export function createModuleAccessGuard(ports: ModuleAccessPorts): ModuleAccessG
           moduleId: canonical,
           action: ports.resolveAction(
             Array.isArray(route.method) ? (route.method[0] ?? "GET") : route.method,
-            route.url,
+            toLegacyApiUrl(route.url),
             canonical,
             config.moduleAction,
           ),

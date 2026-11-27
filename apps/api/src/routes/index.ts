@@ -51,6 +51,7 @@ import {
   requirePlatformSuperUser,
 } from "../middleware/authenticatePlatform.js";
 import { registerModuleAccess } from "../middleware/requireTenantModule.js";
+import { mountModuleDescriptor } from "../compose.js";
 
 // Composition root: bind the faculty domain's soft-deleted-account probe to the
 // auth middleware port. Runs on module load (app.ts imports this file), before any
@@ -81,7 +82,11 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "contacts");
-    await scope.register(contactRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "contacts",
+    restBasePath: "/api/contacts",
+    register: contactRoutes,
   });
   await app.register(emailRoutes, { prefix: "/api/email" });
   await app.register(smsRoutes, { prefix: "/api/sms" });
@@ -89,17 +94,29 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "students");
-    await scope.register(studentsTenantRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "students",
+    restBasePath: "/api/students",
+    register: studentsTenantRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "faculty");
-    await scope.register(facultyTenantRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "faculty",
+    restBasePath: "/api/faculty",
+    register: facultyTenantRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "tasks");
-    await scope.register(tasksTenantRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "tasks",
+    restBasePath: "/api/tasks",
+    register: tasksTenantRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
@@ -108,47 +125,83 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "finance");
-    await scope.register(financeTenantRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "finance",
+    restBasePath: "/api/finance",
+    register: financeTenantRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "enrollments");
-    await scope.register(enrollmentsTenantRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "enrollments",
+    restBasePath: "/api/enrollments",
+    register: enrollmentsTenantRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "obligations");
-    await scope.register(obligationsRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "obligations",
+    restBasePath: "/api/obligations",
+    register: obligationsRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "accounting");
-    await scope.register(tenantAccountingRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "accounting",
+    restBasePath: "/api/accounting",
+    register: tenantAccountingRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "hasanat");
-    await scope.register(hasanatTenantRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "hasanat",
+    restBasePath: "/api/hasanat",
+    register: hasanatTenantRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "workshops");
-    await scope.register(workshopsRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "workshops",
+    restBasePath: "/api/workshops",
+    register: workshopsRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "examinations");
-    await scope.register(examinationsRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "examinations",
+    restBasePath: "/api/examinations",
+    register: examinationsRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "questionBank");
-    await scope.register(questionBankRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "questionBank",
+    restBasePath: "/api/question-bank",
+    register: questionBankRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "users");
-    await scope.register(usersRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "users",
+    restBasePath: "/api/users",
+    register: usersRoutes,
   });
 
   await app.register(async (scope) => {
@@ -175,17 +228,29 @@ export async function registerRoutes(app: FastifyInstance): Promise<void> {
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "attendance");
-    await scope.register(attendanceTenantRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "attendance",
+    restBasePath: "/api/attendance",
+    register: attendanceTenantRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "sessions");
-    await scope.register(sessionsTenantRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "sessions",
+    restBasePath: "/api/sessions",
+    register: sessionsTenantRoutes,
   });
   await app.register(async (scope) => {
     scope.addHook("preHandler", authenticateTenant);
     registerModuleAccess(scope, "messaging");
-    await scope.register(messagingTenantRoutes);
+  });
+  await mountModuleDescriptor(app, {
+    moduleKey: "messaging",
+    restBasePath: "/api/messaging",
+    register: messagingTenantRoutes,
   });
   await app.register(savedReportsRoutes);
   await app.register(dashboardRoutes);

@@ -10,10 +10,10 @@ import {
 
 let container: HTMLDivElement;
 let root: Root;
-let guard!: TemplateDraftGuard;
+const guardRef: { current?: TemplateDraftGuard } = {};
 
 function Harness() {
-  guard = useTemplateDraftGuard();
+  guardRef.current = useTemplateDraftGuard();
   return null;
 }
 
@@ -31,22 +31,22 @@ describe("useTemplateDraftGuard", () => {
   });
 
   it("tracks editor dirtiness", async () => {
-    expect(guard.isDirty()).toBe(false);
+    expect(guardRef.current!.isDirty()).toBe(false);
 
-    await act(async () => guard.markDirty(true));
-    expect(guard.isDirty()).toBe(true);
+    await act(async () => guardRef.current!.markDirty(true));
+    expect(guardRef.current!.isDirty()).toBe(true);
 
-    await act(async () => guard.markDirty(false));
-    expect(guard.isDirty()).toBe(false);
+    await act(async () => guardRef.current!.markDirty(false));
+    expect(guardRef.current!.isDirty()).toBe(false);
   });
 
   it("clears the draft and remounts the editor on discard", async () => {
-    await act(async () => guard.markDirty(true));
-    const before = guard.resetNonce;
+    await act(async () => guardRef.current!.markDirty(true));
+    const before = guardRef.current!.resetNonce;
 
-    await act(async () => guard.discard());
+    await act(async () => guardRef.current!.discard());
 
-    expect(guard.isDirty()).toBe(false);
-    expect(guard.resetNonce).toBe(before + 1);
+    expect(guardRef.current!.isDirty()).toBe(false);
+    expect(guardRef.current!.resetNonce).toBe(before + 1);
   });
 });

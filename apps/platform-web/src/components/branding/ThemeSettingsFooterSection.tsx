@@ -6,7 +6,7 @@ import { Textarea } from "@mms/ui";
 import { Button } from "@mms/ui";
 import { FieldHint, FOOTER_MAX } from "@/components/branding/BrandingShared";
 import { WORK_SURFACE } from "@mms/ui";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 export interface ThemeSettingsFooterSectionProps {
   t: TranslationFunction;

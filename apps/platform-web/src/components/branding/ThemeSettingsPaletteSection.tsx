@@ -2,7 +2,7 @@ import React from "react";
 import { Sparkles, Copy } from "lucide-react";
 import { Button } from "@mms/ui";
 import { notify } from "@mms/fe-core/notify";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 export interface ThemeSettingsPaletteSectionProps {
   t: TranslationFunction;

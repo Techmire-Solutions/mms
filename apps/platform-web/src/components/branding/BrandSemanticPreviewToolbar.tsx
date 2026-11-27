@@ -4,7 +4,7 @@ import type { BrandingThemeMode } from "@mms/contracts";
 import { Button } from "@mms/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@mms/ui";
 import { cn } from "@mms/ui";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 export type PreviewTab = "actions" | "table" | "document" | "dashboard";
 export type ColorblindFilterType =

@@ -1,6 +1,6 @@
 # ADR-020: Tenant console API lives under an additive `/api/tenant/*` namespace
 
-- **Status:** Accepted — implementation pending (blueprint P7 route map)
+- **Status:** Accepted — **implemented 2026-11-27** (canonical `/api/tenant/<module>` mounts for every module-owned tenant surface; legacy `/api/<module>` mounts carry `Deprecation` + `Sunset: Wed, 31 Dec 2026 23:59:59 GMT`)
 - **Date:** 2026-11-27
 - **Deciders:** Backend/platform maintainers
 

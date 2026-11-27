@@ -6,7 +6,7 @@ import { Input } from "@mms/ui";
 import { Label } from "@mms/ui";
 import { PasswordInput } from "@mms/fe-core/components/PasswordInput";
 import { Switch } from "@mms/ui";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import {
   LLM_PROVIDERS_META,
   type LlmConfig,

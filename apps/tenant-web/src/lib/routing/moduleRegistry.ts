@@ -203,7 +203,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "workshops",
     path: TENANT_PATHS.workshops,
     access: moduleAccess("workshops"),
-    loader: () => import("@/tenant/features/workshops/WorkshopsPage"),
+    loader: () =>
+      import("@mms/mod-workshops/frontend/tenant").then((m) => ({ default: m.WorkshopsPage })),
     nav: { labelKey: "nav.workshops", icon: Presentation, order: 7, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },

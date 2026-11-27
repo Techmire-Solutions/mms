@@ -62,7 +62,12 @@ for (const coverageDir of dirs) {
   const jsonPath = path.join(coverageDir, "coverage-final.json");
   if (!fs.existsSync(jsonPath)) {
     console.error(`✗ Accounting coverage report not found: ${jsonPath}`);
-    console.error("Run: pnpm --filter mms-api run test:db:coverage:finance");
+    // Both halves are required: apps/api covers the billing mixins, the accounting module covers its
+    // own repository/routes/ledgerPosting/service. Naming only the first sent readers on a 4-minute
+    // detour when the second artifact was the missing one.
+    console.error("Run both halves:");
+    console.error("  pnpm --filter mms-api run test:db:coverage:finance");
+    console.error("  pnpm --filter @mms/mod-accounting run test:db:coverage:finance");
     process.exit(1);
   }
   const parsed = JSON.parse(fs.readFileSync(jsonPath, "utf8"));

@@ -171,6 +171,10 @@ echo "Phase B: buckets frontend=$NEED_FE backend_unit=$NEED_BE_UNIT backend_db=$
 
 pnpm run check:module-boundaries && note_ran "module-boundaries"
 pnpm run check:topology && note_ran "topology"
+pnpm run check:web-app-isolation && note_ran "web-app-isolation"
+pnpm run check:package-boundaries && note_ran "package-boundaries"
+pnpm run check:routes-inventory && note_ran "routes-inventory"
+pnpm run check:module-exports && note_ran "module-exports"
 if [[ "$NEED_FE" -eq 1 || "$NEED_BE_UNIT" -eq 1 ]]; then
   for mod_dir in packages/modules/*/; do
     [[ -f "${mod_dir}package.json" ]] || continue

@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import { BrandSaveCustomPresetModal } from "./BrandSaveCustomPresetModal";
 
 const t = ((key: string) => key) as unknown as TranslationFunction;

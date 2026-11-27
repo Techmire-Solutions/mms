@@ -5,7 +5,10 @@ import App from "./App";
 
 const mockApplyApexPlatformTheme = vi.fn();
 const mockUnsubscribePlatformBranding = vi.fn();
-const mockSubscribePlatformBranding = vi.fn((_cb: () => void) => mockUnsubscribePlatformBranding);
+const mockSubscribePlatformBranding = vi.fn((_cb: () => void) => {
+  void _cb;
+  return mockUnsubscribePlatformBranding;
+});
 
 vi.mock("@mms/fe-core/lib/apexPlatformTheme", () => ({
   applyApexPlatformTheme: (lang: string) => mockApplyApexPlatformTheme(lang),

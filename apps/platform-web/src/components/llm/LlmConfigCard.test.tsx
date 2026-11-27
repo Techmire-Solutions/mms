@@ -2,7 +2,7 @@ import React from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, it, expect, vi } from "vitest";
 import { LlmConfigCard } from "./LlmConfigCard";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { LlmConfig } from "@mms/contracts";
 
 describe("LlmConfigCard", () => {

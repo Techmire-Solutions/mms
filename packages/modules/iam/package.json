@@ -57,10 +57,10 @@
       "import": "./dist/shared/index.js",
       "types": "./dist/shared/index.d.ts"
     },
-    "./frontend/tenant/*": {
-      "import": "./src/frontend/tenant/*",
-      "types": "./src/frontend/tenant/*"
-    },
+    "./frontend/tenant/*": [
+      "./src/frontend/tenant/*.ts",
+      "./src/frontend/tenant/*.tsx"
+    ],
     "./frontend/tenant/hooks/*": "./src/frontend/tenant/hooks/*.ts",
     "./frontend/tenant/components/*": "./src/frontend/tenant/components/*.tsx",
     "./frontend/tenant/lib/*": [
@@ -68,6 +68,7 @@
       "./src/frontend/tenant/lib/*.tsx"
     ],
     "./frontend/tenant/lib/usersDescriptor": "./src/frontend/tenant/lib/usersDescriptor.tsx",
+    "./frontend/tenant/UsersPage": "./src/frontend/tenant/UsersPage.tsx",
     "./frontend/tenant/host": "./src/frontend/tenant/host.ts"
   },
   "scripts": {

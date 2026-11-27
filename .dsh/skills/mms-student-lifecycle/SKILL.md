@@ -21,7 +21,7 @@ metadata:
 
 ## 1. Domain Invariants & Data Flow
 
-- **Contact Linkage**: Student records link to a primary contact for person identity (`contactId`). Demographic, address, and phone data hydrate from `contacts` rather than duplicating onto `students` (`mms-migration-status.md` §2).
+- **Contact Linkage**: Student records link to a primary contact for person identity (`contactId`). Demographic, address, and phone data hydrate from `contacts` rather than duplicating onto `students` (see `packages/modules/contacts` and the `mms-contacts` skill).
 - **Enrollment Cascades**: When an academic session is archived or restored, enrollment cascades must preserve `deleted_with_cascade` flags so standalone student un-enrollments are never erroneously restored.
 - **Attendance Batching**: Daily attendance operates as workshop grid (`MarkAttendanceTableView.tsx`, `MarkAttendanceStudentCard.tsx`). Form submissions use bulk upsert contracts with transactional atomicity.
 - **Grading & GPA Calculations**: Grade calculations (percentages, grade letters, GPA points) must be calculated on the backend or in pure `@mms/contracts` helpers; never rely on un-validated client math.

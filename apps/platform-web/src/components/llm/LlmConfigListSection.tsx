@@ -5,7 +5,7 @@ import { Button } from "@mms/ui";
 import { EmptyState } from "@mms/ui";
 import { SectionCard } from "@mms/ui";
 import { SettingsCallout } from "@mms/fe-core/components/SettingsShell";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { LlmConfig, LlmTestResult } from "@mms/contracts";
 import { LlmConfigCard } from "./LlmConfigCard";
 import { LlmConfigTestResultPanel } from "./LlmConfigTestResultPanel";

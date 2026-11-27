@@ -3,7 +3,6 @@ import { SETTINGS_PREVIEW_EVENT } from "@mms/fe-core/lib/settingsPreview";
 import { subscribePlatformBranding } from "@mms/fe-core/lib/platformBrandingStore";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import RouterBridge from "@/components/routing/RouterBridge";
-import { AppProviders } from "@/providers/AppProviders";
 import { MotionPreferences } from "@/providers/MotionPreferences";
 import { PlatformAuthProvider } from "@/platform/features/auth/lib/PlatformAuthContext";
 
@@ -38,16 +37,14 @@ function App(): React.JSX.Element {
   }, []);
 
   return (
-    <AppProviders>
-      <MotionPreferences>
-        <PlatformAuthProvider>
-          <RouterBridge />
-          <Suspense fallback={<RouteStatusFallback fullScreen />}>
-            <ApexRoutesWithSuspense />
-          </Suspense>
-        </PlatformAuthProvider>
-      </MotionPreferences>
-    </AppProviders>
+    <MotionPreferences>
+      <PlatformAuthProvider>
+        <RouterBridge />
+        <Suspense fallback={<RouteStatusFallback fullScreen />}>
+          <ApexRoutesWithSuspense />
+        </Suspense>
+      </PlatformAuthProvider>
+    </MotionPreferences>
   );
 }
 

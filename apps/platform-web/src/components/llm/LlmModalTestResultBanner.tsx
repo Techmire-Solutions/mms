@@ -1,5 +1,5 @@
 import type React from "react";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import { cn } from "@mms/ui";
 import type { LlmTestResult } from "@mms/contracts";
 

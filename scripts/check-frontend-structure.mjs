@@ -49,7 +49,7 @@ const ROOTS = [
     label: "platform-web",
     fe: path.join(ROOT, "apps/platform-web/src"),
     featuresDir: path.join(ROOT, "apps/platform-web/src/platform/features"),
-    barrelSkip: path.join(ROOT, "apps/platform-web/src/tenant"),
+    barrelSkip: null, // the duplicate tenant copy was removed on 2026-11-27 (P14/P18)
   },
 ].map((root) => ({
   ...root,

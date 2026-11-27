@@ -35,6 +35,7 @@
     "@mms/mod-sessions": "workspace:*",
     "@mms/mod-students": "workspace:*",
     "@mms/mod-tasks": "workspace:*",
+    "@mms/mod-workshops": "workspace:*",
     "@mms/ui": "workspace:*",
     "@photostructure/tz-lookup": "^11.8.0",
     "@radix-ui/react-alert-dialog": "^1.2.1",

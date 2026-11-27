@@ -2,7 +2,7 @@ import { ArrowRight, ArrowLeft } from "lucide-react";
 import { Button, Alert } from "@mms/ui";
 import { ROUTES } from "@/lib/config/routes";
 import { tenantUrl } from "@/lib/config/tenantConfig";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 interface OnboardingWizardFooterProps {
   t: TranslationFunction;

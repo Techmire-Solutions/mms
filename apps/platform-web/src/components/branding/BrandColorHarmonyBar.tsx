@@ -7,7 +7,7 @@ import {
 } from "@mms/contracts";
 import { Button } from "@mms/ui";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@mms/ui";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 interface BrandColorHarmonyBarProps {
   harmonyScheme: BrandingHarmonyScheme;

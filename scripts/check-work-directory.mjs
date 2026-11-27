@@ -26,8 +26,8 @@ import path from "node:path";
 import { assertScanDirs } from "./lib/repo-paths.mjs";
 
 const ROOT = process.cwd();
-// Live console trees only: `apps/platform-web/src/tenant/**` is an unrouted copy awaiting the P11a
-// prune (see `pnpm run report:dead-sources`), so policing it would just encode dead paths.
+// Live console trees only. `apps/platform-web/src/tenant/**` was removed on 2026-11-27, so policing it
+// would just encode dead paths.
 const FE_SRC_ROOTS = [
   { label: "tenant-web src", dir: path.join(ROOT, "apps/tenant-web/src") },
   { label: "platform-web src/platform", dir: path.join(ROOT, "apps/platform-web/src/platform") },

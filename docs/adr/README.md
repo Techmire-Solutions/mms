@@ -24,7 +24,7 @@ Enforced unless noted. Open follow-ups live in [`../open-items.md`](../open-item
 | 017 | [Static Accessibility Gating (jsx-a11y error rules + E2E axe)](./017-static-accessibility-gating.md) | Accepted |
 | 018 | [Audit Verification Anchoring and Dedicated Audit Permissions](./018-audit-verification-anchoring.md) | Accepted |
 | 019 | [Vertical modules own their domain; cross-domain calls go through ports](./019-module-descriptors-and-ports.md) | Accepted |
-| 020 | [Tenant console API under an additive `/api/tenant/*` namespace](./020-additive-tenant-api-namespace.md) | Accepted — implementation pending |
+| 020 | [Tenant console API under an additive `/api/tenant/*` namespace](./020-additive-tenant-api-namespace.md) | Accepted — implemented (legacy window to 2026-12-31) |
 | 021 | [Two web apps, one Fastify API host](./021-two-web-apps-one-api-host.md) | Accepted |
 | 022 | [Module package contents and audience-separated exports](./022-module-package-contents-and-exports.md) | Accepted |
 
