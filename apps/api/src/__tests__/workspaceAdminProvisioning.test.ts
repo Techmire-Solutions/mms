@@ -24,7 +24,8 @@ vi.mock("../services/auth/userService.js", () => ({
   createUser: mocks.createUser,
 }));
 
-vi.mock("../services/workspaceService.js", () => ({
+vi.mock("../services/workspaceService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/workspaceService.js")>()),
   listWorkspaceSuperAdminIds: mocks.listWorkspaceSuperAdminIds,
 }));
 

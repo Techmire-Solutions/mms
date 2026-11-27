@@ -13,7 +13,8 @@ vi.mock("../db/database.js", () => ({
   initDb: vi.fn(),
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   deleteRefreshTokensForUser: vi.fn(),
   purgeExpiredAuthArtifacts: vi.fn(),
   putAuthArtifact: vi.fn(),

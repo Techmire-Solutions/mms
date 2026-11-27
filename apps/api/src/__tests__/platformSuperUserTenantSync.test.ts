@@ -1,3 +1,27 @@
+vi.mock("@mms/mod-iam/backend/tenant/repository/usersRepositoryAdapter", () => ({
+  usersRepository: {
+    findTenantUserRowById: async (tenant: string, id: string) => {
+      const target = tenant.trim().toLowerCase();
+      return (
+        mockTenantUsers.find(
+          (u: any) => u.id === id && (u.workspaceSubdomain || "").toLowerCase() === target,
+        ) ?? null
+      );
+    },
+    softDeleteTenantUserRow: vi.fn(async () => true),
+    updateTenantUserRow: vi.fn(async () => null),
+    upsertTenantUserRow: vi.fn(async () => undefined),
+    listTenantUsersByWorkspace: async (tenant: string) =>
+      mockTenantUsers.filter(
+        (u: any) =>
+          (u.workspaceSubdomain || "").toLowerCase() === tenant.trim().toLowerCase() &&
+          !u.deletedAt,
+      ),
+  },
+}));
+
+import { configurePlatformAdapters } from "../modules/platform/adapters.js";
+configurePlatformAdapters();
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import type { StoredPlatformUser } from "@mms/contracts";
 import type { Workspace } from "@mms/contracts";
@@ -7,10 +31,10 @@ import { hashPassword } from "../services/auth/passwordService.js";
 import {
   findActivePlatformSuperUser,
   syncPlatformSuperUserToTenants,
-} from "../services/platform/platformSuperUserTenantSyncService.js";
+} from "@mms/mod-platform/backend/platform/services/platformSuperUserTenantSyncService";
 import { createWorkspace } from "../services/workspaceService.js";
 import { listTenantUsersByWorkspace } from "@mms/mod-iam/backend/tenant/repository";
-import { updatePlatformUserPassword } from "../services/platform/platformUserServicePassword.js";
+import { updatePlatformUserPassword } from "@mms/mod-platform/backend/platform/services/platformUserServicePassword";
 import { validateCredentials } from "../services/auth/userServiceAuth.js";
 import {
   deleteUserById,
@@ -121,7 +145,7 @@ vi.mock("@mms/db/context", async (importOriginal) => ({
   }),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowByRole: vi.fn().mockImplementation(async (role: string) => {
     return mockPlatformUsers.find((u: any) => u.role === role) ?? null;
   }),
@@ -150,7 +174,7 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
     }),
 }));
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -168,7 +192,8 @@ vi.mock("../db/repositories/workspaceRepository.js", () => ({
   getWorkspaceBranding: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("@mms/mod-iam/backend/tenant/repository", () => ({
+vi.mock("@mms/mod-iam/backend/tenant/repository", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/mod-iam/backend/tenant/repository")>()),
   listTenantUsersByWorkspace: vi.fn().mockImplementation(async (subdomain: string) => {
     return mockTenantUsers.filter(
       (u: any) =>
@@ -292,7 +317,8 @@ vi.mock("../lib/livePush.js", () => ({
   broadcastTenantUpdate: vi.fn(),
 }));
 
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   deleteRefreshTokensForUser: vi.fn(),
 
   authArtifactUserScopeKey: vi.fn(() => ""),
@@ -307,7 +333,8 @@ vi.mock("@mms/be-core/auth/sessionRevocation", () => ({
   revokeAllUserSessions: vi.fn(),
 }));
 
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   assertPasswordMeetsPolicy: vi.fn().mockReturnValue(true),
 }));
 

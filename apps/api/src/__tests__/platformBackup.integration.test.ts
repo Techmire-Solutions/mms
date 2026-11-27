@@ -21,7 +21,7 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi.fn().mockResolvedValue(mockSuperUser),
   findPlatformUserRowByEmail: vi.fn().mockResolvedValue(mockSuperUser),
   listPlatformUsers: vi.fn().mockResolvedValue([mockSuperUser]),
@@ -29,28 +29,35 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
   deletePlatformUserRow: vi.fn(),
 }));
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/platform/platformSettingsService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformSettingsService", () => ({
   getPlatformSettings: vi.fn().mockReturnValue(DEFAULT_PLATFORM_SETTINGS),
   maskPlatformSettingsForClient: vi.fn().mockImplementation((settings: unknown) => settings),
   updatePlatformSettings: vi.fn().mockResolvedValue(DEFAULT_PLATFORM_SETTINGS),
 }));
 
-vi.mock("../services/platform/platformUserService.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../services/platform/platformUserService.js")>();
-  return {
-    ...actual,
-    verifyPlatformUserPassword: vi
-      .fn()
-      .mockImplementation(async (_id: string, password: string) => password === "correct-password"),
-  };
-});
+vi.mock(
+  "@mms/mod-platform/backend/platform/services/platformUserService",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@mms/mod-platform/backend/platform/services/platformUserService")
+      >();
+    return {
+      ...actual,
+      verifyPlatformUserPassword: vi
+        .fn()
+        .mockImplementation(
+          async (_id: string, password: string) => password === "correct-password",
+        ),
+    };
+  },
+);
 
-vi.mock("../services/platform/platformBackupService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformBackupService", () => ({
   exportPlatformConfigBackup: vi.fn().mockResolvedValue({
     fileName: "platform-config-2026-01-01.mmsbackup.json",
     file: '{"format":"mms-encrypted-platform-config-backup"}',
@@ -70,8 +77,8 @@ vi.mock("../services/platform/platformBackupService.js", () => ({
   }),
 }));
 
-import { insertPlatformActivityLog } from "../db/repositories/platformActivityLogsRepository.js";
-import { importPlatformConfigBackup } from "../services/platform/platformBackupService.js";
+import { insertPlatformActivityLog } from "@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository";
+import { importPlatformConfigBackup } from "@mms/mod-platform/backend/platform/services/platformBackupService";
 
 const mockAudit = vi.mocked(insertPlatformActivityLog);
 const mockImport = vi.mocked(importPlatformConfigBackup);

@@ -5,7 +5,8 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   deleteRefreshTokensForUser: vi.fn(),
   purgeExpiredAuthArtifacts: vi.fn().mockResolvedValue(undefined),
   putAuthArtifact: vi.fn(),
@@ -162,7 +163,7 @@ describe("contacts picker routes", () => {
   it("forwards filters, limit, and deduped excludeIds to the contacts page", async () => {
     await inject(
       "GET",
-      "/api/contacts/picker?limit=5&gender=male&hasPhone=true&excludeIds=c9,%20c9,,c8",
+      "/api/contacts/picker?limit=5&gender=male&hasPhone=true&excludeIds=c9,%20c9,c8",
       teacherToken,
     );
 

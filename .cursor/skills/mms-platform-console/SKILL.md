@@ -14,7 +14,7 @@ metadata:
 ## When to use
 
 - Building or modifying pages, routes, or components in the Platform Console (`apps/platform-web/src/platform`)
-- Implementing platform-level backend routes, services, or repositories (`apps/api/src/routes/platform`)
+- Implementing platform-level backend routes, services, or repositories (`packages/modules/platform/src/backend/platform/routes`)
 - Enforcing platform authorization, super-user capabilities, or workspace provisioning
 - Writing or maintaining Platform Console E2E specs (`e2e/tests/platform`)
 
@@ -57,7 +57,7 @@ For platform permission keys, RBAC mappings, and capability matrices, see [refer
 | Shared Shell / Auth | `apps/platform-web/src/platform/features/shell/`, `platform/features/auth/` |
 | Frontend Auth Context | `apps/platform-web/src/platform/features/auth/lib/PlatformAuthContext.tsx` |
 | Query Keys Factory | `apps/platform-web/src/platform/features/shell/lib/platformQueryKeys.ts` |
-| Backend Routes | `apps/api/src/routes/platform/` |
+| Backend Routes | `packages/modules/platform/src/backend/platform/routes/` |
 | Backend Auth Middleware | `apps/api/src/middleware/authenticatePlatform.ts` |
 | Architecture Guard Test | `apps/platform-web/src/platform/platformUiArchitecture.test.ts` |
 | E2E Tests | `e2e/tests/platform/` |

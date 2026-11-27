@@ -19,7 +19,8 @@ const mocks = vi.hoisted(() => ({
   revokeAllUserSessions: vi.fn(),
 }));
 
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   findAuthArtifactByLookupKey: mocks.findAuthArtifactByLookupKey,
   updateAuthArtifactPayload: mocks.updateAuthArtifactPayload,
   deleteAuthArtifact: mocks.deleteAuthArtifact,
@@ -44,7 +45,8 @@ vi.mock("../services/auth/tenantPasswordOtpDispatch.js", () => ({
   sendTenantWelcomeEmail: vi.fn(),
 }));
 
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   assertPasswordMeetsPolicy: mocks.assertPasswordMeetsPolicy,
   loadGlobalSettings: mocks.loadGlobalSettings,
 }));

@@ -80,7 +80,7 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => {
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => {
   const byId = new Map<string, unknown>(Object.values(mockUsers).map((user) => [user.id, user]));
   return {
     findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => byId.get(id) ?? null),
@@ -90,7 +90,7 @@ vi.mock("../db/repositories/platformUserRepository.js", () => {
   };
 });
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 

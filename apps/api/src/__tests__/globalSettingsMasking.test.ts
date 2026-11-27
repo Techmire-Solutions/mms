@@ -1,3 +1,5 @@
+import { configurePlatformAdapters } from "../modules/platform/adapters.js";
+configurePlatformAdapters();
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
 // Mock the repository + db modules so saveGlobalSettings can be tested in isolation.
@@ -25,7 +27,7 @@ import {
   upsertWorkspaceGlobalSettings,
 } from "../db/repositories/workspaceRepository.js";
 import { saveObject } from "../db/database.js";
-import { setPlatformSettingsCache } from "../services/platform/platformSettingsService.js";
+import { setPlatformSettingsCache } from "@mms/mod-platform/backend/platform/services";
 import { DEFAULT_PLATFORM_SETTINGS } from "@mms/contracts";
 
 const mockedGet = vi.mocked(getWorkspaceGlobalSettings);

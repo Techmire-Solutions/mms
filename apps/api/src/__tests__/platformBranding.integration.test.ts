@@ -21,7 +21,7 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi.fn().mockResolvedValue(mockSuperUser),
   findPlatformUserRowByEmail: vi.fn().mockResolvedValue(mockSuperUser),
   listPlatformUsers: vi.fn().mockResolvedValue([mockSuperUser]),
@@ -29,7 +29,7 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
   deletePlatformUserRow: vi.fn(),
 }));
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -39,7 +39,7 @@ let currentBranding = {
   updatedAt: "2026-01-01T00:00:00.000Z",
 };
 
-vi.mock("../services/platform/platformBrandingService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformBrandingService", () => ({
   getPlatformBranding: vi.fn().mockImplementation(() => currentBranding),
   savePlatformAppearance: vi.fn().mockImplementation(async (input: Record<string, unknown>) => {
     if (input.expectedUpdatedAt === "stale") {
@@ -78,7 +78,7 @@ vi.mock("../services/platform/platformBrandingService.js", () => ({
   })),
 }));
 
-import { insertPlatformActivityLog } from "../db/repositories/platformActivityLogsRepository.js";
+import { insertPlatformActivityLog } from "@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository";
 
 const mockAudit = vi.mocked(insertPlatformActivityLog);
 

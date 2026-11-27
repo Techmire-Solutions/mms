@@ -4,6 +4,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const execFileMock = vi.fn();
 const initDb = vi.fn().mockResolvedValue(undefined);
 
+vi.mock("@mms/mod-platform/backend/platform/deps", () => ({
+  initializeDatabase: (...args: unknown[]) => initDb(...args),
+  resolveBackendRoot: () => "/repo/apps/api",
+}));
+
 vi.mock("node:child_process", () => ({
   execFile: (...args: unknown[]) => execFileMock(...args),
 }));
@@ -32,7 +37,7 @@ describe("platformAdminService", () => {
 
   afterEach(async () => {
     const { resetMigrateRestartLatchForTests } =
-      await import("../services/platform/platformAdminService.js");
+      await import("@mms/mod-platform/backend/platform/services/platformAdminService");
     resetMigrateRestartLatchForTests();
     vi.useRealTimers();
   });
@@ -40,7 +45,7 @@ describe("platformAdminService", () => {
   it("isRemoteMigrateRestartEnabled requires explicit env opt-in", async () => {
     delete process.env.PLATFORM_ALLOW_REMOTE_MIGRATE_RESTART;
     const { isRemoteMigrateRestartEnabled } =
-      await import("../services/platform/platformAdminService.js");
+      await import("@mms/mod-platform/backend/platform/services/platformAdminService");
     expect(isRemoteMigrateRestartEnabled()).toBe(false);
 
     process.env.PLATFORM_ALLOW_REMOTE_MIGRATE_RESTART = "true";
@@ -48,7 +53,8 @@ describe("platformAdminService", () => {
   });
 
   it("runMigrateAndReload applies initDb then invokes hardcoded pm2 reload", async () => {
-    const { runMigrateAndReload } = await import("../services/platform/platformAdminService.js");
+    const { runMigrateAndReload } =
+      await import("@mms/mod-platform/backend/platform/services/platformAdminService");
     await runMigrateAndReload();
 
     expect(initDb).toHaveBeenCalledTimes(1);
@@ -73,7 +79,7 @@ describe("platformAdminService", () => {
   it("scheduleMigrateAndRestart rejects a second concurrent schedule", async () => {
     vi.useFakeTimers();
     const { scheduleMigrateAndRestart, isMigrateRestartInFlight } =
-      await import("../services/platform/platformAdminService.js");
+      await import("@mms/mod-platform/backend/platform/services/platformAdminService");
 
     const meta = {
       userId: "u1",
@@ -104,7 +110,7 @@ describe("platformAdminService", () => {
     const exitSpy = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);
 
     const { scheduleMigrateAndRestart, isMigrateRestartInFlight, MIGRATE_RESTART_DELAY_MS } =
-      await import("../services/platform/platformAdminService.js");
+      await import("@mms/mod-platform/backend/platform/services/platformAdminService");
 
     vi.useFakeTimers();
     expect(
@@ -143,7 +149,8 @@ describe("platformAdminService", () => {
     });
 
     const exitSpy = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);
-    const { reloadBackendProcess } = await import("../services/platform/platformAdminService.js");
+    const { reloadBackendProcess } =
+      await import("@mms/mod-platform/backend/platform/services/platformAdminService");
     const result = await reloadBackendProcess();
 
     expect(result).toEqual({ reloaded: false });

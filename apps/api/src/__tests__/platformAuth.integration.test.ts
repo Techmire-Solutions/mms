@@ -7,14 +7,14 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   listPlatformUsers: vi.fn().mockResolvedValue([{ id: "p-super" }]),
   countPlatformUserRows: vi.fn().mockResolvedValue(1),
   findPlatformUserRowByEmail: vi.fn().mockResolvedValue(null),
   findPlatformUserRowById: vi.fn().mockResolvedValue(null),
 }));
 
-vi.mock("../db/repositories/platformSettingsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformSettingsRepository", () => ({
   getPlatformSettingsRow: vi.fn().mockResolvedValue({ id: "global", smtpHost: "smtp.example.com" }),
 }));
 

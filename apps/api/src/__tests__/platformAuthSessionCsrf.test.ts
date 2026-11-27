@@ -1,17 +1,20 @@
+import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
+configureModuleAdapters();
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { issuePlatformSession } from "../services/platform/platformAuthService.js";
+import { issuePlatformSession } from "@mms/mod-platform/backend/platform/services/platformAuthService";
 
 const mockSetCsrfCookie = vi.fn();
 const mockClearAuthCookies = vi.fn();
 const mockSetPlatformAccessCookie = vi.fn();
 const mockResetSessionClock = vi.fn();
 
-vi.mock("../services/auth/authCookieService.js", () => ({
+vi.mock("../services/auth/authCookieService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authCookieService.js")>()),
   clearAuthCookies: (...args: unknown[]) => mockClearAuthCookies(...args),
   setCsrfCookie: (...args: unknown[]) => mockSetCsrfCookie(...args),
 }));
 
-vi.mock("../services/platform/platformCookieService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformCookieService", () => ({
   clearPlatformAccessCookie: vi.fn(),
   setPlatformAccessCookie: (...args: unknown[]) => mockSetPlatformAccessCookie(...args),
 }));
@@ -32,12 +35,12 @@ vi.mock("../services/sessionPolicyService.js", () => ({
   platformSessionPolicy: () => ({ idleMs: 60_000 }),
 }));
 
-vi.mock("../services/platform/platformTwoFactorService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformTwoFactorService", () => ({
   createPlatformTwoFactorChallenge: vi.fn(),
   isPlatformTwoFactorRequired: () => false,
 }));
 
-vi.mock("../services/platform/platformUserService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformUserService", () => ({
   findPlatformUserByEmail: vi.fn(),
   toPlatformUserProfile: vi.fn(),
   toPublicPlatformUser: vi.fn(),

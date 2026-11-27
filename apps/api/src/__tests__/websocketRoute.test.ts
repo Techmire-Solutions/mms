@@ -17,7 +17,8 @@ vi.mock("@mms/be-core/auth/sessionRevocation", () => ({
   isUserSessionRevoked: vi.fn().mockResolvedValue(false),
 }));
 
-vi.mock("../services/workspaceService.js", () => ({
+vi.mock("../services/workspaceService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/workspaceService.js")>()),
   getWorkspaceBySubdomain: vi.fn().mockImplementation(async (sub: string) => {
     if (sub === "demo") {
       return { id: "ws-demo", subdomain: "demo", enabled: true };

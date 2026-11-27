@@ -7,6 +7,7 @@ import {
   isValidSubdomain,
   isWorkspaceEnabled,
 } from "@mms/contracts";
+import { hasCommitScope, runAfterCommit } from "@mms/db/client";
 import { purgeTenantDataBySubdomain, runInGlobalTransaction } from "../db/database.js";
 import { deleteAuthArtifactsForWorkspace } from "./auth/authArtifactService.js";
 import { deleteStoragePrefix } from "../config/storage.js";
@@ -61,6 +62,15 @@ export async function invalidateWorkspaceCache(subdomain: string): Promise<void>
   if (!normalized) return;
   await redisDel(workspaceCacheKey(normalized));
   clearModuleAvailabilityCache(normalized);
+  if (hasCommitScope()) {
+    runAfterCommit(async () => {
+      await redisDel(workspaceCacheKey(normalized));
+      clearModuleAvailabilityCache(normalized);
+      broadcastTenantUpdate(normalized, "object", "workspace");
+      broadcastTenantUpdate(normalized, "object", "branding");
+    });
+    return;
+  }
   broadcastTenantUpdate(normalized, "object", "workspace");
   broadcastTenantUpdate(normalized, "object", "branding");
 }

@@ -47,7 +47,7 @@ vi.mock("../db/database.js", () => ({
   getPool: () => ({ totalCount: 1, idleCount: 1, waitingCount: 0 }),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi
     .fn()
     .mockImplementation(

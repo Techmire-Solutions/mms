@@ -47,7 +47,7 @@ vi.mock("../db/database.js", () => ({
   closeDatabase: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => {
     return mockUsers.find((u: any) => u.id === id) ?? null;
   }),
@@ -73,16 +73,21 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
     }),
 }));
 
-vi.mock("../services/platform/platformUserService.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../services/platform/platformUserService.js")>();
-  return {
-    ...actual,
-    verifyPlatformUserPassword: vi.fn().mockResolvedValue(true),
-  };
-});
+vi.mock(
+  "@mms/mod-platform/backend/platform/services/platformUserService",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@mms/mod-platform/backend/platform/services/platformUserService")
+      >();
+    return {
+      ...actual,
+      verifyPlatformUserPassword: vi.fn().mockResolvedValue(true),
+    };
+  },
+);
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 

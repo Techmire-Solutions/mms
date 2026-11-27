@@ -6,12 +6,12 @@ import {
   type PlatformAuthFailureReason,
   type PlatformAuthResolveResult,
 } from "@mms/be-core/auth";
-import { attachPlatformTokenFromCookie } from "../services/platform/platformCookieService.js";
-import type { PlatformAccessTokenPayload } from "../services/platform/platformAuthService.js";
+import { attachPlatformTokenFromCookie } from "@mms/mod-platform/backend/platform/services";
+import type { PlatformAccessTokenPayload } from "@mms/mod-platform/backend/platform/services";
 import {
   getStoredPlatformUserById,
   toPublicPlatformUser,
-} from "../services/platform/platformUserService.js";
+} from "@mms/mod-platform/backend/platform/services";
 import { isAuthDependencyUnavailable } from "../lib/authGuard.js";
 import { isTokenRevoked } from "@mms/be-core/auth/sessionRevocation";
 import { platformSessionPolicy } from "@mms/mod-sessions/backend/services";

@@ -14,10 +14,14 @@
  */
 import { initDb } from "../db/dbInit.js";
 import { createPlatformBootServices, type PlatformBootServices } from "./bootServices.js";
+import { configureModuleAdapters } from "./configureModuleAdapters.js";
 
 export function initializeDatabase(
   options: { force?: boolean; services?: PlatformBootServices } = {},
 ): Promise<void> {
+  if (!options.services) {
+    configureModuleAdapters();
+  }
   return initDb({
     services: options.services ?? createPlatformBootServices(),
     force: options.force,

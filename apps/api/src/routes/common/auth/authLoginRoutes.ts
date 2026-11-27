@@ -23,8 +23,8 @@ import {
 } from "@mms/contracts";
 import { parseRequest, replyValidationError } from "../../../lib/zodRequest.js";
 import { sendNotFound } from "../../../lib/httpErrors.js";
-import { insertPlatformActivityLog } from "../../../platform/use-cases/platformUseCases.js";
-import { verifyPlatformUserPassword } from "../../../services/platform/platformUserService.js";
+import { insertPlatformActivityLog } from "@mms/mod-platform/backend/platform/use-cases";
+import { verifyPlatformUserPassword } from "@mms/mod-platform/backend/platform/services";
 
 /** Rate-limited login, onboarding, and two-factor challenge routes. */
 export const authLoginRoutes: FastifyPluginAsync = async (fastify) => {

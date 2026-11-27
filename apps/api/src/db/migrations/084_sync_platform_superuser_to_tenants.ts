@@ -1,4 +1,4 @@
-import { syncPlatformSuperUserToTenants } from "../../services/platform/platformSuperUserTenantSyncService.js";
+import { syncPlatformSuperUserToTenants } from "@mms/mod-platform/backend/platform/services";
 
 /**
  * Migration 084: Synchronizes the platform super-user record into the `tenant_users` table

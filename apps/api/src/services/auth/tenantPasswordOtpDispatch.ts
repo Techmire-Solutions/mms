@@ -6,7 +6,7 @@ import {
 } from "@mms/contracts";
 import { loadGlobalSettings } from "../globalSettingsService.js";
 import { sendTenantEmail } from "../email/emailService.js";
-import { sendPlatformEmail } from "../platform/platformEmailService.js";
+import { sendPlatformEmail } from "@mms/mod-platform/backend/platform/services";
 import { sendTenantSms } from "../sms/smsService.js";
 import { getContactById } from "@mms/mod-contacts/backend/services";
 import type { StoredUser } from "./userService.js";

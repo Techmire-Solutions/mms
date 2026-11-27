@@ -59,6 +59,7 @@ COPY --from=builder /app/packages/modules/iam/dist ./packages/modules/iam/dist
 COPY --from=builder /app/packages/modules/messaging/dist ./packages/modules/messaging/dist
 COPY --from=builder /app/packages/modules/notifications/dist ./packages/modules/notifications/dist
 COPY --from=builder /app/packages/modules/obligations/dist ./packages/modules/obligations/dist
+COPY --from=builder /app/packages/modules/platform/dist ./packages/modules/platform/dist
 COPY --from=builder /app/packages/modules/question-bank/dist ./packages/modules/question-bank/dist
 COPY --from=builder /app/packages/modules/sessions/dist ./packages/modules/sessions/dist
 COPY --from=builder /app/packages/modules/students/dist ./packages/modules/students/dist

@@ -9,7 +9,7 @@ description: Active technical debt register and architectural gaps — do not fi
 
 ## 0. Module Extraction Status
 
-**14 modules extracted** → `packages/modules/`: accounting, audit, billing, contacts, documents, examinations, faculty, hasanat, iam, messaging, notifications, obligations, question-bank, workshops. **7 domains remain inline in `apps/api/src/`**: users, students, enrollments, sessions, attendance, savedReports, tasks — each moves to a `packages/modules/` slice named `<domain>` (backend + frontend) per `mms-module-architecture.md` §9.
+**Module extraction complete — 21 vertical modules** own every backend business domain: accounting, analytics, attendance, audit, billing, contacts, documents, enrollments, examinations, faculty, hasanat, iam, messaging, notifications, obligations, platform, question-bank, sessions, students, tasks, workshops. `apps/api/src` now holds only kernel/composition code (`app.ts`, `bootstrap`, `config`, `db`, `lib`, `middleware`, `modules` composition adapters, `plugins`, `routes` for app-level public/auth composition, `scripts`, `services`, `worker`); cross-module needs go through declared ports bound in `apps/api/src/modules/*/adapters.ts`. Remaining frontend work is app-owned UI only (`apps/tenant-web` app features, `apps/platform-web` console) — those are frontend migrations, not domain extraction (`mms-module-architecture.md` §9).
 
 ## 1. Open Gaps Register (Active Debt)
 Only address these residual gaps when explicitly within task scope:

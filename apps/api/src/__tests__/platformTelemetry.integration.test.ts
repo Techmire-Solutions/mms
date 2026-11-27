@@ -4,7 +4,7 @@ import { buildApp } from "../app.js";
 import {
   getPlatformTelemetry,
   getPlatformActivityTrend,
-} from "../services/platform/platformTelemetryService.js";
+} from "@mms/mod-platform/backend/platform/services/platformTelemetryService";
 
 const { mockSuperUser, mockAdminUser } = vi.hoisted(() => {
   const mockSuperUser = {
@@ -48,7 +48,7 @@ vi.mock("../db/database.js", () => ({
   }),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => {
     if (id === "p-super-telem") return mockSuperUser;
     if (id === "p-admin-no-sys") return mockAdminUser;
@@ -62,7 +62,7 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
   listPlatformUsers: vi.fn().mockResolvedValue([mockSuperUser, mockAdminUser]),
 }));
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   getPlatformMonthlyActivityTrend: vi.fn().mockResolvedValue([
     { month: "Jan", yearMonth: "2026-01", tenants: 5, ops: 20 },
     { month: "Feb", yearMonth: "2026-02", tenants: 6, ops: 25 },

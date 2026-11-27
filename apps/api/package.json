@@ -82,6 +82,7 @@
     "@mms/mod-messaging": "workspace:*",
     "@mms/mod-notifications": "workspace:*",
     "@mms/mod-obligations": "workspace:*",
+    "@mms/mod-platform": "workspace:*",
     "@mms/mod-question-bank": "workspace:*",
     "@mms/mod-sessions": "workspace:*",
     "@mms/mod-students": "workspace:*",

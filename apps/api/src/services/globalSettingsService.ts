@@ -8,7 +8,7 @@ import {
   type GlobalSettings,
 } from "@mms/contracts";
 import { getRequestTenant } from "../lib/tenantContext.js";
-import { getPlatformSettings } from "./platform/platformSettingsService.js";
+import { getPlatformSettings } from "@mms/mod-platform/backend/platform/services";
 import {
   getWorkspaceGlobalSettings,
   upsertWorkspaceGlobalSettings as upsertWorkspaceGlobalSettingsRepo,

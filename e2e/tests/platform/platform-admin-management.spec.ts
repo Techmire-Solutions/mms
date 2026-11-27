@@ -257,7 +257,10 @@ test.describe("Platform Admin Creation and Access Management Flow", () => {
       // Wait for modal to close and new admin to appear in directory
       await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 20_000 });
 
-      const searchBox = page.locator('input[placeholder*="Search"]');
+      const searchBox = page
+        .getByRole("searchbox", { name: /Search administrators/i })
+        .or(page.locator('input[placeholder*="Search administrators"]'))
+        .first();
       if (await searchBox.isVisible().catch(() => false)) {
         await searchBox.fill(e2eCreatedAdminName);
       }

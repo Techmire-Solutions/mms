@@ -1,5 +1,5 @@
 import type { FastifyError, FastifyInstance } from "fastify";
-import { PlatformError } from "../services/platform/platformErrorService.js";
+import { PlatformError } from "@mms/mod-platform/backend/platform/services";
 import { HttpDomainError, errorEnvelopeExtras } from "./httpErrors.js";
 import {
   dependencyForDiagnosticStage,

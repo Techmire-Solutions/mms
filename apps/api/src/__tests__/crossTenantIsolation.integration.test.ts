@@ -6,7 +6,8 @@ vi.mock("../db/database.js", () => ({
   getPoolMetrics: vi.fn().mockReturnValue({ totalCount: 5, idleCount: 4, waitingCount: 0 }),
 }));
 
-vi.mock("../services/workspaceService.js", () => ({
+vi.mock("../services/workspaceService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/workspaceService.js")>()),
   getWorkspaceBySubdomain: vi.fn().mockImplementation(async (subdomain: string) => {
     if (subdomain === "campus-a" || subdomain === "campus-b") {
       return { id: 1, subdomain, enabled: true, madrasaName: "Campus Madrasa" };

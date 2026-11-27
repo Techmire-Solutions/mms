@@ -12,7 +12,8 @@ const mocks = vi.hoisted(() => ({
   sendTenantSms: vi.fn(),
 }));
 
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   deleteRefreshTokensForUser: vi.fn(),
   authArtifactUserScopeKey: (userId: string) => `user:${userId}`,
   authArtifactWorkspaceScopeKey: (subdomain: string) => `ws:${subdomain}`,
@@ -31,7 +32,8 @@ vi.mock("../services/auth/userService.js", () => ({
   getPublicUserById: mocks.getPublicUserById,
 }));
 
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   loadGlobalSettings: mocks.loadGlobalSettings,
 }));
 

@@ -178,5 +178,5 @@ test("exposes the declared app and module rosters", () => {
   assert.deepEqual([...TRANSITIONAL_APPS], ["frontend"]);
   assert.deepEqual([...TARGET_APPS], ["api", "tenant-web", "platform-web"]);
   assert.equal(MODULE_SLICES["question-bank"], "question-bank");
-  assert.equal(Object.keys(MODULE_SLICES).length, 22);
+  assert.equal(Object.keys(MODULE_SLICES).length, 21);
 });

@@ -8,7 +8,8 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   deleteRefreshTokensForUser: vi.fn(),
   purgeExpiredAuthArtifacts: vi.fn().mockResolvedValue(undefined),
   putAuthArtifact: vi.fn(),
@@ -61,7 +62,8 @@ vi.mock("../services/email/emailService.js", () => ({
   sendTenantEmail: (payload: unknown, settings: unknown) => mockSendTenantEmail(payload, settings),
 }));
 
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   loadGlobalSettings: vi.fn().mockResolvedValue({ emailNotifications: true }),
   maskGlobalSettingsForClient: vi.fn((settings) => settings),
 }));

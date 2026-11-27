@@ -28,7 +28,7 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi.fn().mockResolvedValue(mockUser),
   findPlatformUserRowByEmail: vi.fn().mockResolvedValue(mockUser),
   listPlatformUsers: vi.fn().mockResolvedValue([mockUser]),
@@ -36,7 +36,7 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
   deletePlatformUserRow: vi.fn(),
 }));
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 
@@ -58,7 +58,7 @@ vi.mock("@mms/mod-contacts/backend/use-cases", async (importOriginal) => ({
   },
 }));
 
-vi.mock("../platform/use-cases/platformMessagingUseCases.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/use-cases/platformMessagingUseCases", () => ({
   platformMessagingUseCases: {
     listMessages: vi.fn().mockResolvedValue([]),
     send: vi.fn().mockResolvedValue({ id: "m1", channel: "email", status: "queued" }),

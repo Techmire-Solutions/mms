@@ -23,7 +23,8 @@ vi.mock("@mms/be-core/auth/sessionRevocation", () => ({
   checkTenantAuthPipelineBatch: (...args: unknown[]) => mocks.checkBatch(...args),
 }));
 
-vi.mock("../services/workspaceService.js", () => ({
+vi.mock("../services/workspaceService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/workspaceService.js")>()),
   getWorkspaceBySubdomain: vi.fn().mockImplementation(async (raw: string) => {
     const subdomain = String(raw ?? "")
       .replace(/\.mms\.local$/, "")
@@ -35,7 +36,8 @@ vi.mock("../services/workspaceService.js", () => ({
   }),
 }));
 
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   loadGlobalSettings: vi.fn().mockResolvedValue({ sessionTimeout: "30" }),
 }));
 

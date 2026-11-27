@@ -1,6 +1,6 @@
 import { buildModuleAvailability, type ModuleAvailabilityMap } from "@mms/contracts";
 import { getWorkspaceModuleAccessRow } from "../db/repositories/workspaceModuleAccessRepository.js";
-import { getPlatformSettings } from "../services/platform/platformSettingsService.js";
+import { getPlatformSettings } from "@mms/mod-platform/backend/platform/services";
 
 /**
  * Short backstop TTL only: every grant/enablement write calls

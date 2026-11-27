@@ -74,7 +74,8 @@ vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => ({
   loadContactsByIds: vi.fn().mockResolvedValue([]),
 }));
 
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   deleteRefreshTokensForUser: vi.fn(),
   purgeExpiredAuthArtifacts: vi.fn().mockResolvedValue(undefined),
   putAuthArtifact: vi.fn(),

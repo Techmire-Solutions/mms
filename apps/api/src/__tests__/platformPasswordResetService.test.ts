@@ -1,3 +1,5 @@
+import { configurePlatformAdapters } from "../modules/platform/adapters.js";
+configurePlatformAdapters();
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StoredPlatformUser } from "@mms/contracts";
 
@@ -17,7 +19,8 @@ const mocks = vi.hoisted(() => ({
   verifyOtpCode: vi.fn(),
 }));
 
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   deleteRefreshTokensForUser: vi.fn(),
   putAuthArtifact: mocks.putAuthArtifact,
   getAuthArtifact: mocks.getAuthArtifact,
@@ -31,39 +34,41 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
   updateAuthArtifactPayload: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/platform/platformOtpService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformOtpService", () => ({
   dispatchPlatformOtp: mocks.dispatchPlatformOtp,
 }));
 
-vi.mock("../services/platform/platformSmsService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformSmsService", () => ({
   sendPlatformSms: mocks.sendPlatformSms,
 }));
 
-vi.mock("../services/platform/platformUserService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformUserService", () => ({
   findPlatformUserByEmail: mocks.findPlatformUserByEmail,
   getStoredPlatformUserById: mocks.getStoredPlatformUserById,
   updatePlatformUserPassword: mocks.updatePlatformUserPassword,
 }));
 
-vi.mock("../services/platform/platformSettingsService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformSettingsService", () => ({
   getPlatformSettings: mocks.getPlatformSettings,
 }));
 
-vi.mock("../services/platform/platformEmailService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformEmailService", () => ({
   isPlatformSmtpConfigured: mocks.isPlatformSmtpConfigured,
   resolvePlatformAppOrigin: vi.fn(() => "https://platform.mms.local"),
 }));
 
-vi.mock("../services/auth/authCookieService.js", () => ({
+vi.mock("../services/auth/authCookieService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authCookieService.js")>()),
   generateOtpCode: vi.fn(() => "654321"),
   hashOtpCode: mocks.hashOtpCode,
   verifyOtpCode: mocks.verifyOtpCode,
+  clearAuthCookies: vi.fn(),
 }));
 
 import {
   requestPlatformPasswordReset,
   resendPlatformPasswordReset,
-} from "../services/platform/platformPasswordResetService.js";
+} from "@mms/mod-platform/backend/platform/services/platformPasswordResetService";
 
 const mockPlatformUser: StoredPlatformUser = {
   id: "p-admin-1",

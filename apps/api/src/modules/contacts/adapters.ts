@@ -19,7 +19,7 @@ import { saveStreamedExportArtifact } from "../../services/exportArtifactService
 import { tenantUserHasPermission } from "../../lib/tenantRoleCatalog.js";
 import { getWorkspaceBranding } from "../../db/repositories/workspaceRepository.js";
 import { registerModuleCsvExportRoutes } from "../../lib/registerModuleCsvExportRoutes.js";
-import { insertPlatformActivityLog } from "../../db/repositories/platformActivityLogsRepository.js";
+import { insertPlatformActivityLog } from "@mms/mod-platform/backend/platform/repository";
 import { getPreparedContactById } from "@mms/mod-students/backend/repository";
 import { deleteObject, getObject, saveObject } from "../../db/documentStore.js";
 
