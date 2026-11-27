@@ -114,7 +114,10 @@ describe("no-cross-feature-imports", () => {
       ["src/tenant/hooks/notifications/useTenantNotifications.ts"],
     ])("flags %s importing a feature internal", (filename) => {
       expect(
-        lint(`import { a } from "@/tenant/features/dashboard/hooks/useDashboardData";`, filename),
+        lint(
+          `import { a } from "@/tenant/features/accounting/hooks/useAccountingLedger";`,
+          filename,
+        ),
       ).toEqual(["sharedLayer"]);
     });
 

@@ -99,7 +99,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "home",
     path: TENANT_PATHS.home,
     access: { kind: "landing", moduleId: "dashboard" },
-    loader: () => import("@/tenant/features/dashboard/DashboardPage"),
+    loader: () =>
+      import("@mms/mod-analytics/frontend/tenant").then((m) => ({ default: m.DashboardPage })),
     nav: { labelKey: "nav.dashboard", icon: LayoutDashboard, order: 0 },
   },
   {

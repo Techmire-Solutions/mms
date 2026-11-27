@@ -31,6 +31,13 @@ import * as facultyStatusUi from "@/lib/faculty/facultyStatusUi";
 import * as studentStatusUi from "@/lib/students/studentStatusUi";
 import * as enrollmentStatusBadge from "@/lib/ui/enrollmentStatusBadge";
 import * as chartDirection from "@/lib/ui/chartDirection";
+import * as buildDashboardNotifications from "@/lib/buildDashboardNotifications";
+import * as settingsDeepLink from "@/lib/config/settingsDeepLink";
+import { useBranding } from "@/tenant/hooks/useBranding";
+import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
+import * as pinnedWidgetsFacade from "@/tenant/components/reports/pinnedWidgetsFacade";
+import { useNotificationReadState } from "@/tenant/hooks/notifications/useNotificationReadState";
+import { useOpenTenantNotification } from "@/tenant/hooks/notifications/useOpenTenantNotification";
 import * as moduleReportAdapters from "@/tenant/components/reports/moduleReportAdapters";
 import { ChartTooltip, ChartTooltipRow } from "@/components/app/ChartTooltip";
 import SessionsTable from "@/components/dashboard-widgets/SessionsTable";
@@ -84,6 +91,13 @@ export function bindAnalyticsHost(): void {
       ...studentStatusUi,
       ...enrollmentStatusBadge,
       ...chartDirection,
+      ...buildDashboardNotifications,
+      ...settingsDeepLink,
+      ...(pinnedWidgetsFacade as unknown as Record<string, unknown>),
+      useBranding,
+      useOpenTenantNotification,
+      useNotificationReadState,
+      useModuleAccess,
       useGenericSavedReportsSource: savedReportsSource.useGenericSavedReportsSource,
     },
   });

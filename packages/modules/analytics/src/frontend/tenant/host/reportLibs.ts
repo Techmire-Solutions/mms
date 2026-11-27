@@ -90,7 +90,10 @@ export const COLOR_MAP: Record<string, unknown> = new Proxy(
   },
 );
 export const ICONS_LIST: unknown[] = new Proxy([], {
-  get: (_t: any, k: any) => libs().ICONS_LIST?.[k as string],
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype
+      ? Reflect.get(t, k)
+      : libs().ICONS_LIST?.[k as string],
 });
 export const THEME_PALETTES: Record<string, unknown> = new Proxy(
   {},
@@ -99,10 +102,16 @@ export const THEME_PALETTES: Record<string, unknown> = new Proxy(
   },
 );
 export const COLLECTION_OPTIONS: unknown[] = new Proxy([], {
-  get: (_t: any, k: any) => libs().COLLECTION_OPTIONS?.[k as string],
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype
+      ? Reflect.get(t, k)
+      : libs().COLLECTION_OPTIONS?.[k as string],
 });
 export const METADATA_FIELDS: unknown[] = new Proxy([], {
-  get: (_t: any, k: any) => libs().METADATA_FIELDS?.[k as string],
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype
+      ? Reflect.get(t, k)
+      : libs().METADATA_FIELDS?.[k as string],
 });
 export const MESSAGING_CHANNEL_CONFIG: Record<string, unknown> = new Proxy(
   {},
@@ -158,3 +167,12 @@ export const findCachedCollectionRecord = (...a: any[]): any =>
 export function readQueryCollection<_T = any>(...a: any[]): any {
   return libCall("readQueryCollection", ...a);
 }
+export const buildDashboardNotifications = (...a: any[]): any =>
+  libCall("buildDashboardNotifications", ...a);
+export const settingsTabPath = (...a: any[]): any => libCall("settingsTabPath", ...a);
+export const resolveDashboardNotifications = (...a: any[]): any =>
+  libCall("resolveDashboardNotifications", ...a);
+
+export { DashboardWidgetsView as DashboardWidgets } from "./DashboardWidgetsView.js";
+export { CustomWidgetRenderer } from "./CustomWidgetRenderer.js";
+export type { DashboardNotificationItem } from "../lib/buildDashboardNotificationsTypes.js";

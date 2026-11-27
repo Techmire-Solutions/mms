@@ -1,5 +1,14 @@
 import { getAnalyticsHost } from "../host.js";
 
+function hostHook(name: string): any {
+  const all: Record<string, any> = (getAnalyticsHost() as any).collections ?? {};
+  for (const ns of Object.values(all)) {
+    const fn = ns?.[name];
+    if (typeof fn === "function") return fn;
+  }
+  return undefined;
+}
+
 function collection(name: string): any {
   return (getAnalyticsHost() as any).collections?.[name] ?? {};
 }
@@ -120,71 +129,108 @@ export const useUsersPaginated = (...a: any[]) => collection("users").useUsersPa
 
 // Host stubs for symbols bound at composition time.
 export const ATTENDANCE_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const CONTACTS_METRICS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const CONTACTS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const CONTACTS_WIDGET_AGGREGATES_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const ENROLLMENTS_METRICS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const ENROLLMENTS_WIDGET_AGGREGATES_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const FACULTY_METRICS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const FACULTY_WIDGET_AGGREGATES_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const FINANCE_INVOICES_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const HASANAT_DENOMS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const HASANAT_DISTRIBUTIONS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const HASANAT_METRICS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const HASANAT_REPORT_AGGREGATES_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const QUESTION_BANK_QUESTIONS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const QUESTION_BANK_RESULTS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const QUESTION_BANK_TESTS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const SESSIONS_METRICS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const SESSIONS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const SESSIONS_WIDGET_AGGREGATES_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const STUDENTS_METRICS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const STUDENTS_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export const STUDENTS_WIDGET_AGGREGATES_QUERY_KEY: readonly unknown[] = new Proxy([], {
-  get: () => undefined,
+  get: (t: any, k: any) =>
+    typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export function useHasanatDenomsCollection(...a: any[]): any {
   return (getAnalyticsHost() as any).collections?.useHasanatDenomsCollection?.(...a);
+}
+export function useBranding(...a: any[]): any {
+  return hostHook("useBranding")?.(...a);
+}
+export function useOpenTenantNotification(...a: any[]): any {
+  return hostHook("useOpenTenantNotification")?.(...a);
+}
+export function useNotificationReadState(...a: any[]): any {
+  return hostHook("useNotificationReadState")?.(...a);
+}
+export function useModuleAccess(...a: any[]): any {
+  return hostHook("useModuleAccess")?.(...a);
+}
+export function useContactsMetrics(...a: any[]): any {
+  return hostHook("useContactsMetrics")?.(...a);
 }
