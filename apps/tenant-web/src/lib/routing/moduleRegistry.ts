@@ -195,7 +195,10 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "questionBank",
     path: TENANT_PATHS.questionBank,
     access: moduleAccess("questionBank"),
-    loader: () => import("@/tenant/features/question-bank/QuestionBankPage"),
+    loader: () =>
+      import("@mms/mod-question-bank/frontend/tenant").then((m) => ({
+        default: m.QuestionBankPage,
+      })),
     nav: { labelKey: "nav.questionBank", icon: Library, order: 6, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },

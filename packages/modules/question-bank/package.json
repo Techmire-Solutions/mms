@@ -26,12 +26,37 @@
       "import": "./dist/backend/services/index.js",
       "types": "./dist/backend/services/index.d.ts"
     },
+    "./frontend/tenant/hooks/*": [
+      "./src/frontend/tenant/hooks/*.ts",
+      "./src/frontend/tenant/hooks/*.tsx"
+    ],
+    "./frontend/tenant/components/*": [
+      "./src/frontend/tenant/components/*.ts",
+      "./src/frontend/tenant/components/*.tsx"
+    ],
+    "./frontend/tenant/lib/*": [
+      "./src/frontend/tenant/lib/*.ts",
+      "./src/frontend/tenant/lib/*.tsx"
+    ],
+    "./frontend/tenant/lib/questionBankDescriptor": "./src/frontend/tenant/lib/questionBankDescriptor.tsx",
+    "./frontend/tenant/QuestionBankPage": "./src/frontend/tenant/QuestionBankPage.tsx",
     "./frontend/tenant": "./src/frontend/tenant/index.ts",
     "./package.json": "./package.json",
     "./backend/domain": {
       "import": "./dist/backend/domain/index.js",
       "types": "./dist/backend/domain/index.d.ts"
-    }
+    },
+    "./frontend/tenant/*": [
+      "./src/frontend/tenant/*.ts",
+      "./src/frontend/tenant/*.tsx"
+    ],
+    "./frontend/tenant/host": "./src/frontend/tenant/host.ts",
+    "./frontend/tenant/host/*": [
+      "./src/frontend/tenant/host/*.ts",
+      "./src/frontend/tenant/host/*.tsx"
+    ],
+    "./frontend/tenant/components/AutoGrading": "./src/frontend/tenant/components/AutoGrading.tsx",
+    "./frontend/tenant/components/PerformanceAnalytics": "./src/frontend/tenant/components/PerformanceAnalytics.tsx"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json && tsc --noEmit -p tsconfig.frontend.json",
@@ -49,7 +74,13 @@
     "@ts-rest/core": "^3.52.1",
     "@ts-rest/fastify": "^3.52.1",
     "drizzle-orm": "catalog:",
-    "zod": "catalog:"
+    "zod": "catalog:",
+    "framer-motion": "^14.14.0",
+    "lucide-react": "^1.78.0",
+    "@tanstack/react-virtual": "^3.13.0",
+    "recharts": "^3.3.0",
+    "react-hook-form": "^7.92.0",
+    "@hookform/resolvers": "^7.0.8"
   },
   "peerDependencies": {
     "fastify": "^5.12.8",

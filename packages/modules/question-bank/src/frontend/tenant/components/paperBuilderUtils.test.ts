@@ -1,0 +1,159 @@
+import { describe, expect, it } from "vitest";
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import {
+  buildPaperPrintHtml,
+  coercePaperNumberInput,
+  createPaperDraftFromTest,
+  escapeHtml,
+  getPaperQuestionCount,
+  getPaperQuestionIds,
+  normalizePaperSections,
+  type PaperSection,
+} from "../lib/paperBuilderUtils";
+
+const sections: PaperSection[] = [
+  { id: "section-a", title: "A", instructions: "", questionIds: ["q1", "q2"] },
+  { id: "section-b", title: "B", instructions: "", questionIds: ["q3"] },
+];
+
+describe("paperBuilderUtils", () => {
+  it("coerces numeric form values without allowing invalid paper settings", () => {
+    expect(coercePaperNumberInput("45", 30, 5)).toBe(45);
+    expect(coercePaperNumberInput("12.8", 30, 5)).toBe(12);
+    expect(coercePaperNumberInput("2", 30, 5)).toBe(5);
+    expect(coercePaperNumberInput("", 30, 5)).toBe(30);
+    expect(coercePaperNumberInput("abc", 30, 5)).toBe(30);
+  });
+
+  it("derives flattened paper question ids and counts from sections", () => {
+    expect(getPaperQuestionIds(sections)).toEqual(["q1", "q2", "q3"]);
+    expect(getPaperQuestionCount(sections)).toBe(3);
+  });
+
+  it("normalizes paper sections before persistence", () => {
+    expect(
+      normalizePaperSections([
+        {
+          id: "section-a",
+          title: "  ",
+          instructions: "  Read carefully  ",
+          questionIds: ["q1", ""],
+        },
+        { id: "section-b", title: "  Essay  ", instructions: "  ", questionIds: [] },
+      ]),
+    ).toEqual([
+      { id: "section-a", title: "Section 1", instructions: "Read carefully", questionIds: ["q1"] },
+    ]);
+  });
+
+  it("creates a paper builder draft from saved paper metadata", () => {
+    const draft = createPaperDraftFromTest(
+      {
+        id: "paper-1",
+        name: "Monthly Paper",
+        categoryId: null,
+        difficulty: "mixed",
+        questionIds: ["q1", "q2"],
+        duration: 45,
+        createdAt: "2026-06-27T10:00:00.000Z",
+        examClass: "Hifz 2",
+        totalMarks: 50,
+        instructions: "Answer all.",
+        sections: [
+          { id: "section-a", title: "  Part A  ", instructions: "  MCQ  ", questionIds: ["q1"] },
+          { id: "section-b", title: "", instructions: "", questionIds: ["q2"] },
+        ],
+      },
+      (sectionNumber: any) => `Part ${sectionNumber}`,
+    );
+
+    expect(draft).toEqual({
+      config: {
+        name: "Monthly Paper",
+        examClass: "Hifz 2",
+        classId: "",
+        totalMarks: 50,
+        duration: 45,
+        instructions: "Answer all.",
+      },
+      sections: [
+        { id: "section-a", title: "Part A", instructions: "MCQ", questionIds: ["q1"] },
+        { id: "section-b", title: "Part 2", instructions: "", questionIds: ["q2"] },
+      ],
+    });
+  });
+
+  it("creates a draft for older flat test records without sections", () => {
+    expect(
+      createPaperDraftFromTest(
+        {
+          id: "test-1",
+          name: "Old Paper",
+          categoryId: null,
+          difficulty: "mixed",
+          questionIds: ["q1", "q2"],
+          duration: 30,
+          createdAt: "2026-06-27T10:00:00.000Z",
+        },
+        (sectionNumber: any) => `Section ${sectionNumber}`,
+      ).sections,
+    ).toEqual([
+      { id: "test-1-section-1", title: "Section 1", instructions: "", questionIds: ["q1", "q2"] },
+    ]);
+  });
+
+  it("prints with the active locale direction and the Arabic/Urdu font stack", () => {
+    const content = document.createElement("div");
+    content.innerHTML = '<article class="qpaper">paper</article>';
+    const html = buildPaperPrintHtml(content, "Paper <1>", { language: "ur", direction: "rtl" });
+
+    expect(html).toContain('lang="ur"');
+    expect(html).toContain('dir="rtl"');
+    expect(html).toContain("Noto Nastaliq Urdu");
+    expect(html).toContain("Paper &lt;1&gt;");
+  });
+
+  it("defaults to an English LTR document", () => {
+    const content = document.createElement("div");
+    const html = buildPaperPrintHtml(content, "Paper");
+    expect(html).toContain('lang="en"');
+    expect(html).toContain('dir="ltr"');
+  });
+
+  it("escapes printable document titles before writing print HTML", () => {
+    expect(escapeHtml(`A&B <Paper> "Final" 'One'`)).toBe(
+      "A&amp;B &lt;Paper&gt; &quot;Final&quot; &#039;One&#039;",
+    );
+  });
+
+  /**
+   * Source-read ratchet: guards the print contract. The popup inherits the app's
+   * nonce-only CSP, so the document must carry no inline script; the opener helper is
+   * the only place that may touch fonts/afterprint.
+   */
+  describe("openPaperPrintWindow print contract", () => {
+    const src = readFileSync(
+      path.resolve(import.meta.dirname, "../lib/paperBuilderUtils.ts"),
+      "utf-8",
+    );
+    const printHelper = readFileSync(
+      path.resolve(
+        import.meta.dirname,
+        "../../../../../../../packages/fe-core/src/print/printWindowHtml.ts",
+      ),
+      "utf-8",
+    );
+
+    it("emits no inline script, which the app CSP would block", () => {
+      expect(src).not.toMatch(/<script/i);
+      expect(src).not.toMatch(/window\.onafterprint/);
+    });
+
+    it("delegates printing to the opener helper", () => {
+      expect(src).toContain("autoPrintWindow(");
+      expect(printHelper).toContain("document.fonts?.ready");
+      expect(printHelper).toContain('addEventListener("afterprint"');
+    });
+  });
+});
