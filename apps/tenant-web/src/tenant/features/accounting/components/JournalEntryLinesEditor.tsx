@@ -6,7 +6,7 @@ import { FieldErrorMessage } from "@mms/ui";
 import { FormCollectionShell } from "@mms/ui/app/FormCollectionShell";
 import { ModuleTableHeaderCell } from "@mms/fe-core/components/ModuleTableHeaderCell";
 import { Table, TableBody, TableHeader } from "@mms/ui";
-import { MutedTableHeaderRow } from "@/components/reports/FinancialDebitCreditTableChrome";
+import { MutedTableHeaderRow } from "@mms/mod-analytics/frontend/tenant/components/FinancialDebitCreditTableChrome";
 import { WorkBatchTableFooter } from "@mms/fe-core/components/WorkBatchTableFooter";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { useMemo } from "react";

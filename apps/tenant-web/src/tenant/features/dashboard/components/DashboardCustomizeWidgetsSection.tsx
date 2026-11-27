@@ -1,7 +1,7 @@
 import React from "react";
 import { Pencil, Trash2, Plus, ChevronUp, ChevronDown } from "lucide-react";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
-import { getCollectionLabel } from "@/lib/reports/reportMetadata";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
+import { getCollectionLabel } from "@mms/mod-analytics/frontend/tenant/lib/reportMetadata";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { isSeededDashboardWidget, resolveWidgetTitle } from "@/lib/dashboardWidgets";
 import { Button } from "@mms/ui";

@@ -1,10 +1,10 @@
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import {
   computeContactsCustomCardValue,
   computeStudentsCustomCardValue,
   computeFacultyCustomCardValue,
   computeSessionsCustomCardValue,
-} from "@/lib/reports/widgetDataUtils";
+} from "@mms/mod-analytics/frontend/tenant/lib/widgetDataUtils";
 import {
   isSeededDashboardWidget,
   resolveWidgetTitle,

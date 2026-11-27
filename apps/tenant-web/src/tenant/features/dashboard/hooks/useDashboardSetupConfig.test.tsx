@@ -68,7 +68,7 @@ vi.mock("@mms/fe-core/notify", () => ({
   notify: { error: vi.fn(), success: vi.fn(), info: vi.fn() },
 }));
 
-vi.mock("@/lib/reports/widgetDefaults", () => ({
+vi.mock("@mms/mod-analytics/frontend/tenant/lib/widgetDefaults", () => ({
   buildDefaultCustomWidgets: () => [],
   getOrInitializeCustomWidgets: () => [],
   peekSeedWidgets: () => [],

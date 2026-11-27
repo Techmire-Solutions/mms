@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import type { Permission } from "@mms/contracts";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import type { DashboardRole } from "@/lib/dashboardRole";
 import { isDashboardWidgetAllowed, filterDashboardCardWidgets } from "@/lib/dashboardCollections";
 import type { StatItem } from "@/lib/dashboardWidgets";

@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { AnimatePresence } from "framer-motion";
-import { WidgetBuilder } from "@/components/reports/pinnedWidgets/WidgetBuilder";
+import { WidgetBuilder } from "@mms/mod-analytics/frontend/tenant/components/pinnedWidgets/WidgetBuilder";
 import { CustomWidgetRenderer } from "@/tenant/components/reports/pinnedWidgetsFacade";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { useReducedMotion } from "@mms/fe-core/tenant";

@@ -23,6 +23,7 @@
     "@mms/contracts": "workspace:*",
     "@mms/fe-core": "workspace:*",
     "@mms/mod-accounting": "workspace:*",
+    "@mms/mod-analytics": "workspace:*",
     "@mms/mod-attendance": "workspace:*",
     "@mms/mod-billing": "workspace:*",
     "@mms/mod-contacts": "workspace:*",

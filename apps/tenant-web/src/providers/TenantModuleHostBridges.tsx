@@ -15,6 +15,7 @@ import { WorkshopsHostBridge } from "@/providers/WorkshopsHostProvider";
 import { QuestionBankHostBridge } from "@/providers/QuestionBankHostProvider";
 import { ObligationsHostBridge } from "@/providers/ObligationsHostProvider";
 import { ExaminationsHostBridge } from "@/providers/ExaminationsHostProvider";
+import { AnalyticsHostBridge } from "@/providers/AnalyticsHostProvider";
 
 /**
  * Composes all 10 vertical-module host bridges inside the lazy authenticated shell (`AppLayout`)
@@ -41,7 +42,9 @@ export function TenantModuleHostBridges({
                             <WorkshopsHostBridge>
                               <QuestionBankHostBridge>
                                 <ObligationsHostBridge>
-                                  <ExaminationsHostBridge>{children}</ExaminationsHostBridge>
+                                  <ExaminationsHostBridge>
+                                    <AnalyticsHostBridge>{children}</AnalyticsHostBridge>
+                                  </ExaminationsHostBridge>
                                 </ObligationsHostBridge>
                               </QuestionBankHostBridge>
                             </WorkshopsHostBridge>

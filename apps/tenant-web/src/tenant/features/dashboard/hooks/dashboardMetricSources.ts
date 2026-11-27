@@ -1,4 +1,4 @@
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import {
   isDashboardAdmin,
   isDashboardAdminOrAccountant,

@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import type { DashboardRole } from "@/lib/dashboardRole";
 import {
   useStudentsMetrics,

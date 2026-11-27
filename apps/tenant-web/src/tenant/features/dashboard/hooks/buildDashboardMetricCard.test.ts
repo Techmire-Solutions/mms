@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import { buildDashboardMetricCard } from "./buildDashboardMetricCard";
 import type { DashboardMetricTrends } from "./dashboardMetricTrends";
 import type { DashboardCollectionData } from "./useDashboardData";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
 import type {
   AttendanceCommandMetricsSnapshot,

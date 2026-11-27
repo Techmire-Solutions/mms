@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("@mms/fe-core/i18n", () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
-vi.mock("@/components/reports/pinnedWidgets/WidgetBuilder", () => ({
+vi.mock("@mms/mod-analytics/frontend/tenant/components/pinnedWidgets/WidgetBuilder", () => ({
   WidgetBuilder: () => <div data-testid="widget-builder" />,
 }));
 vi.mock("@/tenant/components/reports/pinnedWidgetsFacade", () => ({

@@ -9,8 +9,8 @@ import {
   normalizeDashboardPreferences,
   normalizeDashboardWidgets,
 } from "@mms/contracts";
-import { buildDefaultCustomWidgets } from "@/lib/reports/widgetDefaults";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import { buildDefaultCustomWidgets } from "@mms/mod-analytics/frontend/tenant/lib/widgetDefaults";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import { apiContract, tsrClient } from "@mms/fe-core/api/tsRest";
 
 export {

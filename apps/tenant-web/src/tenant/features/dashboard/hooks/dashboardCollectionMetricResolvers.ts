@@ -1,5 +1,5 @@
 import { formatMoney, formatNumber, formatPercent } from "@mms/contracts";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import type { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
 
 type DashboardData = ReturnType<typeof useDashboardData>;

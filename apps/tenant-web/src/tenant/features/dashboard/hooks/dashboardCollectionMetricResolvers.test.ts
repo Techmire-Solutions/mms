@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatMoney, formatNumber, formatPercent } from "@mms/contracts";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import type { DashboardData } from "./useDashboardData";
 import { resolveServerMetricValue } from "./dashboardCollectionMetricResolvers";
 

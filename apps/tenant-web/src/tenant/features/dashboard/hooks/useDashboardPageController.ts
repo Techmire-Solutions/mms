@@ -3,7 +3,7 @@ import { DASHBOARD_MODULE_MANIFEST } from "@mms/contracts";
 import { resolveDashboardRole } from "@/lib/dashboardRole";
 import { getActiveCustomCardIds, isDashboardWidgetAllowed } from "@/lib/dashboardCollections";
 import { usePermissions } from "@/tenant/hooks/usePermissions";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
 import { useDashboardMetricCards } from "@/tenant/features/dashboard/hooks/useDashboardMetricCards";
 import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";

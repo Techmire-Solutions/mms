@@ -1,0 +1,192 @@
+import React from "react";
+import type { ContactsSavedReportShareScope, WorkspaceUser } from "@mms/contracts";
+import { CheckboxField } from "@mms/ui";
+import { FormModal } from "@mms/fe-core/components/FormModal";
+import { FORM_INPUT } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { Input } from "@mms/ui";
+import { Label } from "@mms/ui";
+import { Field } from "@mms/fe-core/components/FormPrimitives";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useUsersPaginated } from "../../host/collections";
+import { SearchBar } from "@mms/fe-core/components/SearchBar";
+
+interface ContactsSavedReportUserPickerProps {
+  value: string[];
+  onChange: (userIds: string[]) => void;
+}
+
+function ContactsSavedReportUserPicker({
+  value,
+  onChange,
+}: ContactsSavedReportUserPickerProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const [userSearch, setUserSearch] = React.useState("");
+  const usersQuery = useUsersPaginated({ page: 1, limit: 50, search: userSearch });
+  const users: WorkspaceUser[] = usersQuery.data?.users ?? [];
+  const options = (() =>
+    users.slice().sort((a: any, b: any) => (a.name ?? "").localeCompare(b.name ?? "")))();
+
+  const valueSet = new Set(value);
+
+  const toggle = (userId: string) => {
+    if (valueSet.has(userId)) {
+      onChange(value.filter((selectedUserId: any) => selectedUserId !== userId));
+    } else {
+      onChange([...value, userId]);
+    }
+  };
+
+  return (
+    <div className="space-y-1.5">
+      <Label htmlFor="saved-report-user-search">
+        {t("contacts.savedReports.usersPickerLabel")}
+      </Label>
+      <SearchBar
+        id="saved-report-user-search"
+        name="savedReportUserSearch"
+        value={userSearch}
+        onChange={setUserSearch}
+        placeholder={t("registryPerson.searchPlaceholder")}
+      />
+      <div className="max-h-40 overflow-y-auto rounded-lg border border-border divide-y divide-border">
+        {options.length === 0 ? (
+          <p className="px-3 py-2 text-xs text-muted-foreground">{t("common.loading")}</p>
+        ) : (
+          options.map((user: any) => {
+            const checkboxId = `saved-report-user-${user.id}`;
+            return (
+              <CheckboxField
+                key={user.id}
+                id={checkboxId}
+                checked={valueSet.has(String(user.id))}
+                onCheckedChange={() => toggle(String(user.id))}
+                label={user.name || user.email}
+                className="px-3 hover:bg-muted/50"
+                labelClassName="truncate text-sm"
+              />
+            );
+          })
+        )}
+      </div>
+      {usersQuery.data?.hasMore && (
+        <p className="text-xs text-muted-foreground">{t("registryPerson.refineSearch")}</p>
+      )}
+    </div>
+  );
+}
+
+interface ContactsSavedReportsEditorProps {
+  open: boolean;
+  name: string;
+  search: string;
+  shareScope: ContactsSavedReportShareScope;
+  shareScopeOptions: ContactsSavedReportShareScope[];
+  sharedWithUserIds: string[];
+  saving: boolean;
+  error?: string | null;
+  searchLabel: string;
+  shareLabel: (scope: ContactsSavedReportShareScope | undefined) => string;
+  onClose: () => void;
+  onNameChange: (value: string) => void;
+  onSearchChange: (value: string) => void;
+  onShareScopeChange: (value: ContactsSavedReportShareScope) => void;
+  onSharedWithUserIdsChange: (userIds: string[]) => void;
+  onSave: () => void;
+}
+
+export function ContactsSavedReportsEditor({
+  open,
+  name,
+  search,
+  shareScope,
+  shareScopeOptions,
+  sharedWithUserIds,
+  saving,
+  error,
+  searchLabel,
+  shareLabel,
+  onClose,
+  onNameChange,
+  onSearchChange,
+  onShareScopeChange,
+  onSharedWithUserIdsChange,
+  onSave,
+}: ContactsSavedReportsEditorProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const nameValid = name.trim().length > 0 && name.trim().length <= 200;
+  const usersValid = shareScope !== "users" || sharedWithUserIds.length > 0;
+  const nameError = name.trim().length > 200 ? t("common.maxLength", { max: 200 }) : undefined;
+
+  return (
+    <FormModal
+      open={open}
+      onClose={onClose}
+      title={t("contacts.savedReports.saveDialogTitle")}
+      size="sm"
+      cancelLabel={t("common.cancel")}
+      saveLabel={t("contacts.savedReports.save")}
+      onSave={onSave}
+      saving={saving}
+      saveDisabled={saving || !nameValid || !usersValid}
+      error={nameError ?? error ?? undefined}
+      isDirty={Boolean(name.trim() || search.trim() || sharedWithUserIds.length)}
+      formId="contacts-saved-reports-form"
+    >
+      <form
+        id="contacts-saved-reports-form"
+        noValidate
+        onSubmit={(e: any) => {
+          e.preventDefault();
+          if (nameValid && usersValid && !saving) {
+            onSave();
+          }
+        }}
+        className="space-y-4"
+      >
+        <Field id="saved-report-name" label={t("contacts.savedReports.nameLabel")} required>
+          <Input
+            id="saved-report-name"
+            name="name"
+            className={FORM_INPUT}
+            value={name}
+            maxLength={200}
+            onChange={(event: any) => onNameChange(event.target.value)}
+            placeholder={t("contacts.savedReports.namePlaceholder")}
+            required
+          />
+        </Field>
+
+        <Field id="saved-report-search" label={searchLabel}>
+          <Input
+            id="saved-report-search"
+            name="search"
+            className={FORM_INPUT}
+            value={search}
+            onChange={(event: any) => onSearchChange(event.target.value)}
+            placeholder={t("contacts.savedReports.searchPlaceholder")}
+          />
+        </Field>
+
+        <Field id="saved-report-share-scope" label={t("contacts.savedReports.shareScopeLabel")}>
+          <FormSelect
+            id="saved-report-share-scope"
+            name="shareScope"
+            value={shareScope}
+            onChange={(value: any) => onShareScopeChange(value as ContactsSavedReportShareScope)}
+            options={shareScopeOptions.map((scope: any) => ({
+              value: scope,
+              label: shareLabel(scope),
+            }))}
+          />
+        </Field>
+        {shareScope === "users" && (
+          <ContactsSavedReportUserPicker
+            value={sharedWithUserIds}
+            onChange={onSharedWithUserIdsChange}
+          />
+        )}
+      </form>
+    </FormModal>
+  );
+}

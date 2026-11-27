@@ -5,7 +5,7 @@ import {
   STUDENTS_MODULE_MANIFEST,
   type Permission,
 } from "@mms/contracts";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import { resolveDashboardMetricSources } from "./dashboardMetricSources";
 
 const allowAll = () => true;

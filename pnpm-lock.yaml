@@ -534,6 +534,9 @@ importers:
       '@mms/mod-accounting':
         specifier: workspace:*
         version: link:../../packages/modules/accounting
+      '@mms/mod-analytics':
+        specifier: workspace:*
+        version: link:../../packages/modules/analytics
       '@mms/mod-attendance':
         specifier: workspace:*
         version: link:../../packages/modules/attendance
@@ -1131,6 +1134,9 @@ importers:
 
   packages/modules/analytics:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^7.0.8
+        version: 7.0.8(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(zod@4.6.7)
       '@mms/be-core':
         specifier: workspace:*
         version: link:../../be-core
@@ -1140,9 +1146,45 @@ importers:
       '@mms/db':
         specifier: workspace:*
         version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-virtual':
+        specifier: ^3.13.0
+        version: 3.14.28(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      html2canvas:
+        specifier: ^1.4.1
+        version: 1.4.1
+      jspdf:
+        specifier: ^3.0.4
+        version: 3.0.4
+      jspdf-autotable:
+        specifier: ^5.0.2
+        version: 5.0.9(jspdf@3.0.4)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-hook-form:
+        specifier: ^7.92.0
+        version: 7.92.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: ^7.18.6
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.3.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
     devDependencies:
       '@mms/eslint-config':
         specifier: workspace:*
@@ -13363,6 +13405,10 @@ snapshots:
       graceful-fs: 4.2.12
 
   jsonpointer@5.0.1: {}
+
+  jspdf-autotable@5.0.9(jspdf@3.0.4):
+    dependencies:
+      jspdf: 3.0.4
 
   jspdf-autotable@5.0.9(jspdf@4.2.1):
     dependencies:

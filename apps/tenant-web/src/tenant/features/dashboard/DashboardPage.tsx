@@ -18,7 +18,7 @@ import { useBranding } from "@/tenant/hooks/useBranding";
 import { useMediaQuery } from "@mms/fe-core/hooks/useMediaQuery";
 import { useReducedMotion } from "@mms/fe-core/tenant";
 import { MEDIA_LG_UP } from "@mms/fe-core/tenant";
-import { splitDashboardWidgets } from "@/lib/reports/dashboardWidgetLayout";
+import { splitDashboardWidgets } from "@mms/mod-analytics/frontend/tenant/lib/dashboardWidgetLayout";
 import { selectAggregateWidgets } from "@/lib/dashboardCollections";
 
 export function DashboardPage() {
