@@ -40,7 +40,7 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => {
     if (id === "p-super") return mockSuperUser;
     if (id === "p-admin") return mockAdminUser;
@@ -63,7 +63,7 @@ let currentSettings: Record<string, unknown> = {
   updatedAt: "2026-01-01T00:00:00.000Z",
 };
 
-vi.mock("../services/platform/platformSettingsService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformSettingsService", () => ({
   getPlatformSettings: vi.fn().mockImplementation(() => currentSettings),
   maskPlatformSettingsForClient: vi.fn().mockImplementation((settings: unknown) => settings),
   updatePlatformSettings: vi.fn().mockImplementation(async (data: unknown) => {
@@ -72,20 +72,25 @@ vi.mock("../services/platform/platformSettingsService.js", () => ({
   }),
 }));
 
-vi.mock("../services/platform/platformUserService.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../services/platform/platformUserService.js")>();
-  return {
-    ...actual,
-    verifyPlatformUserPassword: vi
-      .fn()
-      .mockImplementation(async (_id: string, password: string) => {
-        return password === "correct-password" || password === "TestPassword123!";
-      }),
-  };
-});
+vi.mock(
+  "@mms/mod-platform/backend/platform/services/platformUserService",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@mms/mod-platform/backend/platform/services/platformUserService")
+      >();
+    return {
+      ...actual,
+      verifyPlatformUserPassword: vi
+        .fn()
+        .mockImplementation(async (_id: string, password: string) => {
+          return password === "correct-password" || password === "TestPassword123!";
+        }),
+    };
+  },
+);
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 

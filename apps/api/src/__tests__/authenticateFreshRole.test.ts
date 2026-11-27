@@ -25,10 +25,12 @@ vi.mock("../lib/tenantContext.js", () => ({
   resolveSubdomainFromRequest: vi.fn(),
 }));
 vi.mock("../config/telemetry.js", () => ({ formatTraceParent: () => null }));
-vi.mock("../services/workspaceService.js", () => ({
+vi.mock("../services/workspaceService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/workspaceService.js")>()),
   getWorkspaceBySubdomain: vi.fn().mockResolvedValue({ subdomain: "demo", status: "active" }),
 }));
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   loadGlobalSettings: vi.fn().mockResolvedValue({ sessionTimeout: "30" }),
 }));
 vi.mock("../lib/httpErrors.js", () => ({

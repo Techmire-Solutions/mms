@@ -1,6 +1,8 @@
+import { configurePlatformAdapters } from "../modules/platform/adapters.js";
+configurePlatformAdapters();
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository", () => ({
   countPlatformActivityLogsOlderThan: vi.fn(),
   deletePlatformActivityLogsOlderThan: vi.fn(),
 }));
@@ -8,7 +10,7 @@ vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
 import {
   countPlatformActivityLogsOlderThan,
   deletePlatformActivityLogsOlderThan,
-} from "../db/repositories/platformActivityLogsRepository.js";
+} from "@mms/mod-platform/backend/platform/repository";
 import {
   DEFAULT_PLATFORM_ACTIVITY_LOG_RETENTION_DAYS,
   platformActivityLogCutoff,

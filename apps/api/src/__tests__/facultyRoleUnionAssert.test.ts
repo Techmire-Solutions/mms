@@ -78,7 +78,8 @@ vi.mock("@mms/mod-faculty/backend/deps", async (importOriginal) => ({
   getTenantUsersSettings: (...args: unknown[]) => mockGetTenantUsersSettings(...args),
 }));
 
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   assertPasswordMeetsPolicy: vi.fn(),
 }));
 

@@ -48,22 +48,20 @@ export function createPlatformBootServices(): PlatformBootServices {
     },
     ensurePlatformSuperUser: async () => {
       const { ensurePlatformSuperUserFromEnv } =
-        await import("../services/platform/platformUserService.js");
+        await import("@mms/mod-platform/backend/platform/services");
       await ensurePlatformSuperUserFromEnv();
     },
     syncPlatformSuperUserToTenants: async () => {
       const { syncPlatformSuperUserToTenants } =
-        await import("../services/platform/platformSuperUserTenantSyncService.js");
+        await import("@mms/mod-platform/backend/platform/services");
       await syncPlatformSuperUserToTenants();
     },
     initPlatformSettings: async () => {
-      const { initPlatformSettings } =
-        await import("../services/platform/platformSettingsService.js");
+      const { initPlatformSettings } = await import("@mms/mod-platform/backend/platform/services");
       await initPlatformSettings();
     },
     initPlatformBranding: async () => {
-      const { initPlatformBranding } =
-        await import("../services/platform/platformBrandingService.js");
+      const { initPlatformBranding } = await import("@mms/mod-platform/backend/platform/services");
       await initPlatformBranding();
     },
   };

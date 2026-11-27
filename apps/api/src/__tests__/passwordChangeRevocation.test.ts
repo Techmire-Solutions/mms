@@ -37,7 +37,8 @@ vi.mock("../services/auth/userService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   deleteRefreshTokensForUser: vi.fn().mockResolvedValue(undefined),
 
   authArtifactUserScopeKey: vi.fn(() => ""),

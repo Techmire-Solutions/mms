@@ -11,11 +11,8 @@ import {
   workspaces,
 } from "@mms/db/schema";
 import { bulkSaveEntries } from "@mms/mod-accounting/backend/repository";
-import { platformConsolidationRepository as repo } from "../../platform/repository/platformConsolidationRepositoryAdapter.js";
-import {
-  buildConsolidationReport,
-  saveGroup,
-} from "../../platform/use-cases/consolidationUseCases.js";
+import { platformConsolidationRepository as repo } from "@mms/mod-platform/backend/platform/repository";
+import { buildConsolidationReport, saveGroup } from "@mms/mod-platform/backend/platform/use-cases";
 import { requireDatabaseConnection } from "./dbTestSupport.js";
 
 const PARENT = "fx-ias21-parent";

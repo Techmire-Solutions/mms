@@ -1,16 +1,18 @@
 import { loadBackendEnv } from "../config/loadEnv.js";
+import { configureModuleAdapters } from "../bootstrap/configureModuleAdapters.js";
 import { hashPassword } from "../services/auth/passwordService.js";
 import {
   insertPlatformUser,
   findPlatformUserRowByEmail,
   updatePlatformUserRow,
-} from "../db/repositories/platformUserRepository.js";
+} from "@mms/mod-platform/backend/platform/repository";
 import { closeDatabase } from "../db/database.js";
 import { initializeDatabase } from "../bootstrap/initializeDatabase.js";
 import { randomBytes } from "node:crypto";
 import { FULL_PLATFORM_ADMIN_PERMISSIONS } from "@mms/contracts";
 
 loadBackendEnv();
+configureModuleAdapters();
 
 async function seed() {
   await initializeDatabase();
@@ -68,7 +70,7 @@ async function seed() {
     }
   }
   const { syncPlatformSuperUserToTenants } =
-    await import("../services/platform/platformSuperUserTenantSyncService.js");
+    await import("@mms/mod-platform/backend/platform/services");
   const syncedCount = await syncPlatformSuperUserToTenants();
   console.log(`✅ Synchronized platform super-user to ${syncedCount} tenant workspace(s).`);
   await closeDatabase();

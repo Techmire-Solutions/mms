@@ -3,7 +3,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { isOriginAllowedForAppDomain, isTrustedWorkspaceOrigin } from "@mms/contracts";
 import type { ServerConfig } from "../config/serverConfig.js";
 import { requestHostname } from "../lib/requestHost.js";
-import { PLATFORM_ACCESS_COOKIE } from "../services/platform/platformCookieService.js";
+import { PLATFORM_ACCESS_COOKIE } from "@mms/mod-platform/backend/platform/services";
 
 const MUTATION_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const BODY_MUTATION_METHODS = new Set(["POST", "PUT", "PATCH"]);

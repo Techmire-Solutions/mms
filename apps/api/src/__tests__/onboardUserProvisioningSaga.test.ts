@@ -1,4 +1,27 @@
+vi.mock("@mms/mod-platform/backend/platform/services", () => ({
+  resolvePlatformAppOrigin: () => "http://localhost:5173",
+  getPlatformSettings: vi.fn(() => platformSettingsState.current),
+  setPlatformSettingsCache: vi.fn((next: Record<string, unknown>) => {
+    platformSettingsState.current = {
+      ...platformSettingsState.current,
+      ...next,
+    } as typeof platformSettingsState.current;
+  }),
+  issuePlatformSession: vi.fn(),
+  requestPlatformPasswordReset: vi.fn(),
+  resendPlatformPasswordReset: vi.fn(),
+  isPlatformTwoFactorRequired: vi.fn(() => false),
+  createPlatformTwoFactorChallenge: vi.fn(),
+  resendPlatformTwoFactorChallenge: vi.fn(),
+  verifyPlatformTwoFactorChallenge: vi.fn(),
+
+  clearPlatformAccessCookie: vi.fn(),
+}));
+import { configurePlatformAdapters } from "../modules/platform/adapters.js";
+configurePlatformAdapters();
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const platformSettingsState = vi.hoisted(() => ({ current: {} as Record<string, unknown> }));
 
 const mocks = vi.hoisted(() => ({
   createWorkspace: vi.fn(),
@@ -12,7 +35,8 @@ const mocks = vi.hoisted(() => ({
   sendTenantWelcomeEmail: vi.fn(),
 }));
 
-vi.mock("../services/workspaceService.js", () => ({
+vi.mock("../services/workspaceService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/workspaceService.js")>()),
   createWorkspace: mocks.createWorkspace,
   deleteWorkspace: mocks.deleteWorkspace,
   assertWorkspaceActive: vi.fn(),
@@ -38,7 +62,8 @@ vi.mock("../services/workspaceAdminProvisioningService.js", () => ({
   provisionWorkspaceAdmin: mocks.provisionWorkspaceAdmin,
 }));
 
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   loadGlobalSettings: vi.fn().mockResolvedValue({}),
   saveGlobalSettings: vi.fn().mockResolvedValue(undefined),
   getJwtExpiresIn: vi.fn().mockReturnValue("15m"),
@@ -63,31 +88,26 @@ vi.mock("../services/auth/tenantPasswordOtpDispatch.js", () => ({
   sendTenantWelcomeEmail: mocks.sendTenantWelcomeEmail,
 }));
 
-vi.mock("../services/platform/platformEmailConfig.js", () => ({
-  resolvePlatformAppOrigin: () => "http://localhost:5173",
-}));
-
 vi.mock("../services/auth/twoFactorService.js", () => ({
   createTwoFactorChallenge: vi.fn(),
   issueRefreshToken: vi.fn(),
 }));
 
-vi.mock("../services/auth/authCookieService.js", () => ({
+vi.mock("../services/auth/authCookieService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authCookieService.js")>()),
   setAuthCookies: vi.fn(),
-}));
-
-vi.mock("../services/platform/platformCookieService.js", () => ({
-  clearPlatformAccessCookie: vi.fn(),
+  clearAuthCookies: vi.fn(),
 }));
 
 import { onboardUser } from "../services/auth/authService.js";
-import { setPlatformSettingsCache } from "../services/platform/platformSettingsService.js";
+import { setPlatformSettingsCache } from "@mms/mod-platform/backend/platform/services";
 import { DEFAULT_PLATFORM_SETTINGS } from "@mms/contracts";
 
 const workspace = { id: "ws_1", subdomain: "demo", madrasaName: "Demo Madrasa", enabled: true };
 
 describe("onboardUser provisioning saga", () => {
   beforeEach(() => {
+    platformSettingsState.current = { ...DEFAULT_PLATFORM_SETTINGS };
     vi.clearAllMocks();
     setPlatformSettingsCache({ ...DEFAULT_PLATFORM_SETTINGS, disabledModules: [] });
     mocks.createWorkspace.mockResolvedValue(workspace);

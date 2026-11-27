@@ -4,7 +4,7 @@ paths:
   - "apps/api/src/routes/common/auth.ts"
   - "apps/api/src/middleware/authenticate*.ts"
   - "apps/api/src/services/auth/**"
-  - "apps/api/src/services/platform/**"
+  - "packages/modules/platform/src/backend/platform/**"
   - "apps/api/src/services/rbac*.ts"
   - "apps/api/src/lib/tenantContext.ts"
   - "packages/contracts/src/**/platformApiErrors.ts"

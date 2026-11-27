@@ -30,7 +30,7 @@ vi.mock("../db/database.js", () => ({
   getPool: () => ({ totalCount: 1, idleCount: 1, waitingCount: 0 }),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => {
     if (id === "p-admin-erd-test") return mockPlatformAdmin;
     return null;
@@ -111,7 +111,7 @@ describe("GET /api/platform/schema/erd", () => {
       },
     };
     const { findPlatformUserRowById } =
-      await import("../db/repositories/platformUserRepository.js");
+      await import("@mms/mod-platform/backend/platform/repository/db/platformUserRepository");
     vi.mocked(findPlatformUserRowById).mockImplementation(async (id: string) => {
       if (id === limitedAdmin.id) return limitedAdmin;
       if (id === mockPlatformAdmin.id) return mockPlatformAdmin;

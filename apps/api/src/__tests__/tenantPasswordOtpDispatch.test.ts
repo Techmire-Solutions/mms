@@ -1,3 +1,5 @@
+import { configurePlatformAdapters } from "../modules/platform/adapters.js";
+configurePlatformAdapters();
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -8,7 +10,8 @@ const mocks = vi.hoisted(() => ({
   getContactById: vi.fn(),
 }));
 
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   loadGlobalSettings: mocks.loadGlobalSettings,
 }));
 
@@ -16,7 +19,7 @@ vi.mock("../services/email/emailService.js", () => ({
   sendTenantEmail: mocks.sendTenantEmail,
 }));
 
-vi.mock("../services/platform/platformEmailService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services", () => ({
   sendPlatformEmail: mocks.sendPlatformEmail,
 }));
 

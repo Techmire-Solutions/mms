@@ -9,7 +9,7 @@ import {
   verifyEdtechWebhookSignature,
   calculateExponentialBackoff,
   isTokenExpired,
-} from "../integrations/edtech/edtechWebhookVerifier.js";
+} from "@mms/be-core/integrations/edtech";
 import { createHmac } from "node:crypto";
 import type { ImportPipelineContext } from "@mms/contracts";
 import type { StudentImportRow } from "@mms/mod-students/backend/use-cases";

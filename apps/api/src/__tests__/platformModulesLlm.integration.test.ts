@@ -34,7 +34,7 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi
     .fn()
     .mockImplementation(async (id: string) =>
@@ -50,17 +50,17 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
   deletePlatformUserRow: vi.fn(),
 }));
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/platform/platformSettingsService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformSettingsService", () => ({
   getPlatformSettings: vi.fn().mockReturnValue(DEFAULT_PLATFORM_SETTINGS),
   maskPlatformSettingsForClient: vi.fn().mockImplementation((settings: unknown) => settings),
   updatePlatformSettings: vi.fn().mockResolvedValue(DEFAULT_PLATFORM_SETTINGS),
 }));
 
-vi.mock("../services/platform/platformModuleService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformModuleService", () => ({
   getPlatformModuleCatalog: vi.fn().mockReturnValue([
     {
       id: "students",
@@ -86,7 +86,7 @@ vi.mock("../services/platform/platformModuleService.js", () => ({
   updatePlatformModules: vi.fn().mockResolvedValue(DEFAULT_PLATFORM_SETTINGS),
 }));
 
-vi.mock("../services/platform/platformLlmService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformLlmService", () => ({
   updatePlatformLlm: vi.fn().mockResolvedValue(DEFAULT_PLATFORM_SETTINGS),
   testPlatformLlm: vi.fn().mockResolvedValue({
     success: true,
@@ -96,9 +96,9 @@ vi.mock("../services/platform/platformLlmService.js", () => ({
   listPlatformLlmModels: vi.fn().mockResolvedValue(["gpt-4o-mini", "gpt-4o"]),
 }));
 
-import { insertPlatformActivityLog } from "../db/repositories/platformActivityLogsRepository.js";
-import { updatePlatformModules } from "../services/platform/platformModuleService.js";
-import { updatePlatformLlm } from "../services/platform/platformLlmService.js";
+import { insertPlatformActivityLog } from "@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository";
+import { updatePlatformModules } from "@mms/mod-platform/backend/platform/services/platformModuleService";
+import { updatePlatformLlm } from "@mms/mod-platform/backend/platform/services/platformLlmService";
 
 const mockAudit = vi.mocked(insertPlatformActivityLog);
 const mockUpdateModules = vi.mocked(updatePlatformModules);

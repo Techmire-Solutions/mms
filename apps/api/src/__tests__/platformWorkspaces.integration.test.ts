@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "../app.js";
-import { insertPlatformActivityLog } from "../db/repositories/platformActivityLogsRepository.js";
+import { insertPlatformActivityLog } from "@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository";
 
 const { mockSuperUser, mockLimitedUser, mockWorkspaces } = vi.hoisted(() => {
   const mockSuperUser = {
@@ -50,7 +50,7 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => {
     if (id === "p-super") return mockSuperUser;
     if (id === "p-limited") return mockLimitedUser;
@@ -111,7 +111,7 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => ({
     }),
 }));
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 

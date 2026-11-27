@@ -35,8 +35,8 @@ import {
 import { findWorkspaceTimezone } from "../../db/repositories/workspaceRepository.js";
 import { getWorkspaceTimezone } from "../../lib/workspaceTimezone.js";
 import { deleteRefreshTokensForUser } from "../../services/auth/authArtifactService.js";
-import * as platformSettingsService from "../../services/platform/platformSettingsService.js";
-import { getPlatformSettings } from "../../services/platform/platformSettingsService.js";
+import * as platformSettingsService from "@mms/mod-platform/backend/platform/services";
+import { getPlatformSettings } from "@mms/mod-platform/backend/platform/services";
 import { enqueueCsvExportJob, normalizeExportQuery } from "../../lib/csvExportEnqueue.js";
 import {
   enqueueBackgroundJob,

@@ -14,8 +14,8 @@ import type {
 import {
   listPlatformUsers,
   insertPlatformActivityLog,
-} from "../../platform/use-cases/platformUseCases.js";
-import { verifyPlatformUserPassword } from "../../services/platform/platformUserService.js";
+} from "@mms/mod-platform/backend/platform/use-cases";
+import { verifyPlatformUserPassword } from "@mms/mod-platform/backend/platform/services";
 import { createAuthHandoff } from "../../services/auth/authHandoffService.js";
 import { revokeAllUserSessions } from "@mms/be-core/auth/sessionRevocation";
 import { recordModernAuditEvent } from "@mms/be-core/audit";

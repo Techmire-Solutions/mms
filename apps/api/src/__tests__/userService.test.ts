@@ -58,7 +58,8 @@ vi.mock("@mms/mod-contacts/backend/services", async (importOriginal) => ({
   updateContactById: vi.fn(),
 }));
 
-vi.mock("../services/globalSettingsService.js", () => ({
+vi.mock("../services/globalSettingsService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/globalSettingsService.js")>()),
   assertPasswordMeetsPolicy: vi.fn().mockResolvedValue(undefined),
 }));
 

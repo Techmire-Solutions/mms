@@ -15,7 +15,7 @@ import {
 import {
   countPlatformUserRows,
   insertPlatformUser,
-} from "../repositories/platformUserRepository.js";
+} from "@mms/mod-platform/backend/platform/repository";
 import {
   countTenantUsersByWorkspace,
   replaceTenantUsersForWorkspace,

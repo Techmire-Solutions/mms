@@ -1,7 +1,9 @@
+import { configurePlatformAdapters } from "../modules/platform/adapters.js";
+configurePlatformAdapters();
 import { describe, expect, it } from "vitest";
 import type { FastifyRequest } from "fastify";
 import { attachAccessTokenFromCookie } from "../services/auth/authCookieService.js";
-import { attachPlatformTokenFromCookie } from "../services/platform/platformCookieService.js";
+import { attachPlatformTokenFromCookie } from "@mms/mod-platform/backend/platform/services";
 
 describe("attachAccessTokenFromCookie", () => {
   it("extracts from parsed cookies", () => {

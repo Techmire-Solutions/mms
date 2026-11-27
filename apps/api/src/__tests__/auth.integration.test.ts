@@ -3,6 +3,30 @@ import { hashRefreshToken } from "../services/auth/authCookieService.js";
 import { ContactUniqueFieldError } from "@mms/mod-contacts/backend/services";
 import { signTenantToken } from "./helpers/tokens.js";
 
+vi.mock("@mms/mod-platform/backend/platform/services/platformSettingsService", () => ({
+  getPlatformSettings: () => ({
+    syncTlsOnCreate: false,
+    emailNotifications: true,
+    smsNotifications: false,
+    whatsAppNotifications: false,
+    timezone: "UTC",
+    defaultEnabledModules: {},
+    disabledModules: [],
+    consolidationPrefs: { defaultPresentationCurrency: "USD", fiscalYearStartMonth: 1 },
+    contactPrefs: { defaultKind: "external" },
+    llmProvider: "none",
+  }),
+  setPlatformSettingsCache: vi.fn(),
+  updatePlatformSettings: vi.fn(async (x: Record<string, unknown>) => x),
+  maskPlatformSettingsForClient: (x: unknown) => x,
+  loadPlatformSettings: vi.fn(async () => ({})),
+  getPlatformSettingsRow: vi.fn(async () => null),
+}));
+
+vi.mock("@mms/mod-platform/backend/platform/services/platformOtpDispatch", () => ({
+  dispatchPlatformOtpAcrossChannels: vi.fn(async () => ({ sent: true, devCode: "123456" })),
+}));
+
 vi.mock("../db/database.js", () => ({
   initDb: vi.fn().mockResolvedValue(undefined),
   pingDatabase: vi.fn().mockResolvedValue(true),
@@ -64,6 +88,7 @@ const mockResetWorkspaceAdminPassword = vi.fn();
 const mockCreateWorkspaceAdminUser = vi.fn();
 const mockGetWorkspaceInstitutionSetupStatus = vi.fn();
 const mockIsPlatformSmtpConfigured = vi.fn().mockReturnValue(false);
+
 const mockGetPlatformUserProfile = vi.fn().mockImplementation(async (id: string) => {
   const stored = await mockGetStoredPlatformUserById(id);
   if (!stored) return null;
@@ -79,14 +104,19 @@ const mockGetPlatformUserProfile = vi.fn().mockImplementation(async (id: string)
   };
 });
 
-vi.mock("../services/platform/platformEmailService.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../services/platform/platformEmailService.js")>();
-  return {
-    ...actual,
-    isPlatformSmtpConfigured: (...args: unknown[]) => mockIsPlatformSmtpConfigured(...args),
-  };
-});
+vi.mock(
+  "@mms/mod-platform/backend/platform/services/platformEmailService",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@mms/mod-platform/backend/platform/services/platformEmailService")
+      >();
+    return {
+      ...actual,
+      isPlatformSmtpConfigured: (...args: unknown[]) => mockIsPlatformSmtpConfigured(...args),
+    };
+  },
+);
 
 vi.mock("../services/auth/passwordService.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/auth/passwordService.js")>();
@@ -110,41 +140,52 @@ const mockCreateVerifiedPlatformUser = vi
     emailVerifiedAt: new Date().toISOString(),
   }));
 
-vi.mock("../services/platform/platformUserService.js", () => ({
-  ensurePlatformSuperUserFromEnv: vi.fn().mockResolvedValue(undefined),
-  findPlatformUserByEmail: (...args: unknown[]) => mockFindPlatformUserByEmail(...args),
-  getStoredPlatformUserById: (...args: unknown[]) => mockGetStoredPlatformUserById(...args),
-  hasPlatformUsers: (...args: unknown[]) => mockHasPlatformUsers(...args),
-  countPlatformUsers: vi.fn(),
-  createVerifiedPlatformUser: (...args: unknown[]) => mockCreateVerifiedPlatformUser(...args),
-  setPlatformAdminPermissions: (...args: unknown[]) => mockSetPlatformAdminPermissions(...args),
-  setPlatformAdminDisabled: (...args: unknown[]) => mockSetPlatformAdminDisabled(...args),
-  deletePlatformAdmin: (...args: unknown[]) => mockDeletePlatformAdmin(...args),
-  verifyPlatformUserPassword: (...args: unknown[]) => mockVerifyPlatformUserPassword(...args),
-  updatePlatformUserPassword: (...args: unknown[]) => mockUpdatePlatformUserPassword(...args),
-  updatePlatformUserName: vi.fn(),
-  changePlatformUserPassword: vi.fn(),
-  getPlatformUserProfile: (...args: unknown[]) => mockGetPlatformUserProfile(...args),
-  updatePlatformUserProfile: vi.fn(),
-  toPlatformUserProfile: (stored: Record<string, unknown>) => ({
-    id: stored.id,
-    email: stored.email,
-    name: stored.name,
-    role: stored.role,
-    permissions: stored.permissions ?? { workspaces: false, onboard: false },
-    createdAt: stored.createdAt,
-    emailVerifiedAt: stored.emailVerifiedAt,
-    disabledAt: stored.disabledAt ?? null,
-  }),
-  toPublicPlatformUser: (user: Record<string, unknown>) => ({
-    id: user.id,
-    email: user.email,
-    name: user.name,
-    role: user.role,
-    permissions: user.permissions ?? { workspaces: false, onboard: false },
-  }),
+const { platformUserServiceMocks } = vi.hoisted(() => ({
+  platformUserServiceMocks: {
+    ensurePlatformSuperUserFromEnv: vi.fn().mockResolvedValue(undefined),
+    findPlatformUserByEmail: (...args: unknown[]) => mockFindPlatformUserByEmail(...args),
+    getStoredPlatformUserById: (...args: unknown[]) => mockGetStoredPlatformUserById(...args),
+    hasPlatformUsers: (...args: unknown[]) => mockHasPlatformUsers(...args),
+    countPlatformUsers: vi.fn(),
+    createVerifiedPlatformUser: (...args: unknown[]) => mockCreateVerifiedPlatformUser(...args),
+    setPlatformAdminPermissions: (...args: unknown[]) => mockSetPlatformAdminPermissions(...args),
+    setPlatformAdminDisabled: (...args: unknown[]) => mockSetPlatformAdminDisabled(...args),
+    deletePlatformAdmin: (...args: unknown[]) => mockDeletePlatformAdmin(...args),
+    verifyPlatformUserPassword: (...args: unknown[]) => mockVerifyPlatformUserPassword(...args),
+    updatePlatformUserPassword: (...args: unknown[]) => mockUpdatePlatformUserPassword(...args),
+    updatePlatformUserName: vi.fn(),
+    changePlatformUserPassword: vi.fn(),
+    getPlatformUserProfile: (...args: unknown[]) => mockGetPlatformUserProfile(...args),
+    updatePlatformUserProfile: vi.fn(),
+    toPlatformUserProfile: (stored: Record<string, unknown>) => ({
+      id: stored.id,
+      email: stored.email,
+      name: stored.name,
+      role: stored.role,
+      permissions: stored.permissions ?? { workspaces: false, onboard: false },
+      createdAt: stored.createdAt,
+      emailVerifiedAt: stored.emailVerifiedAt,
+      disabledAt: stored.disabledAt ?? null,
+    }),
+    toPublicPlatformUser: (user: Record<string, unknown>) => ({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      permissions: user.permissions ?? { workspaces: false, onboard: false },
+    }),
+  },
 }));
 
+vi.mock(
+  "@mms/mod-platform/backend/platform/services/platformUserService",
+  () => platformUserServiceMocks,
+);
+
+vi.mock("@mms/mod-platform/backend/platform/services", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@mms/mod-platform/backend/platform/services")>()),
+  ...platformUserServiceMocks,
+}));
 vi.mock("../services/workspaceService.js", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../services/workspaceService.js")>();
   const demoWorkspace = {
@@ -170,13 +211,13 @@ vi.mock("../services/workspaceService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 
 import { buildApp } from "../app.js";
 import { resetServerConfigCacheForTesting } from "../config/serverConfig.js";
-import { PLATFORM_ACCESS_COOKIE } from "../services/platform/platformCookieService.js";
+import { PLATFORM_ACCESS_COOKIE } from "@mms/mod-platform/backend/platform/services";
 import { unblockTenant } from "@mms/be-core/auth/sessionRevocation";
 
 // Never let state from one test leak into the next: production-mode tests cache

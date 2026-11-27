@@ -1,3 +1,6 @@
+import { configurePlatformPorts } from "@mms/mod-platform/backend/platform/deps";
+import { decryptSecretAtRest, encryptSecretAtRest } from "../lib/cryptoAtRest.js";
+configurePlatformPorts({ decryptSecretAtRest, encryptSecretAtRest });
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   decryptLlmApiKey,
@@ -5,7 +8,7 @@ import {
   encryptLlmApiKey,
   encryptLlmConfigs,
   workspaceLlmSecretsNeedEncryption,
-} from "../db/repositories/workspaceLlmSecrets.js";
+} from "@mms/mod-platform/backend/platform/repository";
 import { maskGlobalSettingsForClient, maskSecret } from "../services/globalSettingsService.js";
 import type { LlmConfig } from "@mms/contracts";
 

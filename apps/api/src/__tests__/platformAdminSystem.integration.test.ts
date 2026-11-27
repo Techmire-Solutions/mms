@@ -44,7 +44,7 @@ vi.mock("../db/database.js", () => ({
   pingDatabase: vi.fn().mockResolvedValue(true),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowById: vi.fn().mockImplementation(async (id: string) => {
     if (id === "p-super-migrate") return mockSuperUser;
     if (id === "p-admin-migrate") return mockAdminUser;
@@ -59,33 +59,43 @@ vi.mock("../db/repositories/platformUserRepository.js", () => ({
   updatePlatformUserRow: vi.fn().mockResolvedValue(mockSuperUser),
 }));
 
-vi.mock("../services/platform/platformUserService.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../services/platform/platformUserService.js")>();
-  return {
-    ...actual,
-    verifyPlatformUserPassword: vi
-      .fn()
-      .mockImplementation(async (_id: string, password: string) => {
-        return password === "TestPassword123!";
-      }),
-  };
-});
+vi.mock(
+  "@mms/mod-platform/backend/platform/services/platformUserService",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@mms/mod-platform/backend/platform/services/platformUserService")
+      >();
+    return {
+      ...actual,
+      verifyPlatformUserPassword: vi
+        .fn()
+        .mockImplementation(async (_id: string, password: string) => {
+          return password === "TestPassword123!";
+        }),
+    };
+  },
+);
 
-vi.mock("../db/repositories/platformActivityLogsRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformActivityLogsRepository", () => ({
   insertPlatformActivityLog: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/platform/platformAdminService.js", async (importOriginal) => {
-  const actual =
-    await importOriginal<typeof import("../services/platform/platformAdminService.js")>();
-  return {
-    ...actual,
-    scheduleMigrateAndRestart: (...args: unknown[]) => scheduleMigrateAndRestart(...args),
-    isRemoteMigrateRestartEnabled: () => isRemoteMigrateRestartEnabled(),
-    isMigrateRestartInFlight: () => isMigrateRestartInFlight(),
-  };
-});
+vi.mock(
+  "@mms/mod-platform/backend/platform/services/platformAdminService",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("@mms/mod-platform/backend/platform/services/platformAdminService")
+      >();
+    return {
+      ...actual,
+      scheduleMigrateAndRestart: (...args: unknown[]) => scheduleMigrateAndRestart(...args),
+      isRemoteMigrateRestartEnabled: () => isRemoteMigrateRestartEnabled(),
+      isMigrateRestartInFlight: () => isMigrateRestartInFlight(),
+    };
+  },
+);
 
 describe("platform admin system migrate-and-restart", () => {
   let app: FastifyInstance;

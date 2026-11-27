@@ -30,7 +30,7 @@ if (can('workspaces')) {
 
 ## 3. Backend Fastify Route Gating
 
-In platform route modules (`apps/api/src/routes/platform/`):
+In platform route modules (`packages/modules/platform/src/backend/platform/routes/`):
 ```typescript
 import { authenticatePlatform } from '../../middleware/authenticatePlatform.js';
 

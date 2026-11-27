@@ -1,3 +1,5 @@
+import { configurePlatformAdapters } from "../modules/platform/adapters.js";
+configurePlatformAdapters();
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { StoredPlatformUser } from "@mms/contracts";
 
@@ -13,7 +15,8 @@ const mocks = vi.hoisted(() => ({
   verifyOtpCode: vi.fn(),
 }));
 
-vi.mock("../services/auth/authArtifactService.js", () => ({
+vi.mock("../services/auth/authArtifactService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authArtifactService.js")>()),
   deleteRefreshTokensForUser: vi.fn(),
   putAuthArtifact: mocks.putAuthArtifact,
   takeAuthArtifact: mocks.takeAuthArtifact,
@@ -28,18 +31,20 @@ vi.mock("../services/auth/authArtifactService.js", () => ({
   updateAuthArtifactPayload: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../services/platform/platformOtpService.js", () => ({
-  dispatchPlatformOtp: mocks.dispatchPlatformOtp,
+vi.mock("@mms/mod-platform/backend/platform/services/platformOtpDispatch", () => ({
+  dispatchPlatformOtpAcrossChannels: mocks.dispatchPlatformOtp,
 }));
 
-vi.mock("../services/platform/platformUserService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformUserService", () => ({
   getStoredPlatformUserById: mocks.getStoredPlatformUserById,
 }));
 
-vi.mock("../services/auth/authCookieService.js", () => ({
+vi.mock("../services/auth/authCookieService.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../services/auth/authCookieService.js")>()),
   generateOtpCode: vi.fn(() => "123456"),
   hashOtpCode: mocks.hashOtpCode,
   verifyOtpCode: mocks.verifyOtpCode,
+  clearAuthCookies: vi.fn(),
 }));
 
 import {
@@ -47,7 +52,7 @@ import {
   isPlatformTwoFactorRequired,
   resendPlatformTwoFactorChallenge,
   verifyPlatformTwoFactorChallenge,
-} from "../services/platform/platformTwoFactorService.js";
+} from "@mms/mod-platform/backend/platform/services/platformTwoFactorService";
 
 const user: StoredPlatformUser = {
   id: "p-super",

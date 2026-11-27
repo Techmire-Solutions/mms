@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyPluginOptions, FastifyRequest } from "fastify";
 import { PLATFORM_BRANDING_NAME_FALLBACK, resolveAppDomainForRequest } from "@mms/contracts";
 import { requestHostname } from "../../lib/requestHost.js";
-import { getPublicPlatformBrandingData } from "../../services/platform/platformBrandingService.js";
+import { getPublicPlatformBrandingData } from "@mms/mod-platform/backend/platform/services";
 
 function manifestIcons(
   logoUrl: string,

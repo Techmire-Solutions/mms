@@ -57,7 +57,6 @@ export const MODULE_SLICES = Object.freeze({
   notifications: "notifications",
   documents: "documents",
   audit: "audit",
-  workspace: "workspace",
   platform: "platform",
 });
 

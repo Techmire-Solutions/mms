@@ -4,6 +4,7 @@ Historical register of architectural milestones closed during MMS migration and 
 
 ## Completed Milestones
 
+- **Vertical Module Extraction** (completed 2026-11-26): every backend business domain now lives in a `@mms/mod-*` package under `packages/modules/` — 21 modules (accounting, analytics, attendance, audit, billing, contacts, documents, enrollments, examinations, faculty, hasanat, iam, messaging, notifications, obligations, platform, question-bank, sessions, students, tasks, workshops). `apps/api/src` holds only kernel/composition code; every former cross-domain import is a declared port bound in `apps/api/src/modules/*/adapters.ts`; `apps/api/src` has no business-domain directory, and `check-module-boundaries` / `check-topology` pass.
 - **RBAC**: Replaced legacy `role ===` write gates with contract `can()` via `useModulePermissions(manifest)` (`mms-auth-security`).
 - **Setup & Prefs**: Migrated all module preferences and lookups to typed relational tables (`mms-fields`, `mms-data-layer`).
 - **PG Statement Budgets**: Enforced route-level query budgets on hot paths via `statementTimeoutMs` (`mms-data-layer`).

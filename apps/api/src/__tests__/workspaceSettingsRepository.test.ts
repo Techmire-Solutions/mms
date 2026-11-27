@@ -1,3 +1,6 @@
+import { configurePlatformPorts } from "@mms/mod-platform/backend/platform/deps";
+import { decryptSecretAtRest, encryptSecretAtRest } from "../lib/cryptoAtRest.js";
+configurePlatformPorts({ decryptSecretAtRest, encryptSecretAtRest });
 import { describe, expect, it } from "vitest";
 import { rowToGlobalSettings } from "../db/repositories/workspaceSettingsRepository.js";
 

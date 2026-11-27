@@ -12,7 +12,7 @@ import {
   encryptLlmApiKey,
   encryptLlmConfigs,
   workspaceLlmSecretsNeedEncryption,
-} from "../repositories/workspaceLlmSecrets.js";
+} from "@mms/mod-platform/backend/platform/repository";
 import { invalidateWorkspaceCache } from "../../services/workspaceService.js";
 
 export async function runMigration090(): Promise<void> {

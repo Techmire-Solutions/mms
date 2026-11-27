@@ -1,6 +1,6 @@
 ---
 description: Authentication session cookies, JWT token scopes, tenant isolation context, RBAC matrices, and threat mitigations
-globs: apps/api/src/routes/common/auth.ts,apps/api/src/middleware/authenticate*.ts,apps/api/src/services/auth/**,apps/api/src/services/platform/**,apps/api/src/services/rbac*.ts,apps/api/src/lib/tenantContext.ts,packages/contracts/src/**/platformApiErrors.ts,packages/contracts/src/**/moduleAccessPolicy.ts,packages/fe-core/src/auth/AuthContext.tsx,apps/platform-web/src/platform/features/auth/lib/PlatformAuthContext.tsx,apps/platform-web/src/platform/features/auth/lib/platformAuthErrors.ts,apps/platform-web/src/platform/features/auth/**,apps/tenant-web/src/tenant/hooks/usePermissions.ts,apps/tenant-web/src/components/routing/**
+globs: apps/api/src/routes/common/auth.ts,apps/api/src/middleware/authenticate*.ts,apps/api/src/services/auth/**,packages/modules/platform/src/backend/platform/**,apps/api/src/services/rbac*.ts,apps/api/src/lib/tenantContext.ts,packages/contracts/src/**/platformApiErrors.ts,packages/contracts/src/**/moduleAccessPolicy.ts,packages/fe-core/src/auth/AuthContext.tsx,apps/platform-web/src/platform/features/auth/lib/PlatformAuthContext.tsx,apps/platform-web/src/platform/features/auth/lib/platformAuthErrors.ts,apps/platform-web/src/platform/features/auth/**,apps/tenant-web/src/tenant/hooks/usePermissions.ts,apps/tenant-web/src/components/routing/**
 alwaysApply: false
 ---
 

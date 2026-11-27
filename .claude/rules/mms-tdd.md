@@ -1,10 +1,10 @@
 ---
 description: Test-first delivery — Red/Green/Refactor for backend domain layers, shared helpers, and bug fixes
 paths:
-  - "apps/api/src/**/use-cases/**/*.ts"
-  - "apps/api/src/**/services/**/*.ts"
-  - "apps/api/src/**/repositories/**/*.ts"
-  - "apps/api/src/**/repository/**/*.ts"
+  - "apps/api/src/services/**/*.ts"
+  - "packages/modules/*/src/backend/**/use-cases/**/*.ts"
+  - "packages/modules/*/src/backend/**/services/**/*.ts"
+  - "packages/modules/*/src/backend/**/repository/**/*.ts"
   - "packages/contracts/src/**/*.ts"
   - "apps/tenant-web/src/tenant/features/**/hooks/**/*.ts"
 ---

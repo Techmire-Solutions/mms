@@ -7,7 +7,7 @@ import {
   decryptLlmConfigs,
   encryptLlmApiKey,
   encryptLlmConfigs,
-} from "./workspaceLlmSecrets.js";
+} from "@mms/mod-platform/backend/platform/repository";
 import { loadWorkspaceRow, invalidateWorkspaceCache } from "./workspaceRepositoryCache.js";
 
 /** Map nullable workspace columns back to a GlobalSettings shape (with defaults). */

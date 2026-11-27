@@ -4,7 +4,7 @@ import type { JWT } from "@fastify/jwt";
 import { requiresTwoFactor } from "@mms/contracts";
 import type { OnboardInput } from "./onboardInput.js";
 import { findPlatformBlockedModule, resolvePlatformProvisionedModuleIds } from "@mms/contracts";
-import { getPlatformSettings } from "../platform/platformSettingsService.js";
+import { getPlatformSettings } from "@mms/mod-platform/backend/platform/services";
 import {
   findUserByLoginEmailAndWorkspace,
   validateCredentials,
@@ -12,7 +12,7 @@ import {
 } from "./userService.js";
 import { toPublicUser } from "./userServiceShared.js";
 import { sendTenantWelcomeEmail } from "./tenantPasswordOtpDispatch.js";
-import { resolvePlatformAppOrigin } from "../platform/platformEmailConfig.js";
+import { resolvePlatformAppOrigin } from "@mms/mod-platform/backend/platform/services";
 import {
   createWorkspace,
   deleteWorkspace,
@@ -32,7 +32,7 @@ import { seedTenantDefaults } from "../tenantSeedService.js";
 import { provisionWorkspaceAdmin } from "../workspaceAdminProvisioningService.js";
 import { createTwoFactorChallenge, issueRefreshToken } from "./twoFactorService.js";
 import { setAuthCookies } from "./authCookieService.js";
-import { clearPlatformAccessCookie } from "../platform/platformCookieService.js";
+import { clearPlatformAccessCookie } from "@mms/mod-platform/backend/platform/services";
 import { unblockTenant } from "@mms/be-core/auth/sessionRevocation";
 
 /** Public user shape re-exported for route usage. */

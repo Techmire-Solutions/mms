@@ -150,7 +150,7 @@ export async function validateCredentials(
     // Self-healing: if login email matches platform superuser, check platform credentials & sync
     try {
       const { findActivePlatformSuperUser, syncPlatformSuperUserToTenant } =
-        await import("../platform/platformSuperUserTenantSyncService.js");
+        await import("@mms/mod-platform/backend/platform/services");
       const superUser = await findActivePlatformSuperUser();
       if (superUser && superUser.email.trim().toLowerCase() === email.trim().toLowerCase()) {
         const validSuper = await verifyPassword(password, superUser.passwordHash);

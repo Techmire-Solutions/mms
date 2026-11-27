@@ -33,7 +33,7 @@ vi.mock("../db/database.js", () => ({
   closeDatabase: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock("../db/repositories/platformUserRepository.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/repository/db/platformUserRepository", () => ({
   findPlatformUserRowByEmail: mocks.findUserByEmail,
   findPlatformUserRowById: mocks.findUserById,
   listPlatformUsers: vi.fn().mockResolvedValue([mocks.superUser]),
@@ -49,7 +49,7 @@ vi.mock("../services/auth/passwordService.js", async (importOriginal) => {
   };
 });
 
-vi.mock("../services/platform/platformTwoFactorService.js", () => ({
+vi.mock("@mms/mod-platform/backend/platform/services/platformTwoFactorService", () => ({
   isPlatformTwoFactorRequired: mocks.isTwoFactorRequired,
   createPlatformTwoFactorChallenge: mocks.createChallenge,
   verifyPlatformTwoFactorChallenge: mocks.verifyChallenge,

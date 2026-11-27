@@ -1,6 +1,6 @@
 # MMS Monorepo Migration Blueprint
 
-**Status:** active · **Scope:** repository layout and package boundaries only · **Behaviour target:** zero change except the additive `/api/tenant/*` namespace · **Measured against:** the working tree at 2026-11-25 (base commit `edd92a58a` + ≈6,900 uncommitted paths; 6,893 at measurement time — the tree is being edited concurrently, so re-measure before quoting a count).
+**Status:** backend module extraction **complete** — 21 `@mms/mod-*` packages own every business domain; `apps/api/src` holds only kernel/composition code (see `.agent/rules/mms-migration-status.md` §0). Remaining: frontend app-owned UI (P8) · **Scope:** repository layout and package boundaries only · **Behaviour target:** zero change except the additive `/api/tenant/*` namespace · **Measured against:** the working tree at 2026-11-25 (base commit `edd92a58a` + ≈6,900 uncommitted paths; 6,893 at measurement time — the tree is being edited concurrently, so re-measure before quoting a count).
 
 > **Read this first.** The tree is **not** the tree at `HEAD`. The migration to the 3-tier layout is already
 > roughly 60 % executed and almost entirely uncommitted: `packages/{db,be-core,fe-core,ui}`, both module

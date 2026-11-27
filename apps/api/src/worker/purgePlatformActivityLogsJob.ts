@@ -2,7 +2,7 @@ import { logger } from "../lib/logger.js";
 import {
   countPlatformActivityLogsOlderThan,
   deletePlatformActivityLogsOlderThan,
-} from "../db/repositories/platformActivityLogsRepository.js";
+} from "@mms/mod-platform/backend/platform/repository";
 
 export const DEFAULT_PLATFORM_ACTIVITY_LOG_RETENTION_DAYS = 180;
 const CHUNK_SIZE = 500;
