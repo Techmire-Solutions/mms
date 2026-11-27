@@ -13,10 +13,12 @@ type ComputedCustomCard = ReturnType<typeof computeCustomCard>;
 
 interface CustomWidgetCardLayoutProps {
   computedCard: ComputedCustomCard;
+  hideTitle?: boolean;
 }
 
 export function CustomWidgetCardLayout({
   computedCard,
+  hideTitle = false,
 }: CustomWidgetCardLayoutProps): React.JSX.Element {
   const Icon = ICONS_LIST[computedCard.icon || ""] || Users;
   const colorClasses = COLOR_MAP[computedCard.color || ""] || COLOR_MAP.emerald;
@@ -44,7 +46,7 @@ export function CustomWidgetCardLayout({
         colorTheme={colorClasses}
         icon={<Icon className={`w-4.5 h-4.5 ${colorClasses.text}`} />}
         value={computedCard.value}
-        title={computedCard.title}
+        title={hideTitle ? "" : computedCard.title}
         footer={computedCard.sub}
         trend={computedCard.trend}
       />

@@ -118,8 +118,8 @@ export function WidgetBuilderMetricOptions({
             options={[
               { value: "equals", label: t("reports.widgets.builder.opEquals") },
               { value: "contains", label: t("reports.widgets.builder.opContains") },
-              { value: "gt", label: `> ${t("reports.widgets.builder.opGt")}` },
-              { value: "lt", label: `< ${t("reports.widgets.builder.opLt")}` },
+              { value: "gt", label: t("reports.widgets.builder.opGt") },
+              { value: "lt", label: t("reports.widgets.builder.opLt") },
             ]}
           />
         </Field>

@@ -45,6 +45,7 @@ type CustomWidgetComfortableLayoutProps = {
   isSwitchOn: boolean;
   switchLabel: string;
   isEditMode: boolean;
+  hideTitle?: boolean;
   onSwitchToggle: (widget: CustomWidget) => void;
   onMetricClick: (widget: CustomWidget) => void;
   t: TranslationFunction;
@@ -63,13 +64,14 @@ export function CustomWidgetComfortableLayout({
   isSwitchOn,
   switchLabel,
   isEditMode,
+  hideTitle = false,
   onSwitchToggle,
   onMetricClick,
   t,
 }: CustomWidgetComfortableLayoutProps): React.JSX.Element {
   if (resolvedWidgetType === "card") {
     if (!computedCard) return <></>;
-    return <CustomWidgetCardLayout computedCard={computedCard} />;
+    return <CustomWidgetCardLayout computedCard={computedCard} hideTitle={hideTitle} />;
   }
 
   if (isComposedWidgetType(resolvedWidgetType)) {
@@ -108,9 +110,11 @@ export function CustomWidgetComfortableLayout({
       />
       <div className="flex min-w-0 items-center justify-between gap-2">
         <div className="min-w-0 space-y-0.5 text-start">
-          <SectionLabel tone="foreground" className="block truncate leading-none">
-            {resolveWidgetTitle(widget, t)}
-          </SectionLabel>
+          {!hideTitle ? (
+            <SectionLabel tone="foreground" className="block truncate leading-none">
+              {resolveWidgetTitle(widget, t)}
+            </SectionLabel>
+          ) : null}
           <p
             className={cn(
               "truncate text-xs font-bold uppercase tracking-wider",

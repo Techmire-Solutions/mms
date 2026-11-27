@@ -59,6 +59,7 @@ vi.mock("../use-cases/contactPreferencesService.js", () => ({
 
 vi.mock("../use-cases/contactLookupsService.js", () => ({
   loadContactLookupKind: vi.fn().mockResolvedValue([]),
+  loadContactLookupsMap: vi.fn().mockResolvedValue({}),
 }));
 
 vi.mock("@mms/be-core/rbac", async (importOriginal) => ({

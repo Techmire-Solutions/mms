@@ -137,7 +137,13 @@ export function useComparisonModeData({
       );
     }
     if (isContacts) {
-      return buildContactsDateRangeComparison(reportData?.monthlyByYear, rangeA, rangeB);
+      const contactsReportBody =
+        reportData && typeof reportData === "object" && "body" in reportData
+          ? reportData.status === 200
+            ? reportData.body
+            : undefined
+          : reportData;
+      return buildContactsDateRangeComparison(contactsReportBody?.monthlyByYear, rangeA, rangeB);
     }
     return computeDynamicDateRangeComparison(
       category,

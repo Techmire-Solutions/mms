@@ -144,7 +144,7 @@ describe("contactRepositoryMetrics (SQL)", () => {
       expect(compiled).toContain("LEFT JOIN LATERAL");
       expect(compiled).toContain("ORDER BY p.is_primary DESC, p.sort_order ASC");
       expect(compiled).toContain("LIMIT 1");
-      expect(compiled).toContain("length(pp.digits) BETWEEN 8 AND 15");
+      expect(compiled).toContain("= 'registered'");
       // Subdomain is a bound parameter, not interpolated text.
       expect(compiled).toContain("demo");
       expect(result).toMatchObject({ total: 2, whatsappCount: 1, incompleteCount: 1 });

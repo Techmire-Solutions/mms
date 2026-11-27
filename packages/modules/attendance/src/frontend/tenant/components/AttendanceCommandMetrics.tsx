@@ -14,7 +14,7 @@ import { ModuleCommandMetricsGrid } from "@mms/fe-core/components/ModuleCommandM
 
 export interface AttendanceCommandMetricsProps {
   total: number;
-  shown: number;
+  shown?: number;
   selectedDate: string;
 }
 
@@ -42,12 +42,16 @@ export const AttendanceCommandMetrics = function AttendanceCommandMetrics({
       value: metrics.total,
       accent: "primary" as const,
     },
-    {
-      icon: Filter,
-      label: t("attendance.metrics.filtered"),
-      value: shown,
-      accent: "info" as const,
-    },
+    ...(shown !== undefined
+      ? [
+          {
+            icon: Filter,
+            label: t("attendance.metrics.filtered"),
+            value: shown,
+            accent: "info" as const,
+          },
+        ]
+      : []),
     {
       icon: UserCheck,
       label: t("attendance.metrics.present"),

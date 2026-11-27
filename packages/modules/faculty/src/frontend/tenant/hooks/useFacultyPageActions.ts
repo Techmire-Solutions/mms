@@ -9,9 +9,10 @@ import { type FacultyRecord, toMessagingRecipient } from "@mms/contracts";
 
 export interface UseFacultyPageActionsParams {
   editFaculty?: Faculty | null;
+  messaging?: ReturnType<typeof useMessageComposerState>;
 }
 
-export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsParams) {
+export function useFacultyPageActions({ editFaculty, messaging }: UseFacultyPageActionsParams) {
   const effectiveEditTarget = editFaculty ?? null;
   const { t } = useTranslation();
   const { handleError, notifyBulkResult, notifyArchivedWithUndo } = useFacultyCrudNotify();
@@ -26,8 +27,9 @@ export function useFacultyPageActions({ editFaculty }: UseFacultyPageActionsPara
     bulkUpdateFacultySpecialization,
     isBulkSpecializationPending,
   } = useFacultyMutations();
+  const localMessaging = useMessageComposerState();
   const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
-    useMessageComposerState();
+    messaging ?? localMessaging;
 
   const toRecipients = (list: Faculty[]) => list.map((item) => toMessagingRecipient(item));
 

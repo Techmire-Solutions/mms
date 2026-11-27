@@ -123,6 +123,8 @@ export type ContactPreferences = {
   relationshipPairs?: RelationshipPair[];
   /** Preferred Relationship-type dropdown order (subset of pair-derived labels). */
   relationshipOptionOrder?: string[];
+  /** Persisted canonical duplicate pair IDs (`minId-maxId`) dismissed by tenant users. */
+  dismissedDuplicatePairs?: string[];
 };
 
 /** WhatsApp quick template preset for campaign messaging. */

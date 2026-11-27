@@ -6,6 +6,7 @@ import {
 } from "../i18n/appTranslations.js";
 import type { FieldDefinition } from "./contactTypes.js";
 import { isAllowedRelationshipLabel } from "./contactRelationshipRules.js";
+import { isValidCalendarIsoDate, isValidDobIsoDate } from "../core/ageUtils.js";
 
 const EMAIL_RE =
   /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}$/;
@@ -132,9 +133,17 @@ export function buildCustomFieldSchema(
       });
       break;
     case "date":
-      baseSchema = z.string().refine((value) => !Number.isNaN(Date.parse(value)), {
-        message: msg("contacts.validation.invalidDate", language, { label }),
-      });
+      baseSchema = z
+        .string()
+        .refine(
+          (value) =>
+            fieldDefinition.key === "dob"
+              ? isValidDobIsoDate(value)
+              : isValidCalendarIsoDate(value) || !Number.isNaN(Date.parse(value)),
+          {
+            message: msg("contacts.validation.invalidDate", language, { label }),
+          },
+        );
       break;
     case "datetime":
       baseSchema = z.string().refine((value) => !Number.isNaN(Date.parse(value)), {

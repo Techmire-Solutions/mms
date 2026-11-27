@@ -35,6 +35,7 @@ export * from "../auth/platformSetupValidation.js";
 export * from "../auth/platformTypes.js";
 export * from "../erd/erdCatalog.js";
 export * from "../core/serverPorts.js";
+export * from "../core/countryProvinces.js";
 export * from "../schemas/uiState.dto.js";
 export * from "../schemas/platformAi.dto.js";
 export * from "../schemas/moduleImport.dto.js";

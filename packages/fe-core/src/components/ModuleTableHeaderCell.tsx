@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowUpDown, ChevronDown, ChevronUp } from "lucide-react";
 import { ResizableTableHead } from "./ResizableTableHead";
 import type { TableCellAlign, TableCellVariant } from "@mms/ui";
 import { cn } from "@mms/ui";
@@ -105,7 +105,7 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
             // makes the whole header cell the sort target (WCAG 2.2 2.5.8 / the
             // project's 44px floor) without growing the row. The end-edge resize
             // handle keeps its own elevated layer, so dragging still wins.
-            "relative flex w-full items-center gap-1 uppercase cursor-pointer select-none hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
+            "group/sort relative flex w-full items-center gap-1 uppercase cursor-pointer select-none hover:text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm",
             "after:absolute after:inset-x-0 after:top-1/2 after:h-11 after:-translate-y-1/2 after:content-['']",
             isEnd
               ? "justify-end text-end"
@@ -122,7 +122,10 @@ export const ModuleTableHeaderCell = function ModuleTableHeaderCell({
               <ChevronDown className="w-3 h-3 text-primary" aria-hidden="true" />
             )
           ) : (
-            <ChevronUp className="w-3 h-3 opacity-20" aria-hidden="true" />
+            <ArrowUpDown
+              className="w-3 h-3 opacity-0 group-hover/sort:opacity-40 group-focus-visible/sort:opacity-40 transition-opacity"
+              aria-hidden="true"
+            />
           )}
         </button>
       ) : (

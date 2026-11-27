@@ -28,7 +28,7 @@ export function useContactsPageDirectoryProps({
   directory: Directory;
   overlay: Pick<Overlay, "setViewContact">;
   messaging: Pick<Messaging, "canWriteMessaging" | "handleWhatsApp" | "handleSms" | "handleEmail">;
-  actions: Pick<Actions, "handleEdit" | "handleDelete" | "handleRestore">;
+  actions: Pick<Actions, "handleEdit" | "handleDelete" | "handleRestore" | "handlePermanentDelete">;
   viewingDeleted: boolean;
   canWrite: boolean;
   canDelete: boolean;
@@ -82,6 +82,7 @@ export function useContactsPageDirectoryProps({
       onEdit: actions.handleEdit,
       onDelete: actions.handleDelete,
       onRestore: actions.handleRestore,
+      onPermanentDelete: actions.handlePermanentDelete,
       showArchived: viewingDeleted,
       ...messagingHandlers,
       allContacts: allContactsForLinks,
@@ -100,6 +101,7 @@ export function useContactsPageDirectoryProps({
       actions.handleEdit,
       actions.handleDelete,
       actions.handleRestore,
+      actions.handlePermanentDelete,
       viewingDeleted,
       messagingHandlers,
       allContactsForLinks,
@@ -122,6 +124,7 @@ export function useContactsPageDirectoryProps({
       onEdit: actions.handleEdit,
       onDelete: actions.handleDelete,
       onRestore: actions.handleRestore,
+      onPermanentDelete: actions.handlePermanentDelete,
       showArchived: viewingDeleted,
       ...messagingHandlers,
       allContacts: allContactsForLinks,
@@ -144,6 +147,7 @@ export function useContactsPageDirectoryProps({
       actions.handleEdit,
       actions.handleDelete,
       actions.handleRestore,
+      actions.handlePermanentDelete,
       viewingDeleted,
       messagingHandlers,
       allContactsForLinks,

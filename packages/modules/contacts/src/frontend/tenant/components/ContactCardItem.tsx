@@ -44,6 +44,7 @@ export interface ContactCardItemProps {
   onEdit: (contact: Contact) => void;
   onDelete: (id: string | number) => void;
   onRestore?: (id: string | number) => void;
+  onPermanentDelete?: (id: string | number) => void;
   onWhatsApp?: (contacts: Contact[]) => void;
   onSms?: (contacts: Contact[]) => void;
   onEmail?: (contacts: Contact[]) => void;
@@ -71,6 +72,7 @@ export const ContactCardItem = React.memo(function ContactCardItem({
   onEdit,
   onDelete,
   onRestore,
+  onPermanentDelete,
   onWhatsApp,
   onSms,
   onEmail,
@@ -154,6 +156,7 @@ export const ContactCardItem = React.memo(function ContactCardItem({
           onEdit={onEdit}
           onDelete={onDelete}
           onRestore={onRestore}
+          onPermanentDelete={onPermanentDelete}
           onWhatsApp={onWhatsApp}
           onSms={onSms}
           onEmail={onEmail}

@@ -5,7 +5,7 @@ import { useContactsMetrics } from "../hooks/useContacts";
 import { ModuleCommandMetricsGrid } from "@mms/fe-core/components/ModuleCommandMetricsGrid";
 
 export interface ContactsCommandMetricsProps {
-  shown: number;
+  shown?: number;
   pendingCount: number;
   conflictCount: number;
   flushing: boolean;
@@ -53,12 +53,16 @@ export const ContactsCommandMetrics = React.memo(function ContactsCommandMetrics
         value: serverValue(metrics.total),
         accent: "primary" as const,
       },
-      {
-        icon: Filter,
-        label: t("contacts.metrics.filtered"),
-        value: shown,
-        accent: "info" as const,
-      },
+      ...(shown !== undefined
+        ? [
+            {
+              icon: Filter,
+              label: t("contacts.metrics.filtered"),
+              value: shown,
+              accent: "info" as const,
+            },
+          ]
+        : []),
       {
         icon: Clock,
         label: t("contacts.metrics.pendingSync"),

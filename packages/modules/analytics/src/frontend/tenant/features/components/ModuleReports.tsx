@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { BarChart2, GitCompare, Wrench, Sparkles, CreditCard, Bookmark } from "lucide-react";
+import { BarChart2, GitCompare, Wrench, Sparkles, Bookmark } from "lucide-react";
 
 import { useTranslation } from "@mms/fe-core/i18n";
 import { FormSelect } from "@mms/fe-core/components/FormSelect";
@@ -46,7 +46,6 @@ export default function ModuleReports({ category }: ModuleReportsProps) {
     { key: "compare", label: t("reports.moduleTools.compare"), icon: GitCompare },
     { key: "builder", label: t("reports.moduleTools.reportBuilder"), icon: Wrench },
     { key: "visualizer", label: t("reports.moduleTools.visualizerBuilder"), icon: Sparkles },
-    { key: "cardBuilder", label: t("reports.moduleTools.cardBuilder"), icon: CreditCard },
     { key: "saved", label: t("reports.saved.title"), icon: Bookmark },
   ])() as readonly SubTab<ReportsToolsTab>[];
 

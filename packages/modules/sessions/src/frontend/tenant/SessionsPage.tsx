@@ -68,7 +68,12 @@ export default function Sessions(): React.JSX.Element {
           ]}
         />
       }
-      metrics={<SessionsCommandMetrics total={c.shownCount} filteredTotal={c.shownCount} />}
+      metrics={
+        <SessionsCommandMetrics
+          total={c.shownCount}
+          filteredTotal={c.activeTab === "work" ? c.shownCount : undefined}
+        />
+      }
       tiers={[
         {
           id: "work",

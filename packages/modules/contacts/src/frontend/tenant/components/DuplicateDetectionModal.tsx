@@ -179,9 +179,6 @@ export function DuplicateDetectionModal({
             />
           ) : (
             <>
-              <p className="text-xs text-muted-foreground">
-                {t("contacts.duplicates.dismissSessionHint")}
-              </p>
               {isVirtualized ? (
                 <div ref={listScrollRef} className="max-h-[min(60vh,640px)] overflow-y-auto pe-1">
                   <div

@@ -27,7 +27,8 @@ export interface ModuleRowActionsMenuProps {
   editLabel?: string;
   deleteLabel?: string;
   restoreLabel?: string;
-  /** True when the row is soft-deleted (archive view → restore item only). */
+  permanentDeleteLabel?: string;
+  /** True when the row is soft-deleted (archive view → restore / permanent delete items). */
   archived: boolean;
   canWrite: boolean;
   canDelete: boolean;
@@ -35,6 +36,7 @@ export interface ModuleRowActionsMenuProps {
   onEdit?: () => void;
   onDelete: () => void;
   onRestore?: () => void;
+  onPermanentDelete?: () => void;
   /** When true, omit View (face header/footer or card already opens the profile). */
   hideViewItem?: boolean;
   /** Module-specific items rendered between edit and delete/restore (messaging etc.). */
@@ -57,6 +59,7 @@ export const ModuleRowActionsMenu = function ModuleRowActionsMenu({
   editLabel,
   deleteLabel,
   restoreLabel,
+  permanentDeleteLabel,
   archived,
   canWrite,
   canDelete,
@@ -64,6 +67,7 @@ export const ModuleRowActionsMenu = function ModuleRowActionsMenu({
   onEdit,
   onDelete,
   onRestore,
+  onPermanentDelete,
   hideViewItem = false,
   extras,
   triggerClassName,
@@ -116,6 +120,17 @@ export const ModuleRowActionsMenu = function ModuleRowActionsMenu({
           <DropdownMenuItem onClick={onRestore}>
             <RotateCcw className="w-3.5 h-3.5 me-2" aria-hidden /> {restoreLabel}
           </DropdownMenuItem>
+        ) : null}
+        {archived && canDelete && onPermanentDelete && permanentDeleteLabel ? (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={onPermanentDelete}
+              className="text-destructive focus:text-destructive"
+            >
+              <Trash2 className="w-3.5 h-3.5 me-2" aria-hidden /> {permanentDeleteLabel}
+            </DropdownMenuItem>
+          </>
         ) : null}
       </DropdownMenuContent>
     </DropdownMenu>

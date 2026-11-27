@@ -6,6 +6,8 @@ import { contactUseCases } from "../../use-cases/index.js";
 import { ContactUniqueFieldError } from "../../services/index.js";
 import { canDeleteContacts } from "@mms/be-core/rbac";
 import { contactRecordSchema, bulkIdsBodySchema } from "@mms/contracts";
+import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
+import { sendDatabaseError } from "@mms/be-core/http/errors";
 import { auditContact, sanitizeOneForUser } from "./contactRouteHelpers.js";
 
 /** Contact soft-delete, restore, and bulk trash routes. */
@@ -65,5 +67,47 @@ export const contactSoftDeleteRoutes: FastifyPluginAsync = async (fastify) => {
         `Restored ${result.succeeded} contact(s); ${result.failed} failed`,
       );
     },
+  });
+
+  fastify.delete<{ Params: { id: string } }>("/:id/permanent", async (request, reply) => {
+    const user = request.user as User;
+    if (!canDeleteContacts(user)) {
+      return reply.status(403).send({ type: "forbidden", message: "Delete permission required" });
+    }
+    const id = request.params.id?.trim();
+    if (!id) return replyValidationError(reply, "Contact ID is required");
+    try {
+      const deleted = await contactUseCases.permanentDeleteContactById(id, String(user.id));
+      if (!deleted) {
+        return reply.status(404).send({ type: "not_found", message: "Archived contact not found" });
+      }
+      await auditContact(user, "contact.permanent_delete", `Permanently deleted contact ${id}`, id);
+      return reply.send({ success: true as const });
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to permanently delete contact", error);
+    }
+  });
+
+  fastify.post("/bulk-permanent-delete", async (request, reply) => {
+    const user = request.user as User;
+    if (!canDeleteContacts(user)) {
+      return reply.status(403).send({ type: "forbidden", message: "Delete permission required" });
+    }
+    const parsed = parseRequest(bulkIdsBodySchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    try {
+      const result = await contactUseCases.bulkPermanentDeleteContacts(
+        parsed.data.ids.map(String),
+        String(user.id),
+      );
+      await auditContact(
+        user,
+        "contact.bulk_permanent_delete",
+        `Permanently deleted ${result.succeeded} contact(s); ${result.failed} failed`,
+      );
+      return reply.send({ success: true as const, ...result });
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to permanently delete contacts", error);
+    }
   });
 };

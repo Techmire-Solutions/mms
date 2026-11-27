@@ -168,8 +168,8 @@ export function WorkBatchTable<TData extends { id: string | number }>({
         tabIndex={0}
         className={cn(
           "overflow-x-auto",
-          // Keep keyboard-focused rows clear of the sticky header (WCAG 2.2 2.4.11).
-          "scroll-pt-12",
+          // Keep keyboard-focused rows clear of the sticky header and sticky end actions column.
+          "scroll-pt-12 scroll-pe-32",
           Boolean(maxHeightClassName) && cn(maxHeightClassName, "overflow-y-auto"),
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40",
           bordered && WORK_SURFACE,

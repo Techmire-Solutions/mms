@@ -1,4 +1,7 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { apiContract } from "@mms/fe-core/api/tsRest";
+import { invalidateContactsQueries } from "./invalidateContactsQueries.js";
 import {
   applyTitleCaseToContact,
   getDuplicateConfidenceBadgeStyle,
@@ -51,6 +54,7 @@ export function useDuplicateDetectionState({
   /** Merge writes carry the active blueprint version so a stale preview is rejected. */
   const withBlueprintVersion = (contact: Contact): Contact =>
     ({ ...contact, _blueprintId: String(fieldConfigVersion) }) as Contact;
+  const queryClient = useQueryClient();
   const [dupPage, setDupPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [tierFilter, setTierFilter] = useState<DuplicateTierFilter>("all");
@@ -73,7 +77,9 @@ export function useDuplicateDetectionState({
   const [mergedPairIds, setMergedPairIds] = useState<Set<string>>(new Set());
   const [keepIndex, setKeepIndex] = useState<Record<string, number>>({});
   const [merging, setMerging] = useState<DuplicatePair | null>(null);
-  const [loadedPairs, setLoadedPairs] = useState<DuplicatePair[]>([]);
+  const [loadedPairs, setLoadedPairs] = useState<DuplicatePair[]>(() =>
+    serverPairs?.pairs ? serverPairs.pairs.map((pair) => mapPairToViewModel(pair, t)) : [],
+  );
   const [confirming, setConfirming] = useState(false);
   const [batchMerging, setBatchMerging] = useState(false);
   const [batchConfirmOpen, setBatchConfirmOpen] = useState(false);
@@ -216,8 +222,20 @@ export function useDuplicateDetectionState({
     }
   };
 
-  const handleDismiss = (pairId: string): void => {
+  const handleDismiss = async (pairId: string): Promise<void> => {
     setDismissedPairIds((prev) => new Set(prev).add(pairId));
+    try {
+      await apiContract.contacts.dismissDuplicatePair({ body: { pairId } });
+      await invalidateContactsQueries(queryClient);
+    } catch (err) {
+      setDismissedPairIds((prev) => {
+        const next = new Set(prev);
+        next.delete(pairId);
+        return next;
+      });
+      notify.error(t("contacts.saveFailed"));
+      reportClientError(err, { scope: "contacts.duplicate_dismiss" });
+    }
   };
 
   const setKeepIndexForPair = (pairId: string, contactIndex: number): void => {

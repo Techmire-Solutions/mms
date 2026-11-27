@@ -13,6 +13,8 @@ export interface ContactFormFooterStartProps {
   noChanges?: boolean;
   /** Setup Fields may disable the first-name control; then it must not explain a disabled Save. */
   requireFirstName?: boolean;
+  /** Setup Fields may disable the gender control; then it must not explain a disabled Save. */
+  requireGender?: boolean;
   t: (key: AppTranslationKey, params?: Record<string, string | number>) => string;
 }
 
@@ -21,11 +23,26 @@ export function ContactFormFooterStart({
   collectionCounts,
   noChanges = false,
   requireFirstName = true,
+  requireGender = true,
   t,
 }: ContactFormFooterStartProps): React.JSX.Element {
-  if (requireFirstName && !contactDraft.firstName?.trim()) {
+  const missingFirstName = requireFirstName && !contactDraft.firstName?.trim();
+  const missingGender = requireGender && !contactDraft.gender?.trim();
+  if (missingFirstName && missingGender) {
+    return <FormFooterErrorChip>{t("contacts.form.requiredFieldsHint")}</FormFooterErrorChip>;
+  }
+  if (missingFirstName) {
     return <FormFooterErrorChip>{t("contacts.form.firstNameRequired")}</FormFooterErrorChip>;
   }
+  if (missingGender) {
+    return <FormFooterErrorChip>{t("contacts.form.requiredFieldsHint")}</FormFooterErrorChip>;
+  }
+
+  const pluralize = (
+    count: number,
+    oneKey: AppTranslationKey,
+    manyKey: AppTranslationKey,
+  ): string => `${count} ${t(count === 1 ? oneKey : manyKey)}`;
 
   return (
     <div className="flex flex-wrap items-center gap-2.5 text-xs">
@@ -36,22 +53,38 @@ export function ContactFormFooterStart({
       <div className="flex flex-wrap items-center gap-1.5">
         {collectionCounts.filledPhones > 0 && (
           <Badge as="span" size="sm" tone="primary">
-            {collectionCounts.filledPhones} {t("contacts.form.tabPhones")}
+            {pluralize(
+              collectionCounts.filledPhones,
+              "contacts.form.countPhoneOne",
+              "contacts.form.tabPhones",
+            )}
           </Badge>
         )}
         {collectionCounts.filledEmails > 0 && (
           <Badge as="span" size="sm" tone="warning">
-            {collectionCounts.filledEmails} {t("contacts.form.tabEmails")}
+            {pluralize(
+              collectionCounts.filledEmails,
+              "contacts.form.countEmailOne",
+              "contacts.form.tabEmails",
+            )}
           </Badge>
         )}
         {collectionCounts.filledAddresses > 0 && (
           <Badge as="span" size="sm" tone="success">
-            {collectionCounts.filledAddresses} {t("contacts.form.tabAddresses")}
+            {pluralize(
+              collectionCounts.filledAddresses,
+              "contacts.form.countAddressOne",
+              "contacts.form.tabAddresses",
+            )}
           </Badge>
         )}
         {collectionCounts.filledSocials > 0 && (
           <Badge as="span" size="sm" tone="info">
-            {collectionCounts.filledSocials} {t("contacts.form.tabSocials")}
+            {pluralize(
+              collectionCounts.filledSocials,
+              "contacts.form.countSocialOne",
+              "contacts.form.tabSocials",
+            )}
           </Badge>
         )}
         {collectionCounts.filledEducation > 0 && (
@@ -66,17 +99,29 @@ export function ContactFormFooterStart({
         )}
         {collectionCounts.filledSkills > 0 && (
           <Badge as="span" size="sm" tone="success">
-            {collectionCounts.filledSkills} {t("contacts.form.tabSkills")}
+            {pluralize(
+              collectionCounts.filledSkills,
+              "contacts.form.countSkillOne",
+              "contacts.form.tabSkills",
+            )}
           </Badge>
         )}
         {collectionCounts.filledRelationships > 0 && (
           <Badge as="span" size="sm" tone="destructive">
-            {collectionCounts.filledRelationships} {t("contacts.detail.relationships")}
+            {pluralize(
+              collectionCounts.filledRelationships,
+              "contacts.form.countRelationshipOne",
+              "contacts.detail.relationships",
+            )}
           </Badge>
         )}
         {collectionCounts.filledBankDetails > 0 && (
           <Badge as="span" size="sm" tone="primary">
-            {collectionCounts.filledBankDetails} {t("contacts.form.tabBankDetails")}
+            {pluralize(
+              collectionCounts.filledBankDetails,
+              "contacts.form.countBankDetailOne",
+              "contacts.form.tabBankDetails",
+            )}
           </Badge>
         )}
       </div>

@@ -46,6 +46,10 @@ export interface ModuleWorkBulkActionBarProps {
     label: string;
     onClick: () => void;
   };
+  permanentDeleteAction?: {
+    label: string;
+    onClick: () => void;
+  };
 }
 
 /** Shared Work bulk selection chrome — Contacts/Students compose labels + slots. */
@@ -63,6 +67,7 @@ export const ModuleWorkBulkActionBar = function ModuleWorkBulkActionBar({
   exportAction,
   extraActions,
   deleteAction,
+  permanentDeleteAction,
 }: ModuleWorkBulkActionBarProps): JSX.Element {
   const trailingNode = (() => (
     <BulkSelectionClearAction label={deselectLabel} onClick={onClearSelection} />
@@ -81,7 +86,19 @@ export const ModuleWorkBulkActionBar = function ModuleWorkBulkActionBar({
     >
       {viewingDeleted ? (
         canDelete && (
-          <BulkSelectionRestoreAction label={restoreLabel} onClick={onRequestBulkRestore} />
+          <>
+            <BulkSelectionRestoreAction label={restoreLabel} onClick={onRequestBulkRestore} />
+            {permanentDeleteAction && (
+              <>
+                <div className="h-4 w-px bg-border" />
+                <BulkSelectionDeleteAction
+                  label={permanentDeleteAction.label}
+                  onClick={permanentDeleteAction.onClick}
+                  icon={Trash2}
+                />
+              </>
+            )}
+          </>
         )
       ) : (
         <>

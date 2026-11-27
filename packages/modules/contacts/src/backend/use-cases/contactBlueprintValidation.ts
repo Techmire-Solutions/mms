@@ -5,6 +5,7 @@ import {
   collectContactWriteExtraFieldKeys,
   CONTACT_WRITE_SYSTEM_KEYS,
   formatZodIssues,
+  overlayLookupOptionsOnFields,
   resolveContactEnabledTabIds,
   verifyBlueprintVersion,
   type FieldConfig,
@@ -12,6 +13,7 @@ import {
 } from "@mms/contracts";
 import { ValidationError as HttpValidationError } from "@mms/be-core/http/errors";
 import { loadContactFieldConfig } from "./contactConfigService.js";
+import { loadContactLookupsMap } from "./contactLookupsService.js";
 
 // Cache compiled schemas by tenant, language, and active blueprint fingerprint (bounded to 100 entries).
 const SCHEMA_CACHE_MAX_ENTRIES = 100;
@@ -115,16 +117,20 @@ export async function validateContactDynamic(
     throw blueprintMismatchError(submittedBlueprintId, fieldConfig.version ?? 1);
   }
 
-  const cacheKey = getBlueprintCacheKey(tenant, fieldConfig, language, viewerRole);
+  const lookups = await loadContactLookupsMap().catch(() => null);
+  const overlaidFields = overlayLookupOptionsOnFields(fieldConfig.fields, lookups);
+  const effectiveConfig: FieldConfig = { ...fieldConfig, fields: overlaidFields };
+
+  const cacheKey = getBlueprintCacheKey(tenant, effectiveConfig, language, viewerRole);
   let schema = schemaCache.get(cacheKey);
 
   if (!schema) {
-    const enabledTabIds = resolveContactEnabledTabIds(fieldConfig, viewerRole || "");
-    const requiredTabIds = new Set(fieldConfig.requiredTabs || []);
-    const fields = fieldConfig.fields || {};
+    const enabledTabIds = resolveContactEnabledTabIds(effectiveConfig, viewerRole || "");
+    const requiredTabIds = new Set(effectiveConfig.requiredTabs || []);
+    const fields = effectiveConfig.fields || {};
 
     schema = buildDynamicContactSchema(
-      fieldConfig,
+      effectiveConfig,
       enabledTabIds,
       requiredTabIds,
       fields,

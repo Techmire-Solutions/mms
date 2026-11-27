@@ -50,6 +50,7 @@ export interface ContactsWorkTierProps {
   isExporting: boolean;
   onRequestBulkDelete: () => void;
   onRequestBulkRestore: () => void;
+  onRequestBulkPermanentDelete?: () => void;
   onBulkTag?: (tags: string[], mode: "add" | "remove") => Promise<void> | void;
   /** First-run empty state: open the create form. */
   onCreate?: () => void;

@@ -90,7 +90,7 @@ export function renderContactMetadataCellValue({
         emptyNode: renderDash(),
       });
     case "whatsapp":
-      return renderWhatsAppMetadata({ contact });
+      return renderWhatsAppMetadata({ contact, t });
     case "socials":
     case "socials_platform":
     case "socials_url":

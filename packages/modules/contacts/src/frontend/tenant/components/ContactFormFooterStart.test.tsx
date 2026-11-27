@@ -21,11 +21,11 @@ describe("ContactFormFooterStart Component", () => {
         t={(k) => k}
       />,
     );
-    expect(htmlEmpty).toContain("contacts.form.firstNameRequired");
+    expect(htmlEmpty).toContain("contacts.form.requiredFieldsHint");
 
     const htmlWhitespace = renderToStaticMarkup(
       <ContactFormFooterStart
-        contactDraft={{ firstName: "   " }}
+        contactDraft={{ firstName: "   ", gender: "Male" }}
         collectionCounts={{
           filledPhones: 0,
           filledEmails: 0,
@@ -43,10 +43,10 @@ describe("ContactFormFooterStart Component", () => {
     expect(htmlWhitespace).toContain("contacts.form.firstNameRequired");
   });
 
-  it("renders chips and badges when draft is populated", () => {
+  it("renders chips and properly pluralized badges when draft is populated", () => {
     const html = renderToStaticMarkup(
       <ContactFormFooterStart
-        contactDraft={{ firstName: "Zayd", lastName: "Harith" }}
+        contactDraft={{ firstName: "Zayd", lastName: "Harith", gender: "Male" }}
         collectionCounts={{
           filledPhones: 2,
           filledEmails: 1,
@@ -64,7 +64,7 @@ describe("ContactFormFooterStart Component", () => {
 
     expect(html).toContain("Zayd Harith");
     expect(html).toContain("2 contacts.form.tabPhones");
-    expect(html).toContain("1 contacts.form.tabEmails");
-    expect(html).toContain("1 contacts.form.tabBankDetails");
+    expect(html).toContain("1 contacts.form.countEmailOne");
+    expect(html).toContain("1 contacts.form.countBankDetailOne");
   });
 });

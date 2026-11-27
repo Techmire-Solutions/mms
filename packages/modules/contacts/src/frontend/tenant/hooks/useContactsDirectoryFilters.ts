@@ -78,8 +78,7 @@ export function useContactsDirectoryFilters({
   }, [applyDrillDown, initialDrillDown, setActiveTab]);
 
   const hasActiveFilters = !!(filterGender || search || quickFilter !== "all");
-  const activeFilterCount =
-    (filterGender ? 1 : 0) + (quickFilter !== "all" ? 1 : 0) + (search.trim() ? 1 : 0);
+  const activeFilterCount = (filterGender ? 1 : 0) + (quickFilter !== "all" ? 1 : 0);
 
   // Updaters must stay pure: setting the direction from inside the field updater
   // queued the toggle twice under StrictMode/concurrent replays, so the second

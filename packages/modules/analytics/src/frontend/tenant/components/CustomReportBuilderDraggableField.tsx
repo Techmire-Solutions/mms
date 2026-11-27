@@ -20,14 +20,11 @@ export interface DraggableFieldProps {
   isFirst: boolean;
   /** Whether this is the last field (disables move-down). */
   isLast: boolean;
+  /** Optional HTML5 drag-and-drop handlers for pointer reordering. */
+  onDragStart?: () => void;
+  onDrop?: () => void;
 }
 
-/**
- * Renders a single draggable/sortable field row within the selected-columns panel.
- *
- * @param props - The component props.
- * @returns The DraggableField component.
- */
 export function DraggableField({
   field,
   onRemove,
@@ -35,6 +32,8 @@ export function DraggableField({
   onMoveDown,
   isFirst,
   isLast,
+  onDragStart,
+  onDrop,
 }: DraggableFieldProps): React.JSX.Element {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
@@ -46,10 +45,24 @@ export function DraggableField({
       animate={{ opacity: 1, y: 0 }}
       exit={reducedMotion ? { opacity: 0 } : { opacity: 0, scale: 0.95 }}
       transition={reducedMotion ? { duration: 0 } : { type: "spring", stiffness: 500, damping: 30 }}
+      draggable={Boolean(onDragStart && onDrop)}
+      onDragStart={onDragStart}
+      onDragOver={onDrop ? (e) => e.preventDefault() : undefined}
+      onDrop={
+        onDrop
+          ? (e) => {
+              e.preventDefault();
+              onDrop();
+            }
+          : undefined
+      }
       className="flex items-center justify-between gap-3 px-4 py-2.5 rounded-2xl border border-border bg-card/60 backdrop-blur-md hover:bg-card/90 transition-colors group shadow-sm"
     >
       <div className="flex items-center gap-2.5 min-w-0">
-        <GripVertical className="w-3.5 h-3.5 text-muted-foreground cursor-grab active:cursor-grabbing shrink-0" />
+        <GripVertical
+          aria-hidden="true"
+          className="w-3.5 h-3.5 text-muted-foreground cursor-grab active:cursor-grabbing shrink-0"
+        />
         <span className="text-xs font-semibold text-foreground truncate">{field}</span>
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
@@ -61,8 +74,9 @@ export function DraggableField({
           className="rounded-lg hover:bg-muted disabled:opacity-20 text-xs text-muted-foreground font-black cursor-pointer transition-colors"
           type="button"
           title={t("reports.builder.moveUp")}
+          aria-label={`${t("reports.builder.moveUp")}: ${field}`}
         >
-          ▲
+          <span aria-hidden="true">▲</span>
         </Button>
         <Button
           disabled={isLast}
@@ -72,8 +86,9 @@ export function DraggableField({
           className="rounded-lg hover:bg-muted disabled:opacity-20 text-xs text-muted-foreground font-black cursor-pointer transition-colors"
           type="button"
           title={t("reports.builder.moveDown")}
+          aria-label={`${t("reports.builder.moveDown")}: ${field}`}
         >
-          ▼
+          <span aria-hidden="true">▼</span>
         </Button>
         <Button
           onClick={onRemove}
@@ -82,8 +97,9 @@ export function DraggableField({
           className="rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive cursor-pointer transition-all"
           type="button"
           title={t("reports.builder.removeField")}
+          aria-label={`${t("reports.builder.removeField")}: ${field}`}
         >
-          <X className="w-3 h-3" />
+          <X className="w-3 h-3" aria-hidden="true" />
         </Button>
       </div>
     </m.div>

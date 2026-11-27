@@ -1,12 +1,6 @@
 import type React from "react";
 import { CreditCard, Landmark, User } from "lucide-react";
-import {
-  EditableSelect,
-  Field,
-  FieldErrorMessage,
-  FormCardTypeSelect,
-  TYPE_SELECT_WIDTH,
-} from "@mms/fe-core/components/FormPrimitives";
+import { EditableSelect, Field } from "@mms/fe-core/components/FormPrimitives";
 import { LeadingIconInput } from "@mms/ui";
 import { FormListFieldCard } from "@mms/fe-core/components/FormPrimitives";
 import { useTranslation } from "@mms/fe-core/i18n";
@@ -67,10 +61,18 @@ export function ContactBankDetailCard({
       id={resolvedId}
       index={idx}
       icon={Landmark}
-      label={showBankName ? undefined : t("contacts.form.bankAccountSequence", { index: idx + 1 })}
-      typeSelect={
-        showBankName ? (
-          <FormCardTypeSelect label={t("contacts.fields.bankName")}>
+      label={t("contacts.form.bankAccountSequence", { index: idx + 1 })}
+      onRemove={() => removeBankDetail(idx)}
+      removeLabel={t("contacts.form.removeBankDetail", { index: idx + 1 })}
+    >
+      <div className="grid grid-cols-1 gap-4 w-full">
+        {showBankName && (
+          <Field
+            label={t("contacts.fields.bankName")}
+            required={false}
+            error={bankNameError}
+            id={`cf-${formInstanceId}-bank-name-${idx}`}
+          >
             <EditableSelect
               id={`cf-${formInstanceId}-bank-name-${idx}`}
               name={`cf-${formInstanceId}-bank-name-${idx}`}
@@ -78,24 +80,12 @@ export function ContactBankDetailCard({
               value={bankDetail.bankName || ""}
               onChange={(val) => updateBankDetail(idx, { bankName: val })}
               onUpdateOptions={onUpdateBankNameOptions}
-              className={TYPE_SELECT_WIDTH}
+              className="w-full"
               aria-invalid={Boolean(bankNameError)}
-              aria-describedby={
-                bankNameError ? `bank-name-error-${formInstanceId}-${idx}` : undefined
-              }
               placeholder={t("contacts.fields.bankNamePlaceholder")}
             />
-          </FormCardTypeSelect>
-        ) : undefined
-      }
-      onRemove={() => removeBankDetail(idx)}
-      removeLabel={t("contacts.form.removeBankDetail", { index: idx + 1 })}
-    >
-      <div className="grid grid-cols-1 gap-4 w-full">
-        <FieldErrorMessage
-          id={`bank-name-error-${formInstanceId}-${idx}`}
-          message={bankNameError}
-        />
+          </Field>
+        )}
 
         {showAccountTitle && (
           <Field

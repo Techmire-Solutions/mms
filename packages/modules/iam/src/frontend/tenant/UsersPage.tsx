@@ -66,7 +66,11 @@ export default function UsersPage(): React.JSX.Element {
           </div>
         ) : undefined
       }
-      metricsStrip={<UsersCommandMetrics shown={controller.shownCount} />}
+      metricsStrip={
+        <UsersCommandMetrics
+          shown={controller.effectiveTab === "work" ? controller.shownCount : undefined}
+        />
+      }
     >
       <ResponsiveAccordionTabs
         tabs={controller.visibleTopTabs}

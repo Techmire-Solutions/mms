@@ -1,7 +1,11 @@
 import { useMemo } from "react";
 import {
   canViewContactField,
+  DEFAULT_GLOBAL_SETTINGS,
+  formatIsoDateToDisplay,
+  getPrimaryAddress,
   type Contact,
+  type DateFormatId,
   type FieldDefinition as RegistryFieldDefinition,
 } from "@mms/contracts";
 import type { EntityDescriptor } from "@mms/fe-core/components/entityRegistryTypes";
@@ -35,6 +39,29 @@ export function useContactEntityDescriptor(): EntityDescriptor<Contact> {
           name: { cardSlot: "hidden" },
           phone: { cardSlot: "hidden" },
           email: { cardSlot: "hidden" },
+          city: {
+            formatValue: (_raw, entity) => getPrimaryAddress(entity)?.city || entity.city || "—",
+          },
+          state: {
+            formatValue: (_raw, entity) => getPrimaryAddress(entity)?.state || entity.state || "—",
+          },
+          country: {
+            formatValue: (_raw, entity) =>
+              getPrimaryAddress(entity)?.country || entity.country || "—",
+          },
+          line1: {
+            formatValue: (_raw, entity) => getPrimaryAddress(entity)?.line1 || entity.line1 || "—",
+          },
+          dob: {
+            formatValue: (raw) => {
+              if (!raw) return "—";
+              const iso = String(raw).slice(0, 10);
+              return (
+                formatIsoDateToDisplay(iso, DEFAULT_GLOBAL_SETTINGS.dateFormat as DateFormatId) ||
+                iso
+              );
+            },
+          },
           gender: {
             badgeVariantMap: {
               male: {

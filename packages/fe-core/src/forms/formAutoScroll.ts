@@ -12,6 +12,13 @@ export interface ScrollAndFocusOptions {
  * @param options Scroll options (behavior: 'smooth', block: 'center' by default) and fallback selector.
  * @returns boolean indicating whether an element was found or queued for focusing.
  */
+let lastErrorFocusTimestamp = 0;
+
+/** True shortly after `scrollAndFocusFirstError` was triggered (prevents tab auto-focus from stealing focus). */
+export function isErrorFocusPending(windowMs = 450): boolean {
+  return Date.now() - lastErrorFocusTimestamp < windowMs;
+}
+
 export function scrollAndFocusFirstError(
   candidateIds: (string | undefined | null)[],
   options: ScrollAndFocusOptions = {},
@@ -21,6 +28,8 @@ export function scrollAndFocusFirstError(
   if (typeof window === "undefined" || typeof document === "undefined") {
     return false;
   }
+
+  lastErrorFocusTimestamp = Date.now();
 
   const tryFocus = (): boolean => {
     if (typeof document === "undefined") {
@@ -85,12 +94,15 @@ export function scrollAndFocusFirstError(
     return false;
   };
 
+  const retryDelaysMs = [50, 160, 280];
+  const runRetry = (attempt: number): void => {
+    if (tryFocus() || attempt >= retryDelaysMs.length) return;
+    window.setTimeout(() => runRetry(attempt + 1), retryDelaysMs[attempt]);
+  };
+
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      if (tryFocus()) return;
-      window.setTimeout(() => {
-        tryFocus();
-      }, 50);
+      runRetry(0);
     });
   });
 

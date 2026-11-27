@@ -6,7 +6,7 @@ import { ModuleCommandMetricsGrid } from "@mms/fe-core/components/ModuleCommandM
 import { useUsersMetrics } from "../hooks/useUsersApi";
 
 interface UsersCommandMetricsProps {
-  shown: number;
+  shown?: number;
 }
 
 export const UsersCommandMetrics = function UsersCommandMetrics({
@@ -32,12 +32,16 @@ export const UsersCommandMetrics = function UsersCommandMetrics({
       value: snapshot.total,
       accent: "primary" as const,
     },
-    {
-      icon: UsersIcon,
-      label: t("users.stats.filtered"),
-      value: shown,
-      accent: "info" as const,
-    },
+    ...(shown !== undefined
+      ? [
+          {
+            icon: UsersIcon,
+            label: t("users.stats.filtered"),
+            value: shown,
+            accent: "info" as const,
+          },
+        ]
+      : []),
     {
       icon: UserCheck,
       label: t("users.status.active"),

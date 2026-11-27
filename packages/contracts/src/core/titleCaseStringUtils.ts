@@ -35,6 +35,10 @@ export function toTitleCase(value: unknown): unknown {
     .trim()
     .split(/\s+/)
     .map((word, index) => {
+      // Preserve intentional uppercase acronyms / mixed-case tokens (e.g. "QA", "IT", "PhD", "McDonald").
+      if (/[A-Z]/.test(word.slice(1))) {
+        return word;
+      }
       if (index === 0 || !LOWERCASE_WORDS.has(word.toLowerCase())) {
         return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
       }

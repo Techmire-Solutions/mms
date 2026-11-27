@@ -163,6 +163,7 @@ export function StudentContactSection({
                         void onStudentDobChange(dateStr);
                       }}
                       required={isFieldRequired("dob")}
+                      min="1900-01-01"
                       max={todayISO()}
                       allowManualInput
                       className={cn(

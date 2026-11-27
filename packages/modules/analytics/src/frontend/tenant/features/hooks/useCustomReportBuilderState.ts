@@ -131,6 +131,7 @@ export function useCustomReportBuilderState(initialSource?: string) {
 
   const moveUp = (index: number): void => {
     setSelectedFields((currentFields: any) => {
+      if (index <= 0 || index >= currentFields.length) return currentFields;
       const nextFields = [...currentFields];
       [nextFields[index - 1], nextFields[index]] = [nextFields[index], nextFields[index - 1]];
       return nextFields;
@@ -139,6 +140,7 @@ export function useCustomReportBuilderState(initialSource?: string) {
 
   const moveDown = (index: number): void => {
     setSelectedFields((currentFields: any) => {
+      if (index < 0 || index >= currentFields.length - 1) return currentFields;
       const nextFields = [...currentFields];
       [nextFields[index + 1], nextFields[index]] = [nextFields[index], nextFields[index + 1]];
       return nextFields;

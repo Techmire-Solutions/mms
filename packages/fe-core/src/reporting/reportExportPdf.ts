@@ -35,7 +35,17 @@ export async function exportReportPdf({
   ]);
   const jsPDF = jsPDFModule.default;
   const autoTable = autoTableModule.default;
-  const resolvedOrientation = variant === "compact" ? "landscape" : orientation;
+  const { headers: tableHeaders, data: tableData } = extractExportTable(
+    columns || sourceColumns,
+    rows,
+    sourceHeaders,
+  );
+
+  // Automatically widen to landscape when many columns would otherwise squeeze/clip in portrait.
+  const resolvedOrientation =
+    variant === "compact" || (orientation === "p" && tableHeaders.length > 5)
+      ? "landscape"
+      : orientation;
 
   const doc = new jsPDF({
     orientation: resolvedOrientation as "p" | "l" | "portrait" | "landscape",
@@ -43,34 +53,49 @@ export async function exportReportPdf({
     format: formatSize,
   });
 
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const safeTitle = (title || "Report").trim();
+  const wrappedTitle = doc.splitTextToSize(safeTitle, Math.max(pageWidth - 24, 60));
+
   doc.setFontSize(13);
   doc.setFont("helvetica", "bold");
-  doc.text(title, 14, 14);
+  doc.text(wrappedTitle, 12, 14);
 
+  const metaY = 14 + wrappedTitle.length * 6;
   doc.setFontSize(8);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(120);
   doc.text(
     `Generated: ${formatDate(new Date())}  |  ${rows.length} record${rows.length !== 1 ? "s" : ""}`,
-    14,
-    20,
+    12,
+    metaY,
   );
   doc.setTextColor(0);
-
-  const { headers: tableHeaders, data: tableData } = extractExportTable(
-    columns || sourceColumns,
-    rows,
-    sourceHeaders,
-  );
 
   autoTable(doc, {
     head: [tableHeaders],
     body: tableData as (string | number)[][],
-    startY: 26,
+    startY: metaY + 6,
+    margin: { top: 20, left: 10, right: 10, bottom: 14 },
+    tableWidth: "auto",
+    horizontalPageBreak: true,
     styles: {
-      fontSize: resolvedOrientation === "l" || resolvedOrientation === "landscape" ? 8 : 10,
+      fontSize: tableHeaders.length > 6 ? 7 : 8,
+      cellPadding: 2,
+      overflow: "linebreak",
+      valign: "middle",
+    },
+    headStyles: {
+      fillColor: [30, 41, 59],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
     },
   });
 
-  doc.save(`${filename}_${todayISO()}.pdf`);
+  const cleanFilename =
+    (filename || "report")
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "_") || "report";
+  doc.save(`${cleanFilename}_${todayISO()}.pdf`);
 }

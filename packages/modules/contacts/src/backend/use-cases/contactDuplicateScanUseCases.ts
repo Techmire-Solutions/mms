@@ -13,7 +13,7 @@ import { getRequestTenant } from "@mms/be-core/http";
 import { isReadOnlyTransaction } from "@mms/db/context";
 import { logger } from "@mms/be-core/logger";
 import { deleteObject, getObject, saveObject } from "../deps.js";
-import { loadContactPreferences } from "./contactPreferencesService.js";
+import { loadContactPreferences, saveContactPreferences } from "./contactPreferencesService.js";
 import type {
   ContactDuplicateCandidateKeys,
   ContactsRepository,
@@ -192,11 +192,15 @@ export async function runContactsDuplicateScan(
 export async function loadDuplicatePairs(
   repo: ContactsRepository = contactsRepository,
 ): Promise<ContactDuplicatePair[]> {
+  const preferences = await loadContactPreferences();
+  const dismissed = new Set(preferences?.dismissedDuplicatePairs ?? []);
   const cached = await getCachedDuplicatePairs();
-  if (cached) return cached;
+  if (cached) {
+    return dismissed.size > 0 ? cached.filter((pair) => !dismissed.has(pair.id)) : cached;
+  }
   const tenant = getRequestTenant();
   const versionBefore = tenant ? await repo.getLatestWriteAt?.(tenant) : undefined;
-  const pairs = await findBlockedDuplicatePairs(await loadContactPreferences(), repo);
+  const pairs = await findBlockedDuplicatePairs(preferences, repo);
   const versionAfter =
     tenant && repo.getLatestWriteAt ? await repo.getLatestWriteAt(tenant) : versionBefore;
   if (tenant && (!repo.getLatestWriteAt || versionBefore === versionAfter)) {
@@ -269,4 +273,21 @@ export async function countContactDuplicateMatches(
       (row) => row === contact || (contact.id != null && String(row.id) === String(contact.id)),
     ),
   ).length;
+}
+
+/** Persists a dismissed duplicate pair ID in tenant contact preferences and invalidates cache. */
+export async function dismissContactDuplicatePair(pairId: string): Promise<{ pairId: string }> {
+  const trimmed = pairId.trim();
+  const current = (await loadContactPreferences()) ?? {};
+  const existing = Array.isArray(current.dismissedDuplicatePairs)
+    ? current.dismissedDuplicatePairs
+    : [];
+  if (!existing.includes(trimmed)) {
+    await saveContactPreferences({
+      ...current,
+      dismissedDuplicatePairs: [...existing, trimmed],
+    });
+  }
+  await invalidateDuplicateScanCache();
+  return { pairId: trimmed };
 }

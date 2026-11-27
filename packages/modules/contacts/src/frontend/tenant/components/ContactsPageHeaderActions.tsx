@@ -1,5 +1,12 @@
 import type React from "react";
-import { UserPlus, AlertTriangle, Download, Upload, FileSpreadsheet } from "lucide-react";
+import {
+  ArrowLeft,
+  UserPlus,
+  AlertTriangle,
+  Download,
+  Upload,
+  FileSpreadsheet,
+} from "lucide-react";
 import { Button } from "@mms/ui";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
@@ -19,6 +26,7 @@ export interface ContactsPageHeaderActionsProps {
   /** Opens the CSV import dialog (`contacts.write`). */
   onImportCsv?: () => void;
   onAddContact: () => void;
+  onExitTrash?: () => void;
 }
 
 export function ContactsPageHeaderActions({
@@ -33,11 +41,17 @@ export function ContactsPageHeaderActions({
   onImport,
   onImportCsv,
   onAddContact,
+  onExitTrash,
 }: ContactsPageHeaderActionsProps): React.JSX.Element {
   const { t } = useTranslation();
 
   return (
     <>
+      {viewingDeleted && onExitTrash && (
+        <Button variant="outline" icon={ArrowLeft} onClick={onExitTrash}>
+          {t("contacts.trash.exitTrash")}
+        </Button>
+      )}
       {canRead && !viewingDeleted && (
         <Button
           variant="ghost"

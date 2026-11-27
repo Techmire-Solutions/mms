@@ -6,6 +6,7 @@ import { stripContactClientSoftDeleteFields } from "../contacts/contactSoftDelet
 import { stripClientAuditFields } from "../contacts/contactWriteSanitize.js";
 import { hydrateContactRelationshipFields } from "../contacts/contactRelationshipHydrate.js";
 import { contactSystemTagSchema } from "../contacts/contactSystemTags.js";
+import { isValidDobIsoDate } from "../core/ageUtils.js";
 import {
   activitySchema,
   attachmentSchema,
@@ -119,7 +120,12 @@ const contactWriteRawObjectSchema = z.object({
   lastName: z.string().optional(),
   name: z.string().optional(),
   gender: z.string().optional(),
-  dob: z.string().optional(),
+  dob: z
+    .string()
+    .refine((val) => !val || isValidDobIsoDate(val), {
+      message: "Invalid date of birth",
+    })
+    .optional(),
   cnic: z.string().optional(),
   isSyed: z.boolean().optional(),
   tag: z.string().optional(),
@@ -249,10 +255,28 @@ export {
   contactsDuplicateScanBodySchema,
 } from "./contactsOperations.dto.js";
 
-export function buildContactDuplicateCheckBodySchema(extraFieldKeys: string[] = []) {
+const partialDuplicatePhoneSchema = z
+  .object({
+    label: z.string().optional(),
+    number: z.string().optional(),
+    countryCode: z.string().optional(),
+    isPrimary: z.boolean().optional(),
+    whatsappStatus: whatsappStatusOptionalSchema,
+  })
+  .passthrough();
+
+export function buildContactDuplicateCheckBodySchema(_extraFieldKeys: string[] = []) {
+  const partialContactSchema = contactWriteRawObjectSchema
+    .partial()
+    .extend({
+      firstName: z.string().optional(),
+      dob: z.string().optional(),
+      phones: z.array(partialDuplicatePhoneSchema).optional(),
+    })
+    .passthrough();
   const base = z
     .object({
-      contact: buildContactWriteSchema(extraFieldKeys),
+      contact: partialContactSchema,
     })
     .strict();
   return z.preprocess((raw) => {

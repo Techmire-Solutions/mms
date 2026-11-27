@@ -3,6 +3,7 @@ import { AnimatePresence, m } from "framer-motion";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import type { SubTab } from "@mms/ui/app/SubTabBar";
 import { useReducedMotion } from "../tenant/index.js";
+import { isErrorFocusPending } from "../forms/formAutoScroll.js";
 import { useDragScroll } from "@mms/ui/app/useDragScroll";
 import { cn } from "@mms/ui";
 
@@ -32,7 +33,7 @@ export const FormModalTabs = function FormModalTabs<K extends string = string>({
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
-      if (!tabContentRef.current) return;
+      if (!tabContentRef.current || isErrorFocusPending()) return;
       const firstInput = tabContentRef.current.querySelector<HTMLElement>(
         'input:not([type="hidden"]):not([disabled]), select:not([disabled]), textarea:not([disabled]), [role="combobox"]:not([aria-disabled="true"])',
       );

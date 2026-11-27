@@ -44,6 +44,7 @@ export function useContactsPageTabPanelProps({
     Actions,
     | "requestBulkDelete"
     | "requestBulkRestore"
+    | "requestBulkPermanentDelete"
     | "handleImport"
     | "handleBulkTag"
     | "handleCreateContact"

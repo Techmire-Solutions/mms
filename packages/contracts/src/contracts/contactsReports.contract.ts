@@ -107,6 +107,18 @@ export const contactsReportsRoutes = {
     },
     summary: "Queue background duplicate scan",
   },
+  dismissDuplicatePair: {
+    method: "POST",
+    path: "/api/contacts/duplicates/dismiss",
+    body: z.object({ pairId: z.string().min(1).max(200) }).strict(),
+    responses: {
+      200: z.object({ success: z.literal(true), pairId: z.string() }),
+      400: errorResponse,
+      403: errorResponse,
+      500: errorResponse,
+    },
+    summary: "Persistently dismiss a duplicate contact pair",
+  },
   getSavedReports: {
     method: "GET",
     path: "/api/contacts/saved-reports",

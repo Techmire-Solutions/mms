@@ -139,14 +139,27 @@ describe("contactMetadataIdentity renderers", () => {
   });
 
   describe("renderWhatsAppMetadata", () => {
-    it("renders status badge for contacts with WhatsApp", () => {
-      const contact = {
+    it("renders Verified for REGISTERED and Unknown for unknown/unset status (never Success for unknown)", () => {
+      const unknownContact = {
         id: "1",
-        phones: [{ isPrimary: true, isWhatsApp: true, number: "+923001234567" }],
+        whatsappStatus: "unknown",
+        phones: [{ isPrimary: true, number: "+923001234567" }],
+      } as unknown as Contact;
+      const verifiedContact = {
+        id: "2",
+        whatsappStatus: "REGISTERED",
+        phones: [{ isPrimary: true, number: "+923001234567" }],
       } as unknown as Contact;
 
-      const html = renderToStaticMarkup(<div>{renderWhatsAppMetadata({ contact })}</div>);
-      expect(html).toBeDefined();
+      const unknownHtml = renderToStaticMarkup(
+        <div>{renderWhatsAppMetadata({ contact: unknownContact })}</div>,
+      );
+      const verifiedHtml = renderToStaticMarkup(
+        <div>{renderWhatsAppMetadata({ contact: verifiedContact })}</div>,
+      );
+      expect(unknownHtml).toContain("Unknown");
+      expect(unknownHtml).not.toContain("Verified");
+      expect(verifiedHtml).toContain("Verified");
     });
   });
 });

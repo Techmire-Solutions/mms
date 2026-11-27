@@ -1,7 +1,10 @@
 import { useCallback } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { getDisplayName, type Contact } from "@mms/contracts";
+import { apiContract } from "@mms/fe-core/api/tsRest";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { notify } from "@mms/fe-core/notify";
+import { invalidateContactsQueries } from "./invalidateContactsQueries.js";
 import type { useContactsCrudActions } from "./useContactsCrudActions.js";
 
 type CrudActions = ReturnType<typeof useContactsCrudActions>;
@@ -36,6 +39,7 @@ export function useContactsPageDeleteActions({
   >;
 }) {
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const {
     handleError,
     notifyBulkResult,
@@ -134,6 +138,72 @@ export function useContactsPageDeleteActions({
     [canDelete, findContactById, restoreContactAction, t, handleError],
   );
 
+  const handlePermanentDelete = useCallback(
+    async (id: string | number) => {
+      if (!canDelete) return;
+      if (
+        typeof window !== "undefined" &&
+        !window.confirm(t("contacts.trash.permanentDeleteConfirm"))
+      ) {
+        return;
+      }
+      try {
+        const res = await apiContract.contacts.permanentDelete({
+          params: { id: String(id) },
+          body: undefined,
+        });
+        if (res.status !== 200) {
+          const msg =
+            res.body && typeof res.body === "object" && "message" in res.body
+              ? String((res.body as { message?: string }).message)
+              : t("contacts.deleteFailed");
+          notify.error(msg);
+          return;
+        }
+        await invalidateContactsQueries(queryClient);
+        notify.success(t("contacts.trash.permanentDeletedSuccess"));
+      } catch (err) {
+        handleError(err, "contacts.permanent_delete", "contacts.deleteFailed");
+      }
+    },
+    [canDelete, t, queryClient, handleError],
+  );
+
+  const requestBulkPermanentDelete = useCallback(async () => {
+    if (!checkBulkAllowed()) return;
+    if (
+      typeof window !== "undefined" &&
+      !window.confirm(t("contacts.trash.permanentDeleteConfirm"))
+    ) {
+      return;
+    }
+    try {
+      const res = await apiContract.contacts.bulkPermanentDelete({
+        body: { ids: selected.map(String) },
+      });
+      if (res.status !== 200) {
+        notify.error(t("contacts.deleteFailed"));
+        return;
+      }
+      await invalidateContactsQueries(queryClient);
+      const body =
+        res.body && typeof res.body === "object"
+          ? (res.body as { succeeded?: number; failed?: number })
+          : undefined;
+      const succeeded = typeof body?.succeeded === "number" ? body.succeeded : selected.length;
+      const failed = typeof body?.failed === "number" ? body.failed : 0;
+      notifyBulkResult(
+        succeeded,
+        failed,
+        "contacts.trash.permanentDeletedSuccess",
+        "contacts.trash.permanentDeletedSuccess",
+      );
+      setSelected([]);
+    } catch (err) {
+      handleError(err, "contacts.bulk_permanent_delete", "contacts.deleteFailed");
+    }
+  }, [checkBulkAllowed, t, selected, queryClient, notifyBulkResult, setSelected, handleError]);
+
   return {
     handleDelete,
     confirmSingleDelete,
@@ -142,5 +212,7 @@ export function useContactsPageDeleteActions({
     requestBulkRestore,
     confirmBulkRestore,
     handleRestore,
+    handlePermanentDelete,
+    requestBulkPermanentDelete,
   };
 }

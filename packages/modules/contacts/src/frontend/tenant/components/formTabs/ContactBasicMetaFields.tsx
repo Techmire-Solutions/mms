@@ -13,6 +13,7 @@ import {
   formatCnic,
   getContactTags,
   isReservedSystemTagName,
+  MIN_DOB_ISO,
   normalizeContactTagName,
   splitContactTags,
   todayISO,
@@ -78,6 +79,7 @@ export function ContactBasicMetaFields({
             value={contactDraft.dob || undefined}
             onChange={(dateStr) => updateDraft({ dob: dateStr })}
             required={isFieldRequired("basic", "dob")}
+            min={MIN_DOB_ISO}
             max={todayISO()}
             allowManualInput
             className={cn(

@@ -43,8 +43,30 @@ export function CustomReportBuilderPreviewPanel({
   resolveFieldLabel,
 }: CustomReportBuilderPreviewPanelProps): React.JSX.Element {
   const { t } = useTranslation();
+  const [dragIndex, setDragIndex] = React.useState<number | null>(null);
   const exportColumns = buildCustomReportExportColumns(selectedFields, resolveFieldLabel);
   const exportRows = previewData as Record<string, unknown>[];
+  const safeFilename =
+    (reportName || "report")
+      .trim()
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "_") || "report";
+
+  const handleDropField = (targetIndex: number): void => {
+    if (dragIndex === null || dragIndex === targetIndex) {
+      setDragIndex(null);
+      return;
+    }
+    setSelectedFields((current) => {
+      if (dragIndex < 0 || dragIndex >= current.length) return current;
+      const next = [...current];
+      const [moved] = next.splice(dragIndex, 1);
+      if (moved === undefined) return current;
+      next.splice(targetIndex, 0, moved);
+      return next;
+    });
+    setDragIndex(null);
+  };
 
   return (
     <div className="lg:col-span-2 space-y-6 flex flex-col justify-between">
@@ -84,6 +106,8 @@ export function CustomReportBuilderPreviewPanel({
                     onMoveDown={() => moveDown(index)}
                     isFirst={index === 0}
                     isLast={index === selectedFields.length - 1}
+                    onDragStart={() => setDragIndex(index)}
+                    onDrop={() => handleDropField(index)}
                   />
                 ))}
               </AnimatePresence>
@@ -113,14 +137,14 @@ export function CustomReportBuilderPreviewPanel({
           </div>
 
           {previewData.length > 0 && (
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 onClick={() =>
                   void exportReportExcel({
-                    title: reportName,
+                    title: reportName || t("reports.builder.title"),
                     columns: exportColumns,
                     rows: exportRows,
-                    filename: reportName,
+                    filename: safeFilename,
                   })
                 }
                 variant="capsSuccess"
@@ -129,15 +153,16 @@ export function CustomReportBuilderPreviewPanel({
                 type="button"
                 title={t("reports.builder.exportExcelTooltip")}
               >
-                <FileSpreadsheet className="w-3.5 h-3.5" /> {t("reports.builder.sheet")}
+                <FileSpreadsheet className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+                {t("reports.builder.sheet")} ({exportRows.length})
               </Button>
               <Button
                 onClick={() =>
                   void exportReportPdf({
-                    title: reportName,
+                    title: reportName || t("reports.builder.title"),
                     columns: exportColumns,
                     rows: exportRows,
-                    filename: reportName,
+                    filename: safeFilename,
                     orientation,
                     formatSize: pageSize,
                   })
@@ -148,7 +173,8 @@ export function CustomReportBuilderPreviewPanel({
                 type="button"
                 title={t("reports.builder.exportPdfTooltip")}
               >
-                <FileText className="w-3.5 h-3.5" /> {t("reports.builder.document")}
+                <FileText className="w-3.5 h-3.5" aria-hidden="true" />{" "}
+                {t("reports.builder.document")} ({exportRows.length})
               </Button>
             </div>
           )}

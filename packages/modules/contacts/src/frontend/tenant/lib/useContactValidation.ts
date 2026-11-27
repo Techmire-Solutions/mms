@@ -4,6 +4,7 @@ import {
   buildDynamicContactSchema,
   collectContactWriteExtraFieldKeys,
   formatZodIssues,
+  overlayLookupOptionsOnFields,
   type FieldConfig,
   type ValidationError,
 } from "@mms/contracts";
@@ -26,13 +27,44 @@ function issueKey(issue: ValidationError): string {
  */
 export function useContactValidation(): (contactDraft: unknown) => ValidationError[] {
   const settings = useGlobalSettings();
-  const { fields, enabledTabIds, requiredTabIds, formTabs, fieldConfigVersion } =
-    useContactConfig();
+  const {
+    fields: rawFields,
+    enabledTabIds,
+    requiredTabIds,
+    formTabs,
+    fieldConfigVersion,
+    genders,
+    socialPlatforms,
+    relationships,
+    phoneLabels,
+    emailLabels,
+    addressLabels,
+    educationDegrees,
+    employmentTypes,
+    skillCategories,
+    skillProficiencies,
+    tags,
+    bankNames,
+  } = useContactConfig();
   const { role } = usePermissions();
   const viewerRole = role ?? undefined;
   const language = settings.language;
 
   return useMemo(() => {
+    const fields = overlayLookupOptionsOnFields(rawFields, {
+      genders,
+      socialPlatforms,
+      relationships,
+      phoneLabels,
+      emailLabels,
+      addressLabels,
+      educationDegrees,
+      employmentTypes,
+      skillCategories,
+      skillProficiencies,
+      tags,
+      bankNames,
+    });
     const enabledTabs = [...enabledTabIds];
     const requiredTabs = [...requiredTabIds];
     const fieldConfig: FieldConfig = {
@@ -74,5 +106,25 @@ export function useContactValidation(): (contactDraft: unknown) => ValidationErr
       }
       return errors;
     };
-  }, [fields, enabledTabIds, requiredTabIds, formTabs, fieldConfigVersion, language, viewerRole]);
+  }, [
+    rawFields,
+    genders,
+    socialPlatforms,
+    relationships,
+    phoneLabels,
+    emailLabels,
+    addressLabels,
+    educationDegrees,
+    employmentTypes,
+    skillCategories,
+    skillProficiencies,
+    tags,
+    bankNames,
+    enabledTabIds,
+    requiredTabIds,
+    formTabs,
+    fieldConfigVersion,
+    language,
+    viewerRole,
+  ]);
 }

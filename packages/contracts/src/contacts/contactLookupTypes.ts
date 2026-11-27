@@ -90,3 +90,40 @@ export const CONTACT_LOOKUP_FIELD_TARGETS = {
 >;
 
 export type ContactLookupStringKind = keyof typeof CONTACT_LOOKUP_FIELD_TARGETS;
+
+/**
+ * Overlays live tenant lookup option lists (e.g. custom `genders`, `bankNames`, `phoneLabels`)
+ * onto `FieldConfig["fields"]` using {@link CONTACT_LOOKUP_FIELD_TARGETS}, so dynamic Zod
+ * validation accepts tenant-added options without rejecting them as invalid.
+ */
+export function overlayLookupOptionsOnFields<TField extends { key: string; options?: string[] }>(
+  fields: Record<string, TField[]> | undefined | null,
+  lookups: Partial<Record<ContactLookupStringKind, readonly string[]>> | undefined | null,
+): Record<string, TField[]> {
+  if (!fields) return {};
+  if (!lookups) return fields;
+  const next: Record<string, TField[]> = { ...fields };
+  for (const [kind, target] of Object.entries(CONTACT_LOOKUP_FIELD_TARGETS) as Array<
+    [ContactLookupStringKind, { tabId: string; fieldId: string }]
+  >) {
+    const items = lookups[kind];
+    if (!Array.isArray(items) || items.length === 0) continue;
+    const tabFields = next[target.tabId];
+    if (!Array.isArray(tabFields)) continue;
+    next[target.tabId] = tabFields.map((field) => {
+      if (field.key !== target.fieldId) return field;
+      const merged: string[] = [];
+      const seen = new Set<string>();
+      for (const opt of [...(field.options ?? []), ...items]) {
+        const trimmed = typeof opt === "string" ? opt.trim() : "";
+        if (!trimmed) continue;
+        const norm = trimmed.toLowerCase();
+        if (seen.has(norm)) continue;
+        seen.add(norm);
+        merged.push(trimmed);
+      }
+      return { ...field, options: merged };
+    });
+  }
+  return next;
+}

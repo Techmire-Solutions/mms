@@ -86,6 +86,7 @@ export default function PinnedWidgets({ category }: { category: string }): React
           <CustomWidgetRenderer
             widget={widget}
             collections={collectionArg}
+            hideTitle={true}
             onSwitchToggle={handleToggleSwitchStateLocal}
             onMetricClick={(clicked: any) => {
               if (applyContactsWidgetWorkDrillDown(clicked)) return;

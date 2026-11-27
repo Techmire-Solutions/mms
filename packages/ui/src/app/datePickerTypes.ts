@@ -5,6 +5,8 @@ export interface DatePickerProps {
   value?: string | number | Date | null;
   onChange?: (value: string) => void;
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  /** Called when manual input transitions between valid and invalid/out-of-range on blur. */
+  onInvalidChange?: (invalid: boolean) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;

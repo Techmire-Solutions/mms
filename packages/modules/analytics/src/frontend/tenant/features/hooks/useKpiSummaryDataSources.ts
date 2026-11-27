@@ -80,7 +80,13 @@ export function useKpiSummaryDataSources(category: string, flags: KpiCategoryFla
   const questionBankTests = useQuestionBankTestsCollection({ enabled: isQuestionBank });
   const questionBankResults = useQuestionBankResultsCollection({ enabled: isQuestionBank });
 
-  const contactAnalytics = contactsReportData?.analytics;
+  const contactsReportBody =
+    contactsReportData && typeof contactsReportData === "object" && "body" in contactsReportData
+      ? contactsReportData.status === 200
+        ? contactsReportData.body
+        : undefined
+      : contactsReportData;
+  const contactAnalytics = contactsReportBody?.analytics;
   const auxiliaryStudentMetrics = category === "enrollments" ? studentMetrics : crossStudentMetrics;
   const auxiliaryFacultyMetrics = category === "enrollments" ? facultyMetrics : crossFacultyMetrics;
 

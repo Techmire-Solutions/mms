@@ -26,7 +26,8 @@ const ContactReport = function ContactReport(_props: ContactReportProps = {}): R
   const palette = useBrandPalette();
   const analyticsQuery = useContactsReportAnalytics();
 
-  const data = analyticsQuery.data?.status === 200 ? analyticsQuery.data.body : undefined;
+  const rawBody = analyticsQuery.data?.status === 200 ? analyticsQuery.data.body : undefined;
+  const data = rawBody?.analytics;
 
   const chartData = (() => {
     if (!data) return [];

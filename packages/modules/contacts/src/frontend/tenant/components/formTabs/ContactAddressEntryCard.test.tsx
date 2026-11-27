@@ -82,10 +82,9 @@ describe("ContactAddressEntryCard", () => {
     );
     expect(cityInput?.value).toBe("Karachi");
 
-    const stateInput = container.querySelector<HTMLInputElement>(
-      "input[name='cf-inst-1-address-state-0']",
-    );
-    expect(stateInput?.value).toBe("Sindh");
+    const stateControl = container.querySelector<HTMLElement>("#cf-inst-1-address-state-0");
+    expect(stateControl).not.toBeNull();
+    expect(stateControl?.textContent).toContain("Sindh");
   });
 
   function changeInput(input: HTMLInputElement, value: string) {

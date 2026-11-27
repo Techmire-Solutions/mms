@@ -143,15 +143,6 @@ export function KPICardsGrid({ cards, onAddCustom }: KPICardsGridProps): React.J
           </m.article>
         );
       })}
-      <Button
-        type="button"
-        variant="ghost"
-        onClick={onAddCustom}
-        className="flex min-h-card-mini h-auto flex-col items-center justify-center rounded-2xl border border-dashed border-border/85 bg-card/25 p-3 text-center text-muted-foreground transition-all duration-300 hover:border-primary/50 hover:bg-primary/5 hover:text-primary"
-      >
-        <Plus className="mb-1 h-5 w-5" aria-hidden="true" />
-        <span className="text-xs font-bold">{t("reports.kpiAddCustom")}</span>
-      </Button>
     </div>
   );
 }

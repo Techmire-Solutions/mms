@@ -144,10 +144,11 @@ export function FormSelect({
             onKeyDown={isSearchable ? handleSelectKeyDown : undefined}
             className={cn(
               FORM_SELECT,
-              "appearance-none pe-10 disabled:cursor-not-allowed disabled:opacity-50",
+              "appearance-none bg-none pe-10 disabled:cursor-not-allowed disabled:opacity-50",
               !disabled && !isSearchable && "cursor-pointer",
               isSearchable && "pointer-events-none",
             )}
+            style={{ WebkitAppearance: "none", MozAppearance: "none", appearance: "none" }}
           >
             {listOptions.map((option, index) => (
               <option

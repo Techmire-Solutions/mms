@@ -22,18 +22,10 @@ export interface ContactDuplicatePair {
   contacts: [Contact, Contact];
 }
 
-/**
- * Name buckets larger than this are not paired on name alone. Exact-name buckets
- * with many members (common South-Asian names) are quadratic (k² pairs without a
- * second signal), so once a bucket is this large only phone/email/cnic matches
- * are considered for its members.
- */
+/** Name buckets larger than this are not paired on name alone (avoids quadratic pairing). */
 export const CONTACT_DUPLICATE_NAME_BUCKET_PAIRING_LIMIT = 100;
 
-/**
- * Hard ceiling on pairs emitted by a single scan. Keeps the persisted cache
- * document and scan CPU bounded for directories with many shared keys.
- */
+/** Hard ceiling on pairs emitted by a single scan. */
 export const CONTACT_DUPLICATE_MAX_PAIRS = 5_000;
 
 const DEFAULT_DUPLICATE_SCORES = {
@@ -51,6 +43,8 @@ const DEFAULT_DUPLICATE_SCORES = {
 type DuplicatePreferences = Pick<
   ContactPreferences,
   | "namePrefixesToIgnore"
+  | "duplicateDetectionFields"
+  | "dismissedDuplicatePairs"
   | "duplicateDetectionScoreDefault"
   | "duplicateDetectionScorePhoneEmail"
   | "duplicateDetectionScoreNamePhone"
@@ -66,31 +60,23 @@ function addToIndex<T>(map: Map<string, T[]>, key: string, item: T): void {
   if (bucket) bucket.push(item);
   else map.set(key, [item]);
 }
-
 function pairKey(contactA: Contact, contactB: Contact): string {
   const idA = String(contactA.id);
   const idB = String(contactB.id);
   return idA < idB ? `${idA}-${idB}` : `${idB}-${idA}`;
 }
-
 export function getContactCleanName(contact: Contact, namePrefixesToIgnore?: string[]): string {
   const fullName =
     contact.name?.trim() || [contact.firstName, contact.lastName].filter(Boolean).join(" ").trim();
   return cleanName(fullName, namePrefixesToIgnore);
 }
-
 function getContactCleanCnic(contact: Contact): string {
   if (!contact.cnic) return "";
   const digits = contact.cnic.replace(/\D/g, "");
   return digits.length === 13 ? digits : "";
 }
 
-/**
- * Normalized duplicate keys (phones / emails / name / cnic) for a contact.
- *
- * Single source shared by JS pair-finding (`findContactDuplicatePairs`) and the
- * backend's SQL blocking queries, so the key space can never drift.
- */
+/** Normalized duplicate keys (phones / emails / name / cnic) shared with SQL blocking. */
 export function getContactDuplicateCandidateKeys(
   contact: Contact,
   preferences: DuplicatePreferences = {},
@@ -161,12 +147,30 @@ function evaluatePair(
   const k1 = keys1 ?? getContactDuplicateCandidateKeys(contact1, preferences);
   const k2 = keys2 ?? getContactDuplicateCandidateKeys(contact2, preferences);
 
-  const phoneMatch = hasOverlap(k1.phones, k2.phones);
-  const emailMatch = hasOverlap(k1.emails, k2.emails);
-  const nameMatch = Boolean(k1.name && k2.name && k1.name === k2.name);
+  const fields = preferences.duplicateDetectionFields;
+  const allowPhone = !fields?.length || fields.includes("phone");
+  const allowEmail = !fields?.length || fields.includes("email");
+  const allowName = !fields?.length || fields.includes("name");
+
+  const phoneMatch = allowPhone && hasOverlap(k1.phones, k2.phones);
+  const emailMatch = allowEmail && hasOverlap(k1.emails, k2.emails);
+  const nameMatch = allowName && Boolean(k1.name && k2.name && k1.name === k2.name);
   const cnicMatch = Boolean(k1.cnic && k2.cnic && k1.cnic === k2.cnic);
 
   if (!phoneMatch && !emailMatch && !nameMatch && !cnicMatch) return null;
+
+  // Name-only matches with conflicting or asymmetric CNIC, conflicting phones/emails/DOBs are distinct people.
+  if (nameMatch && !phoneMatch && !emailMatch && !cnicMatch) {
+    if (
+      (k1.phones.length > 0 && k2.phones.length > 0) ||
+      (k1.emails.length > 0 && k2.emails.length > 0) ||
+      Boolean(k1.cnic) !== Boolean(k2.cnic) ||
+      (k1.cnic && k2.cnic && k1.cnic !== k2.cnic) ||
+      (contact1.dob && contact2.dob && contact1.dob.slice(0, 10) !== contact2.dob.slice(0, 10))
+    ) {
+      return null;
+    }
+  }
 
   if (!nameMatch && areSiblingsSharingParent(contact1, contact2)) {
     return null;
@@ -210,14 +214,10 @@ function collectCandidatesFromKeys(
   }
 }
 
-/** Options for {@link findContactDuplicatePairs}. */
 export interface FindContactDuplicatePairsOptions {
   includeDeleted?: boolean;
-  /**
-   * Contacts known to be a parent/guardian of some child from outside the pool
-   * (SQL relationship/student links). Merged with links visible in the pool.
-   */
   guardianContactIds?: Iterable<string | number>;
+  dismissedPairIds?: Iterable<string>;
 }
 
 /** Finds potential duplicate contact pairs (globle1 §2.2). Indexed scan for large directories. */
@@ -228,6 +228,10 @@ export function findContactDuplicatePairs(
 ): ContactDuplicatePair[] {
   const pool = options?.includeDeleted ? contacts : filterActiveContacts(contacts);
   const guardianIds = collectContactGuardianIds(pool, options?.guardianContactIds);
+  const dismissedIds = new Set<string>([
+    ...(preferences.dismissedDuplicatePairs ?? []),
+    ...(options?.dismissedPairIds ?? []),
+  ]);
   const entries: ContactIndexEntry[] = pool.map((contact) => ({
     contact,
     keys: getContactDuplicateCandidateKeys(contact, preferences),
@@ -258,8 +262,6 @@ export function findContactDuplicatePairs(
     collectCandidatesFromKeys(phoneIndex, entry1.keys.phones, candidates);
     collectCandidatesFromKeys(emailIndex, entry1.keys.emails, candidates);
     if (entry1.keys.name) {
-      // Skip oversized name buckets: pairing them on name alone is quadratic and
-      // low-confidence. High-confidence phone/email/cnic candidates are unaffected.
       const nameBucket = nameIndex.get(entry1.keys.name);
       if (nameBucket && nameBucket.length <= CONTACT_DUPLICATE_NAME_BUCKET_PAIRING_LIMIT) {
         collectCandidatesFromKeys(nameIndex, [entry1.keys.name], candidates);
@@ -273,7 +275,7 @@ export function findContactDuplicatePairs(
       if (list.length >= CONTACT_DUPLICATE_MAX_PAIRS) break;
       if (String(entry1.contact.id) === String(entry2.contact.id)) continue;
       const key = pairKey(entry1.contact, entry2.contact);
-      if (matchedPairs.has(key)) continue;
+      if (matchedPairs.has(key) || dismissedIds.has(key)) continue;
 
       const pair = evaluatePair(
         entry1.contact,

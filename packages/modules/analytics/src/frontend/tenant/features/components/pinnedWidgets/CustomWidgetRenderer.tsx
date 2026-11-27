@@ -33,6 +33,7 @@ export function CustomWidgetRenderer({
   collections,
   isCompact,
   isEditMode = false,
+  hideTitle = false,
   onSwitchToggle,
   onMetricClick,
 }: {
@@ -40,6 +41,7 @@ export function CustomWidgetRenderer({
   collections: ReportCollectionsSnapshot;
   isCompact?: boolean;
   isEditMode?: boolean;
+  hideTitle?: boolean;
   onSwitchToggle: (widget: CustomWidget) => void;
   onMetricClick: (widget: CustomWidget) => void;
 }): React.JSX.Element {
@@ -154,6 +156,7 @@ export function CustomWidgetRenderer({
       isSwitchOn={isSwitchOn}
       switchLabel={switchLabel}
       isEditMode={isEditMode}
+      hideTitle={hideTitle}
       onSwitchToggle={onSwitchToggle}
       onMetricClick={onMetricClick}
       t={t}

@@ -1,12 +1,16 @@
 import {
   CONTACTS_MODULE_MANIFEST,
+  getContactDuplicateCandidateKeys,
   type Contact,
   type ContactsImportJobPayload,
 } from "@mms/contracts";
 import { upsertContact } from "./contactWriteUseCases.js";
 import { reconcileContactSystemTags } from "../systemTags/contactSystemTagUseCases.js";
 import { loadContactWriteContext } from "./contactWriteContext.js";
-import { invalidateDuplicateScanCache } from "./contactDuplicateScanUseCases.js";
+import {
+  invalidateDuplicateScanCache,
+  loadContactDuplicateCandidateIds,
+} from "./contactDuplicateScanUseCases.js";
 import { tenantUserHasPermission } from "../deps.js";
 import { broadcastTenantUpdate } from "@mms/be-core/realtime";
 import { logger } from "@mms/be-core/logger";
@@ -88,7 +92,32 @@ export async function runContactsImportJob(
 
   for (let index = 0; index < total; index += 1) {
     try {
-      const saved = await upsertContact(contacts[index] as Contact, {
+      const incoming = contacts[index] as Contact;
+      // Prevent duplicate creation on re-import when no explicit contact ID is provided:
+      // check strong identity keys (phone, email, CNIC) against existing active contacts.
+      if (incoming.id == null) {
+        const keys = getContactDuplicateCandidateKeys(incoming);
+        if (keys.phones.length > 0 || keys.emails.length > 0 || keys.cnic) {
+          const matches = await loadContactDuplicateCandidateIds(
+            {
+              phones: keys.phones,
+              emails: keys.emails,
+              cnic: keys.cnic,
+              name: "",
+              namePrefixes: [],
+            },
+            [],
+            repo,
+          );
+          if (matches.length > 0) {
+            if ((index + 1) % 10 === 0 || index + 1 === total) {
+              await context.updateProgress(index + 1, total);
+            }
+            continue;
+          }
+        }
+      }
+      const saved = await upsertContact(incoming, {
         canRestore,
         language,
         actorId: context.userId,

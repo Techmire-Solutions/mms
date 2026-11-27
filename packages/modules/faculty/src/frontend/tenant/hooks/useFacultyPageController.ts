@@ -108,7 +108,10 @@ export function useFacultyPageController() {
   });
 
   const mutations = useFacultyMutations();
-  const pageActions = useFacultyPageActions({ editFaculty: formState.editFaculty });
+  const pageActions = useFacultyPageActions({
+    editFaculty: formState.editFaculty,
+    messaging: overlays,
+  });
 
   const workTierState = useFacultyWorkTierState({
     effectiveTab,

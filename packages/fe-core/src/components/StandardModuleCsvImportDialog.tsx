@@ -55,7 +55,7 @@ export function StandardModuleCsvImportDialog<TRow = Record<string, unknown>>({
 
   const resolvedTitle =
     title ?? (navKey ? `${t("common.import")} - ${t(navKey)}` : t("common.import"));
-  const resolvedSubtitle = subtitle ?? t("faculty.io.csvHint");
+  const resolvedSubtitle = subtitle ?? t("common.import.csvOrExcelHint");
 
   return (
     <ModuleImportDialog<TRow>

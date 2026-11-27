@@ -16,6 +16,7 @@ export interface ContactsRowActionsProps {
   onEdit: (contact: Contact) => void;
   onDelete: (id: string | number) => void;
   onRestore?: (id: string | number) => void;
+  onPermanentDelete?: (id: string | number) => void;
   /** Omit when messaging is forbidden (RBAC) or archive mode. */
   onWhatsApp?: (contacts: Contact[]) => void;
   onSms?: (contacts: Contact[]) => void;
@@ -41,6 +42,7 @@ export const ContactsRowActions = React.memo(function ContactsRowActions({
   onEdit,
   onDelete,
   onRestore,
+  onPermanentDelete,
   onWhatsApp,
   onSms,
   onEmail,
@@ -62,6 +64,7 @@ export const ContactsRowActions = React.memo(function ContactsRowActions({
       editLabel={t("contacts.table.edit")}
       deleteLabel={t("contacts.table.deleteContact")}
       restoreLabel={t("contacts.restoreContact")}
+      permanentDeleteLabel={t("contacts.trash.permanentDelete")}
       archived={showArchived}
       canWrite={canWrite}
       canDelete={canDelete}
@@ -69,6 +72,7 @@ export const ContactsRowActions = React.memo(function ContactsRowActions({
       onEdit={() => onEdit(contact)}
       onDelete={() => onDelete(contact.id)}
       onRestore={onRestore ? () => onRestore(contact.id) : undefined}
+      onPermanentDelete={onPermanentDelete ? () => onPermanentDelete(contact.id) : undefined}
       hideViewItem={hideViewItem}
       triggerClassName={triggerClassName}
       extras={

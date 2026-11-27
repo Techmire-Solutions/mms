@@ -85,6 +85,9 @@ export function usePinnedWidgetsController(category: string) {
   })() as CustomWidget["collection"];
   const filteredWidgets = (() => {
     return widgets.filter((widget: any) => {
+      // Home-dashboard StatisticsGrid role cards (e.g. admin/accountant copies of Total Contacts)
+      // belong to DashboardPage, not module Reports pinned widgets.
+      if (widget.widgetType === "card" && Boolean(widget.role)) return false;
       const widgetCategory =
         widget.category === "faculty"
           ? "faculty"

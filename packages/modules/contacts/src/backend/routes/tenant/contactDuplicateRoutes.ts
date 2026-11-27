@@ -3,8 +3,12 @@ import type { Contact, User } from "@mms/contracts";
 import { CONTACTS_MODULE_MANIFEST } from "@mms/contracts";
 import { sendDatabaseError } from "@mms/be-core/http/errors";
 import { parseRequest, replyValidationError } from "@mms/be-core/http/routes";
-import { countContactDuplicateMatches } from "../../use-cases/index.js";
-import { contactUseCases } from "../../use-cases/index.js";
+import {
+  countContactDuplicateMatches,
+  dismissContactDuplicatePair,
+  contactUseCases,
+} from "../../use-cases/index.js";
+import { z } from "zod";
 import { prepareContactRecord } from "../../services/index.js";
 import {
   buildContactDuplicateCheckBodySchema,
@@ -14,10 +18,13 @@ import {
 import { loadContactFieldConfig } from "../../use-cases/index.js";
 import { collectContactWriteExtraFieldKeys, sanitizeContactsForViewer } from "@mms/contracts";
 import {
+  auditContact,
   enqueueContactBackgroundJob,
   getContactFieldConfigViewerOptions,
   requireContactPermission,
 } from "./contactRouteHelpers.js";
+
+const dismissDuplicatePairBodySchema = z.object({ pairId: z.string().min(1).max(200) }).strict();
 
 /** Contact duplicate check, pairs list, and background scan routes. */
 export const contactDuplicateRoutes: FastifyPluginAsync = async (fastify) => {
@@ -77,5 +84,23 @@ export const contactDuplicateRoutes: FastifyPluginAsync = async (fastify) => {
       user,
     });
     return reply.status(202).send({ job });
+  });
+
+  fastify.post("/duplicates/dismiss", async (request, reply) => {
+    const user = request.user as User;
+    if (!requireContactPermission(reply, user, "write")) return;
+    const parsed = parseRequest(dismissDuplicatePairBodySchema, request.body);
+    if (!parsed.ok) return replyValidationError(reply, parsed.message);
+    try {
+      const result = await dismissContactDuplicatePair(parsed.data.pairId);
+      await auditContact(
+        user,
+        "contact.duplicate_dismiss",
+        `Dismissed duplicate pair ${result.pairId}`,
+      );
+      return reply.send({ success: true as const, pairId: result.pairId });
+    } catch (error) {
+      return sendDatabaseError(reply, "Failed to dismiss duplicate pair", error);
+    }
   });
 };

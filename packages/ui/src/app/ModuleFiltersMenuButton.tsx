@@ -110,8 +110,9 @@ export function ModuleFilterDropdown({
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
+        collisionPadding={{ top: 72, bottom: 16, left: 12, right: 12 }}
         className={cn(
-          "w-56 max-h-dialog-scroll overflow-y-auto bg-card border border-border",
+          "w-56 max-h-[min(60dvh,var(--radix-dropdown-menu-content-available-height))] overflow-y-auto bg-card border border-border",
           contentClassName,
         )}
       >

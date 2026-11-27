@@ -69,11 +69,12 @@ export function ContactsPageView({
           onImport={handleOpenImport}
           onImportCsv={handleOpenCsvImport}
           onAddContact={handleNew}
+          onExitTrash={() => tabPanelProps.workTierProps.onShowDeletedChange(false)}
         />
       }
       metrics={
         <ContactsCommandMetrics
-          shown={shownCount}
+          shown={effectiveTab === "work" ? shownCount : undefined}
           pendingCount={pendingCount}
           conflictCount={conflictCount}
           flushing={flushing}

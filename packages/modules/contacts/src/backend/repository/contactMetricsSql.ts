@@ -95,7 +95,9 @@ export function contactMetricsAggregateSql({
   return sql`
     SELECT
       count(*)::int AS "total",
-      count(*) FILTER (WHERE length(pp.digits) BETWEEN 8 AND 15)::int AS "whatsappCount",
+      count(*) FILTER (
+        WHERE lower(trim(coalesce(${contacts.whatsappStatus}::text, ''))) = 'registered'
+      )::int AS "whatsappCount",
       ${missingInfoCountSql} AS "missingInfoCount",
       ${incompleteCountSql} AS "incompleteCount",
       count(*) FILTER (

@@ -14,6 +14,21 @@ export interface ContactFieldFocusTarget {
  * `cf-<instance>-<singular-tab>-<field>-<index>` (phones → phone, emails → email).
  * The bare field id is a last-resort match before the `aria-invalid` fallback.
  */
+const SINGULAR_TAB_MAP: Record<string, string> = {
+  addresses: "address",
+  bankDetails: "bank",
+  phones: "phone",
+  emails: "email",
+  socials: "social",
+  skills: "skill",
+};
+
+const BANK_FIELD_ID_MAP: Record<string, string> = {
+  bankName: "name",
+  accountTitle: "title",
+  accountNumber: "acc-no",
+};
+
 export function contactFieldCandidateIds({
   formInstanceId,
   tabId,
@@ -21,13 +36,13 @@ export function contactFieldCandidateIds({
   index,
 }: ContactFieldFocusTarget): string[] {
   if (!fieldId) return [];
-  const singularTab = tabId.replace(/s$/, "");
+  const singularTab = SINGULAR_TAB_MAP[tabId] ?? tabId.replace(/s$/, "");
+  const mappedField = tabId === "bankDetails" ? (BANK_FIELD_ID_MAP[fieldId] ?? fieldId) : fieldId;
   const candidates = [
     `cf-${formInstanceId}-${fieldId}`,
+    typeof index === "number" ? `cf-${formInstanceId}-${singularTab}-${mappedField}-${index}` : "",
     typeof index === "number" ? `cf-${formInstanceId}-${singularTab}-${fieldId}-${index}` : "",
     typeof index === "number" ? `cf-${formInstanceId}-${tabId}-${fieldId}-${index}` : "",
-    // Sub-list row card root (FormListFieldCard id) — the helper focuses its first
-    // nested control when the row itself is what the error points at.
     typeof index === "number" ? `${formInstanceId}-${tabId}-${index}` : "",
     typeof index === "number" ? `${tabId}-${index}-${fieldId}` : "",
     fieldId,

@@ -1,5 +1,6 @@
 import type React from "react";
-import { GraduationCap, Building2, BookOpen, Calendar, Award } from "lucide-react";
+import { GraduationCap, Building2, BookOpen, Award } from "lucide-react";
+import { DatePicker } from "@mms/fe-core/components/DatePicker";
 import {
   EditableSelect,
   Field,
@@ -138,20 +139,22 @@ export function ContactEducationEntryCard({
                 error={yearError}
                 id={`cf-${formInstanceId}-education-year-${idx}`}
               >
-                <LeadingIconInput
-                  icon={Calendar}
+                <DatePicker
+                  mode="year"
+                  allowManualInput
+                  minYear={1900}
+                  maxYear={new Date().getFullYear() + 10}
                   id={`cf-${formInstanceId}-education-year-${idx}`}
                   name={`cf-${formInstanceId}-education-year-${idx}`}
-                  inputMode="numeric"
-                  spellCheck={false}
-                  enterKeyHint="next"
-                  value={
-                    edu.isCurrentlyEnrolled ? t("contacts.form.currentlyStudying") : edu.year || ""
-                  }
+                  value={edu.isCurrentlyEnrolled ? "" : edu.year || ""}
                   disabled={Boolean(edu.isCurrentlyEnrolled)}
                   required={!edu.isCurrentlyEnrolled && isFieldRequired("education", "year")}
-                  onChange={(e) => onUpdateEducation({ year: e.target.value })}
-                  placeholder={t("contacts.form.passingYearPlaceholder")}
+                  onChange={(val) => onUpdateEducation({ year: val })}
+                  placeholder={
+                    edu.isCurrentlyEnrolled
+                      ? t("contacts.form.currentlyStudying")
+                      : t("contacts.form.passingYearPlaceholder")
+                  }
                   className={cn(yearError && FORM_INPUT_ERROR)}
                 />
               </Field>

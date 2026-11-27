@@ -12,12 +12,14 @@ import { useDatePickerDateMode } from "@mms/ui/app/useDatePickerDateMode";
 import {
   processDatePickerBlur,
   processDatePickerInputChange,
+  type DatePickerBlurResult,
 } from "@mms/ui/app/datePickerInputProcessing";
 
 export interface UseDatePickerStateOptions {
   value?: string | number | Date | null;
   onChange?: (value: string) => void;
   onBlur?: (event: React.FocusEvent<HTMLInputElement>) => void;
+  onInvalidChange?: (invalid: boolean) => void;
   min?: string | number | null;
   max?: string | number | null;
   mode?: "date" | "year" | "flexible";
@@ -31,6 +33,7 @@ export function useDatePickerState({
   value,
   onChange,
   onBlur,
+  onInvalidChange,
   min,
   max,
   mode = "date",
@@ -41,7 +44,21 @@ export function useDatePickerState({
 }: UseDatePickerStateOptions) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
+  const [invalidReason, setInvalidReason] = React.useState<Exclude<
+    DatePickerBlurResult,
+    "valid"
+  > | null>(null);
   const fallbackId = React.useId();
+
+  const updateInvalidReason = React.useCallback(
+    (next: Exclude<DatePickerBlurResult, "valid"> | null) => {
+      setInvalidReason((prev) => {
+        if (prev !== next) onInvalidChange?.(next !== null);
+        return next;
+      });
+    },
+    [onInvalidChange],
+  );
 
   const contextFormat = useDateFormat();
   const dateFormat = normalizeDateFormat(
@@ -88,12 +105,14 @@ export function useDatePickerState({
     if (yearMode.isYearMode) return;
     if (rawIsoString !== lastParsedRef.current || dateFormat !== lastFormatRef.current) {
       setInputValue(formatIsoDateToDisplay(rawIsoString || "", dateFormat));
+      updateInvalidReason(null);
       lastParsedRef.current = rawIsoString || null;
       lastFormatRef.current = dateFormat;
     }
-  }, [rawIsoString, dateFormat, yearMode.isYearMode]);
+  }, [rawIsoString, dateFormat, yearMode.isYearMode, updateInvalidReason]);
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (invalidReason) updateInvalidReason(null);
     processDatePickerInputChange({
       rawValue: event.target.value,
       isYearMode: yearMode.isYearMode,
@@ -113,7 +132,7 @@ export function useDatePickerState({
   };
 
   const handleBlur = (event?: React.FocusEvent<HTMLInputElement>) => {
-    processDatePickerBlur({
+    const result = processDatePickerBlur({
       inputValue,
       isYearMode: yearMode.isYearMode,
       resolvedMinYear: yearMode.resolvedMinYear,
@@ -129,15 +148,29 @@ export function useDatePickerState({
       onChange,
       commitIso: dateMode.commitIso,
     });
+    updateInvalidReason(result === "valid" ? null : result);
     if (event) onBlur?.(event);
+  };
+
+  const handleClearWithReset = () => {
+    updateInvalidReason(null);
+    dateMode.handleClear();
+  };
+
+  const handleSelectWithReset = (date: Date | undefined) => {
+    updateInvalidReason(null);
+    dateMode.handleSelect(date);
   };
 
   return {
     ...yearMode,
     ...dateMode,
+    handleClear: handleClearWithReset,
+    handleSelect: handleSelectWithReset,
     open,
     setOpen,
     inputValue,
+    invalidReason,
     fallbackId,
     dateFormat,
     handleInputChange,

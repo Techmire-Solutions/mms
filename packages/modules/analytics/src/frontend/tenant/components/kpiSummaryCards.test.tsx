@@ -28,7 +28,7 @@ describe("KPICardsGrid Component", () => {
     expect(html).toContain("1,240");
     expect(html).toContain("+5.2%");
     expect(html).toContain("Active enrollments");
-    expect(html).toContain("reports.kpiAddCustom");
+    expect(html).not.toContain("reports.kpiAddCustom");
   });
 
   it("renders a balanced empty state when cards list is empty", () => {

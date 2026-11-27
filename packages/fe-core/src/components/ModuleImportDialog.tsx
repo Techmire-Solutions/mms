@@ -161,14 +161,27 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
           </div>
         ) : parsedRows.length > 0 ? (
           <div className="p-4 bg-card border border-border rounded-lg space-y-3">
-            <div className="flex items-center gap-2">
-              <FileSpreadsheet className="w-5 h-5 text-primary" aria-hidden="true" />
-              <div>
-                <p className="text-sm font-medium">{fileName}</p>
-                <p className="text-xs text-muted-foreground">
-                  {t("module.import.validRecords", { count: parsedRows.length })}
-                </p>
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2 min-w-0">
+                <FileSpreadsheet className="w-5 h-5 shrink-0 text-primary" aria-hidden="true" />
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{fileName}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("module.import.validRecords", { count: parsedRows.length })}
+                  </p>
+                </div>
               </div>
+              {!isImporting ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleReset}
+                  className="shrink-0 cursor-pointer"
+                >
+                  {t("module.import.changeFile")}
+                </Button>
+              ) : null}
             </div>
 
             {isPreflighting ? (
@@ -247,7 +260,7 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
             inputAriaLabel={t("module.import.inputAria")}
             inputId="module-csv-file-input"
             inputName="file"
-            accept=".csv,text/csv"
+            accept=".csv,text/csv,.xlsx,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
             className="bg-card cursor-pointer"
           />
         )}

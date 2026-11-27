@@ -22,7 +22,11 @@ export interface BuildContactsWorkTierPropsParams {
   messaging: Pick<Messaging, "canWriteMessaging" | "handleWhatsApp" | "handleSms" | "handleEmail">;
   actions: Pick<
     Actions,
-    "requestBulkDelete" | "requestBulkRestore" | "handleBulkTag" | "handleCreateContact"
+    | "requestBulkDelete"
+    | "requestBulkRestore"
+    | "requestBulkPermanentDelete"
+    | "handleBulkTag"
+    | "handleCreateContact"
   >;
   onOpenImport?: () => void;
   selectedTargets: SelectedTargets;
@@ -123,6 +127,7 @@ export function buildContactsWorkTierProps({
     isExporting,
     onRequestBulkDelete: actions.requestBulkDelete,
     onRequestBulkRestore: actions.requestBulkRestore,
+    onRequestBulkPermanentDelete: actions.requestBulkPermanentDelete,
     onBulkTag: actions.handleBulkTag,
     onCreate: actions.handleCreateContact,
     onImport: onOpenImport,
