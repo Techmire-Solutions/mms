@@ -27,18 +27,18 @@ Repository documentation is indexed in [`docs/README.md`](docs/README.md); decis
 
 ### Layer Constraints & Responsibilities
 
-| Layer                        | Path                                          | Responsibilities & Boundaries                                                                                                                       |
-| ---------------------------- | --------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Shared Contracts (SSOT)**  | `packages/contracts/`                         | Strict Zod 4 DTOs, TypeScript interfaces, module manifests, pure math/formatting utils. **Zero** DOM, React, Fastify, or SQL dependencies.          |
-| **Frontend UI Primitives**   | `apps/frontend/src/components/ui/`            | Reusable UI chrome, design tokens, Radix UI wrappers. Pure presentation with zero feature-domain imports.                                           |
-| **Frontend Shared Lib**      | `apps/frontend/src/lib/`                      | Application-wide apiClient, TanStack Query factories, i18n configurations, currency formatting.                                                     |
-| **Frontend Tenant Features** | `apps/frontend/src/tenant/features/{module}/` | Module pages, presentation sub-components, custom hooks. Cross-feature imports are forbidden; communication occurs via facades or `@mms/contracts`. |
-| **Backend API Routes**       | `apps/api/src/routes/`                        | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots.                                                      |
-| **Backend Kernel**           | `packages/be-core/`                           | Auth/session/RBAC guard factories, logger+correlation tracing, Redis/BullMQ abstractions, realtime emitters, email/notification transport adapters. |
-| **Frontend Runtime**         | `packages/fe-core/`                           | Typed API SDK, auth/tenant contexts, TanStack query/cache factories, shared form hooks and i18n initialization.                                     |
-| **Shared UI**                | `packages/ui/`                                | Primitives, layout shells, tables, form controls and dumb UI; zero API/router/domain imports.                                                       |
-| **Database Layer**           | `packages/db/`                                | Drizzle schema, migrations, seeds, soft-delete helpers and the tenant-scoped client (`withTenant`, audited `bypassTenantScope`).                    |
-| **Backend Clean Domain**     | `apps/api/src/{module}/`                      | Clean Architecture domain layers: `use-cases/` (business logic) and `repository/` (Drizzle storage adapters).                                       |
+| Layer                        | Path                                          | Responsibilities & Boundaries                                                                                                                                                                                                                                                                      |
+| ---------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Shared Contracts (SSOT)**  | `packages/contracts/`                         | Strict Zod 4 DTOs, TypeScript interfaces, module manifests, pure math/formatting utils. **Zero** DOM, React, Fastify, or SQL dependencies.                                                                                                                                                         |
+| **Frontend UI Primitives**   | `apps/frontend/src/components/ui/`            | Reusable UI chrome, design tokens, Radix UI wrappers. Pure presentation with zero feature-domain imports.                                                                                                                                                                                          |
+| **Frontend Shared Lib**      | `apps/frontend/src/lib/`                      | Application-wide apiClient, TanStack Query factories, i18n configurations, currency formatting.                                                                                                                                                                                                    |
+| **Frontend Tenant Features** | `apps/frontend/src/tenant/features/{module}/` | Module pages, presentation sub-components, custom hooks. Cross-feature imports are forbidden; communication occurs via facades or `@mms/contracts`.                                                                                                                                                |
+| **Backend API Routes**       | `apps/api/src/routes/`                        | HTTP request/response handlers, schema validation via `parseRequest`, route composition roots.                                                                                                                                                                                                     |
+| **Backend Kernel**           | `packages/be-core/`                           | Auth/session/RBAC guard factories, logger+correlation tracing, Redis/BullMQ abstractions, realtime emitters, email/notification transport adapters.                                                                                                                                                |
+| **Frontend Runtime**         | `packages/fe-core/`                           | Typed API SDK, auth/tenant contexts, TanStack query/cache factories, shared form hooks and i18n initialization.                                                                                                                                                                                    |
+| **Shared UI**                | `packages/ui/`                                | Primitives, layout shells, tables, form controls and dumb UI; zero API/router/domain imports.                                                                                                                                                                                                      |
+| **Database Layer**           | `packages/db/`                                | Drizzle schema, migrations, seeds, soft-delete helpers and the tenant-scoped client (`withTenant`, audited `bypassTenantScope`).                                                                                                                                                                   |
+| **Backend Vertical Modules** | `packages/modules/<slice>/src/backend/`       | Every business domain owns Clean Architecture layers inside its `@mms/mod-<slice>` package: `use-cases/` (business logic), `repository/` (ports + SQL adapters), `routes/`, `services/`, `jobs/`. `apps/api/src` keeps only kernel/composition code and the `modules/*/adapters.ts` port bindings. |
 
 ---
 
@@ -89,25 +89,33 @@ MMS uses React 19 with a strict separation of concerns:
 
 ## 5. Backend Clean Architecture & Persistence
 
-Backend modules follow Clean Architecture principles:
+Backend modules follow Clean Architecture principles, and every business domain lives in
+its own `@mms/mod-<slice>` package under `packages/modules/`:
 
 ```
-apps/api/src/{module}/
+packages/modules/<slice>/src/backend/
 ├── use-cases/
-│   ├── {module}UseCases.ts          # Composition root (factory + singleton) & DI wiring
-│   └── {concern}UseCases.ts         # Business logic interactors
-└── repository/
-    ├── {module}Repository.ts        # Port: storage interface (types only)
-    └── {module}RepositoryAdapter.ts # Adapter: binds the port to db/repositories SQL
+│   ├── <slice>UseCases.ts          # Composition root (factory + singleton) & DI wiring
+│   └── {concern}UseCases.ts        # Business logic interactors
+├── repository/
+│   ├── <slice>Repository.ts        # Port: storage interface (types only)
+│   ├── <slice>RepositoryAdapter.ts # Adapter: binds the port to the SQL repository
+│   └── db/                         # Drizzle-backed repositories owned by the module
+├── routes/                         # Fastify route plugins (auth applied by apps/api)
+├── services/                       # Domain services (exports, settings, notifications…)
+└── jobs/                           # Background-job runners
 ```
 
-- **Ports & Adapters over `db/repositories/`:** the real Drizzle/SQL lives in
-  `apps/api/src/db/repositories/**` — the only layer that imports `drizzle-orm`. The domain
-  `{module}/repository/{module}RepositoryAdapter.ts` is a thin binding of that SQL to the module's port
-  (it contains no SQL itself). The enforced direction is
-  `routes → use-cases → port → adapter → db/repositories`. Route files must not import
-  `db/repositories`/`drizzle-orm` (`check:backend-boundaries`, baseline 0); use-case/service storage
-  imports are ratcheted down by `check:backend-structure`.
+Cross-domain reads/writes never import another module: the module declares a **port** and the app
+composition root (`apps/api/src/modules/<slice>/adapters.ts`) binds it.
+
+- **Ports & Adapters over the SQL layer:** the real Drizzle/SQL lives in each module's
+  `src/backend/repository/db/**` (and the remaining kernel repositories in
+  `apps/api/src/db/repositories/**`) — the only layer importing `drizzle-orm`. The domain
+  `repository/<slice>RepositoryAdapter.ts` is a thin binding of that SQL to the module's port.
+  The enforced direction is `routes → use-cases → port → adapter → db/**`. Route files must not import
+  `drizzle-orm` (`check:backend-boundaries`); use-case/service storage imports are ratcheted by
+  `check:backend-structure`.
 - **PostgreSQL 16 & Drizzle ORM:** Normalized 3NF/BCNF schemas, typed columns, foreign keys with referential integrity.
 - **Tenant Isolation:** Transaction-scoped Row Level Security (`SET LOCAL app.current_tenant = ...`).
 - **Soft Deletion:** Tenant entity tables implement `deleted_at timestamp with time zone` with partial indexes (`WHERE deleted_at IS NULL`).

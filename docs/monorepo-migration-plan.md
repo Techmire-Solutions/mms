@@ -1732,11 +1732,14 @@ rehearsed.
 
 ### P9 — Final state and cleanup (depth 5)
 
-- [ ] Rewrite topology docs: `AGENTS.md` layout, `README.md`, `SYSTEM_ARCHITECTURE.md`,
+- [x] Rewrite topology docs: `AGENTS.md` layout, `README.md`, `SYSTEM_ARCHITECTURE.md`,
       `docs/architecture.md`, `.cursor/rules/mms-structure-naming.mdc` §1 (then
       `bash .agent/scripts/sync-all.sh`), `mms-shared-ui.md` §1, `mms-migration-status.md` (closed
       milestone pointer), `docs/migration-milestones.md`, `CONTRIBUTING.md`,
       `.agent/skills/mms-dev-setup` + `verify-env.sh`.
+      **Done 2026-11-27:** layout sections now describe `packages/modules/*` as the backend domain home
+      and `apps/api` as kernel/composition; `README.md` and `docs/architecture.md` lost their
+      pre-split `apps/frontend`/`apps/backend` names; rule mirrors synced and integrity green.
 - [ ] ADRs `019`–`022` (module descriptors/ports, additive tenant prefix, two web apps one API host, module
       package contents) and update `docs/README.md`.
 - [ ] Permanent ratchets: `check:package-boundaries`, extended `check:module-boundaries`,

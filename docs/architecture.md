@@ -44,14 +44,14 @@ mms/
 | Package | Owns | Must **not** contain |
 |---|---|---|
 | `@mms/contracts` | shared **types/DTOs/zod schemas**, pure **format/validate/derive** helpers used by ≥2 packages, i18n packs, shared constants/contracts | UI components, I/O, runtime deps on app internals |
-| `apps/backend` | HTTP API, auth/security, persistence, background jobs | React/DOM, browser-only code |
-| `apps/frontend` | UI, client state (Query), and surface-specific chrome (shared primitives live in `packages/ui`) | server secrets, DB access |
+| `apps/api` | Fastify host: auth/security, kernel wiring, module composition adapters; business domains live in `packages/modules/<slice>` | React/DOM, browser-only code |
+| `apps/tenant-web` / `apps/platform-web` | UI, client state (Query), and surface-specific chrome (shared primitives live in `packages/ui`) | server secrets, DB access |
 | `e2e` | Playwright specs/helpers | app logic |
 
 **Decision rule:** if ≥2 packages need a type/utility, move it to `@mms/contracts` and
 re-export through `packages/contracts/src/index.ts`. If ≥2 **UI surfaces** need a
 component, put it in `packages/ui/src` and import it via `@mms/ui` (enforced by
-`check:shared-ui`; `apps/frontend/src/components/ui` is only a facade).
+`check:shared-ui`; `apps/tenant-web/src/components/ui` is only a facade).
 
 ## 3. Conventions
 
@@ -125,10 +125,10 @@ physical layout can keep evolving without changing consumers.
 ## 6. Where common questions live
 
 - "Where does the platform reuse a shared widget?" → `packages/ui/src/` (`@mms/ui`;
-  `apps/frontend/src/components/ui/` is a facade that re-exports it).
+  `apps/tenant-web/src/components/ui/` is a facade that re-exports it).
 - "Is a type shared?" → `packages/contracts/src` barrel.
 - "Which table/repo serves this?" → `packages/db/src/schema.ts` + `db/repositories/`.
-- "Which route?" → `apps/backend/src/routes/index.ts` registry.
+- "Which route?" → `apps/api/src/routes/index.ts` registry.
 - "Session/timeout policy?" → `packages/contracts/src/sessions/sessionPolicy.ts` (SSOT).
 
 ## Vertical modules

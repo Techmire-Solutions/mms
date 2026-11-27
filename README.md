@@ -61,7 +61,7 @@ mms/
 | `worker/`       | BullMQ job processors (exports, imports, bulk ops)  |
 | `middleware/`   | Auth, CSRF, rate-limit, tenant isolation            |
 
-### Frontend source (`apps/frontend/src/`)
+### Frontend source (`apps/tenant-web/src/`)
 
 | Directory                   | Purpose                                                      |
 | --------------------------- | ------------------------------------------------------------ |
@@ -185,7 +185,7 @@ pnpm audit:verify     # Verify audit chain integrity
 pnpm audit:detach     # Detach an old audit partition (archival)
 ```
 
-### Frontend (`apps/frontend/`)
+### Frontend (`apps/tenant-web/`)
 
 ```bash
 pnpm dev         # Vite dev server

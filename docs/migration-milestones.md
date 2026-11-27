@@ -4,6 +4,7 @@ Historical register of architectural milestones closed during MMS migration and 
 
 ## Completed Milestones
 
+- **P9 Cleanup · CI path filters + topology docs** (completed 2026-11-27): workflow `paths:` filters now route domain changes through `packages/modules/**` (six stale `apps/api/src/{accounting,examinations,routes/tenant/examinations,...}` entries removed) and a new `scripts/ci/ci-path-filters.test.mjs` ratchet fails CI when any workflow path filter no longer resolves; `SYSTEM_ARCHITECTURE.md`, `README.md`, `docs/architecture.md` and `mms-structure-naming` §1 describe the vertical-module layout; the auth-integration Redis fake landed with the suite.
 - **Vertical Module Extraction** (completed 2026-11-26): every backend business domain now lives in a `@mms/mod-*` package under `packages/modules/` — 21 modules (accounting, analytics, attendance, audit, billing, contacts, documents, enrollments, examinations, faculty, hasanat, iam, messaging, notifications, obligations, platform, question-bank, sessions, students, tasks, workshops). `apps/api/src` holds only kernel/composition code; every former cross-domain import is a declared port bound in `apps/api/src/modules/*/adapters.ts`; `apps/api/src` has no business-domain directory, and `check-module-boundaries` / `check-topology` pass.
 - **RBAC**: Replaced legacy `role ===` write gates with contract `can()` via `useModulePermissions(manifest)` (`mms-auth-security`).
 - **Setup & Prefs**: Migrated all module preferences and lookups to typed relational tables (`mms-fields`, `mms-data-layer`).
