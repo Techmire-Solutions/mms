@@ -1,0 +1,170 @@
+import React from "react";
+import { FileText } from "lucide-react";
+import { SubTabBar } from "@mms/ui/app/SubTabBar";
+import { Button } from "@mms/ui";
+import { ReportDataGridContainer } from "../host/ReportDataGridContainer";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { Skeleton } from "@mms/ui";
+import { AccountingDateFilterBar } from "../index";
+import { BalanceSheetPanel, CashFlowStatementPanel, IncomeStatementPanel } from "../index";
+import { PinnedWidgets } from "../host/PinnedWidgets";
+import { FxReportPanel } from "./FxReportPanel";
+import { ReceivablesAgingPanel } from "./ReceivablesAgingPanel";
+import { useFinancialReportsModel } from "../hooks/useFinancialReportsModel";
+import { useAccountingReportPdfExport } from "../hooks/useAccountingReportPdfExport";
+import { todayISO } from "@mms/contracts";
+
+/**
+ * FinancialReports component.
+ *
+ * Displays Income Statement, Balance Sheet, and Cash Flow reports.
+ * Powered by server-side SQL report aggregates with Query-caching.
+ */
+export function FinancialReports(): React.JSX.Element {
+  const {
+    t,
+    view,
+    setView,
+    dateFrom,
+    dateTo,
+    handleDateFromChange,
+    handleDateToChange,
+    isLoading,
+    isError,
+    metrics,
+    getRowsByAccountType,
+    getBalanceSheetRowsByAccountType,
+    exportColumns,
+    exportRows,
+    activeFiscalYear,
+    otherAdjustment,
+    refetchAggregates,
+    refetchFiscalYears,
+  } = useFinancialReportsModel();
+  const { queuePdf, isQueuing: isQueuingPdf } = useAccountingReportPdfExport();
+
+  const reportViews = [
+    { key: "income" as const, label: t("accounting.reports.views.income") },
+    { key: "balance" as const, label: t("accounting.reports.views.balance") },
+    { key: "cashflow" as const, label: t("accounting.reports.views.cashflow") },
+    { key: "fx" as const, label: t("accounting.reports.views.fx") },
+    { key: "aging" as const, label: t("accounting.reports.views.aging") },
+  ];
+
+  if (isError) {
+    return (
+      <div className="p-4">
+        <ErrorState
+          title={t("accounting.loadFailed")}
+          description={t("accounting.loadFailedHint")}
+          onRetry={() => {
+            void refetchAggregates();
+            void refetchFiscalYears();
+          }}
+        />
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 p-2">
+        <Skeleton className="h-12 w-full rounded-xl" />
+        <Skeleton className="h-64 w-full rounded-2xl" />
+      </div>
+    );
+  }
+
+  return (
+    <section aria-label={t("accounting.reports.aria")} className="space-y-5">
+      <AccountingDateFilterBar
+        dateFrom={dateFrom}
+        dateTo={dateTo}
+        onDateFromChange={handleDateFromChange}
+        onDateToChange={handleDateToChange}
+        activeFiscalYear={activeFiscalYear}
+        idPrefix="report"
+        variant="bordered"
+      />
+
+      <div className="space-y-4">
+        <SubTabBar
+          tabs={reportViews}
+          value={view}
+          onChange={setView}
+          panelIdPrefix="financial-report"
+        />
+
+        {view === "aging" ? (
+          <ReceivablesAgingPanel asOf={dateTo || todayISO()} />
+        ) : view === "fx" ? (
+          <FxReportPanel dateFrom={dateFrom} dateTo={dateTo} />
+        ) : (
+          <div className="space-y-3">
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="min-h-11"
+                disabled={isQueuingPdf}
+                onClick={() => {
+                  void queuePdf({ kind: "trial-balance", dateFrom, dateTo });
+                }}
+              >
+                <FileText className="w-3.5 h-3.5" aria-hidden="true" />
+                {t("accounting.reports.pdfAction")}
+              </Button>
+            </div>
+            <ReportDataGridContainer
+              title={t("accounting.reports.export.label", { view })}
+              filename={`${view}_report`}
+              moduleId="accounting"
+              columns={exportColumns}
+              rows={exportRows}
+              hidePdf
+            >
+              {view === "income" && (
+                <IncomeStatementPanel
+                  revenueRows={getRowsByAccountType("Revenue")}
+                  expenseRows={getRowsByAccountType("Expense")}
+                  revenue={metrics.revenue}
+                  expenses={metrics.expenses}
+                  netSurplus={metrics.netSurplus}
+                />
+              )}
+
+              {view === "balance" && (
+                <BalanceSheetPanel
+                  assetRows={getBalanceSheetRowsByAccountType("Asset")}
+                  liabilityRows={getBalanceSheetRowsByAccountType("Liability")}
+                  equityRows={getBalanceSheetRowsByAccountType("Equity")}
+                  assets={metrics.assets}
+                  liabilities={metrics.liabilities}
+                  equity={metrics.equity}
+                />
+              )}
+
+              {view === "cashflow" && (
+                <CashFlowStatementPanel
+                  netSurplus={metrics.netSurplus}
+                  depreciationAdjustment={metrics.cashFlowAdjustments.depreciation}
+                  receivablesChange={metrics.cashFlowAdjustments.receivables}
+                  payablesChange={metrics.cashFlowAdjustments.payables}
+                  otherAdjustment={otherAdjustment}
+                  netCashFlowIndirect={metrics.netCashFlowIndirect}
+                  netCashFlow={metrics.netCashFlow}
+                  cashInflow={metrics.cashInflow}
+                  cashOutflow={metrics.cashOutflow}
+                  cashFlowSections={metrics.cashFlowSections}
+                />
+              )}
+            </ReportDataGridContainer>
+          </div>
+        )}
+      </div>
+
+      <PinnedWidgets category="accounting" />
+    </section>
+  );
+}

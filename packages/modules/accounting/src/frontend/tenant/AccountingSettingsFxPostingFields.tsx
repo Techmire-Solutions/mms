@@ -3,7 +3,7 @@ import type { Account, AppTranslationKey } from "@mms/contracts";
 import { Field } from "@mms/ui";
 import { FormSelect } from "@mms/fe-core/components/FormSelect";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { FX_SETUP_ANCHORS } from "@mms/mod-accounting/frontend/tenant";
+import { FX_SETUP_ANCHORS } from "./index";
 
 type FxPostingField =
   "fxRealizedAccountId" | "fxUnrealizedAccountId" | "fxRoundingAccountId" | "ctaAccountId";

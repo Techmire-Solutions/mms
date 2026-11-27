@@ -2,12 +2,18 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { APP_TRANSLATIONS_EN } from "@mms/contracts";
-import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { Account, JournalEntry } from "./index";
 import { JournalEntryDetail } from "./JournalEntryDetail";
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@mms/fe-core/i18n", () => ({
+vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
+  useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
+}));
+
+vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
   useTranslation: () => ({
     language: "en",
     direction: "ltr",

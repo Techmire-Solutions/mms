@@ -3,7 +3,7 @@ import { Download, Plus, Upload } from "lucide-react";
 import { Button } from "@mms/ui";
 import { Badge } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import type { FiscalYear } from "@mms/mod-accounting/frontend/tenant";
+import type { FiscalYear } from "./index";
 
 interface AccountingPageHeaderActionsProps {
   canWrite: boolean;

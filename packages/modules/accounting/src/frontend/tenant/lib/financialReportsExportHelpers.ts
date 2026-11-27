@@ -1,6 +1,6 @@
 import type { AccountingTrialBalanceRow, AppTranslationKey } from "@mms/contracts";
 import type { ExportColumn } from "@mms/fe-core/components/ExportToolbar";
-import { buildCashflowExportRows } from "@mms/mod-accounting/frontend/tenant";
+import { buildCashflowExportRows } from "../index";
 
 /** Shared trial-balance row (was declared here and cast at the model boundary). */
 export type TrialBalanceRow = AccountingTrialBalanceRow;

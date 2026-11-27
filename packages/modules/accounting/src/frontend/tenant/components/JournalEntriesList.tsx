@@ -1,0 +1,93 @@
+import type React from "react";
+import { Receipt } from "lucide-react";
+import { EmptyState } from "@mms/ui";
+import { ListPagination } from "@mms/fe-core/components/ListPagination";
+import { Button } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { JournalEntriesListCards } from "./JournalEntriesListCards";
+import { JournalEntriesListDesktopTable } from "./JournalEntriesListDesktopTable";
+import type { JournalEntriesListPaging } from "../lib/journalEntriesControllerFilters";
+import type { JournalEntriesListProps } from "../index";
+
+/**
+ * The shared list frame keeps the cards/table split and adds the pager once, so
+ * both variants (mobile cards and desktop table) page the same way.
+ */
+export type JournalEntriesListWithPagingProps = JournalEntriesListProps & JournalEntriesListPaging;
+
+export function JournalEntriesList(props: JournalEntriesListWithPagingProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const { entries, page, limit, total, hasMore, onPageChange } = props;
+
+  return (
+    <>
+      {entries.length === 0 ? (
+        <EmptyState
+          variant="dashed"
+          icon={Receipt}
+          title={
+            props.showDeleted
+              ? t("accounting.trash.empty")
+              : props.hasActiveFilters
+                ? t("accounting.journal.dashboard.noEntriesMatch")
+                : t("accounting.journal.dashboard.noTransactionsYet")
+          }
+          description={
+            props.showDeleted
+              ? t("accounting.trash.emptyHint")
+              : props.hasActiveFilters
+                ? t("accounting.journal.dashboard.noEntriesHint")
+                : t("accounting.journal.dashboard.useQuickActions")
+          }
+          action={
+            props.showDeleted && props.onShowActive ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={props.onShowActive}
+              >
+                {t("accounting.trash.showActive")}
+              </Button>
+            ) : props.hasActiveFilters && props.onClearFilters ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="min-h-11"
+                onClick={props.onClearFilters}
+              >
+                {t("common.clearFilters")}
+              </Button>
+            ) : props.canWrite && props.onCreate ? (
+              <Button type="button" className="min-h-11" onClick={props.onCreate}>
+                {t("accounting.journal.dashboard.newEntry")}
+              </Button>
+            ) : undefined
+          }
+        />
+      ) : props.viewMode === "cards" ? (
+        <JournalEntriesListCards {...props} />
+      ) : (
+        <JournalEntriesListDesktopTable {...props} />
+      )}
+
+      {/*
+        Rendered for any non-empty result, not only when more pages exist: the
+        "1–100 of 3,412" line is the only place the real size of the filtered
+        journal is visible, and `total` is the server's count for the active
+        filter rather than the length of the loaded page.
+      */}
+      {total > 0 && (
+        <ListPagination
+          page={page}
+          total={total}
+          limit={limit}
+          hasMore={hasMore}
+          onPageChange={onPageChange}
+          i18nNamespace="accounting"
+          variant="range"
+        />
+      )}
+    </>
+  );
+}

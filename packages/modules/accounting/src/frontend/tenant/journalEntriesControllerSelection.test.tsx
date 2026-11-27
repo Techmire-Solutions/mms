@@ -5,15 +5,20 @@ import {
   createJournalEntryActionsRenderer,
   createJournalNlHandlers,
 } from "./journalEntriesControllerSelection";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "./index";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@mms/mod-accounting/frontend/tenant", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@mms/mod-accounting/frontend/tenant")>();
+vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
+  useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
+}));
+
+vi.mock("./index", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("./index")>();
   return {
     ...actual,
     JournalEntryRowActions: (props: {

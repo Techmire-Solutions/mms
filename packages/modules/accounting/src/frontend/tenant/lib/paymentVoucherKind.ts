@@ -1,6 +1,6 @@
 import type { AppTranslationKey } from "@mms/contracts";
-import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
-import { isCashAccount } from "@mms/mod-accounting/frontend/tenant";
+import type { Account, JournalEntry } from "../index";
+import { isCashAccount } from "../index";
 
 /** Printed voucher family. Payment is the existing expense / salary voucher. */
 export type VoucherPrintKind =

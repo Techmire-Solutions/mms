@@ -52,3 +52,5 @@ export function useSaveVoucherNumbering() {
     },
   });
 }
+
+export { VOUCHER_NUMBERING_QUERY_KEY } from "./accountingQueryKeys.js";

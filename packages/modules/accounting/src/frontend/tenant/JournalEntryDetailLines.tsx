@@ -1,5 +1,5 @@
 import { StatGrid, StatRow } from "@mms/ui/app/StatGrid";
-import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { Account, JournalEntry } from "./index";
 import { StatusBadge, type StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
 import { WorkBatchTable } from "@mms/fe-core/components/WorkBatchTable";
 import { ReportMoneyCard } from "@mms/fe-core/components/ReportMoneyCard";

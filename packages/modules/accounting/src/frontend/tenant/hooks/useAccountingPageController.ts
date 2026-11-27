@@ -1,0 +1,182 @@
+import { useCallback, useState } from "react";
+import { usePersistedTabState } from "@mms/fe-core/lib/usePersistedTabState";
+import { useAccountingPageShortcuts } from "./useAccountingPageShortcuts";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useDirectoryTrashState } from "@mms/fe-core/lib/useDirectoryTrashState";
+import { useFilteredModuleTierTabs } from "@mms/fe-core/lib/useModuleTierTabs";
+import { useModulePermissions } from "../host/usePermissions";
+import { useAccountingJournalColumnLayout } from "./useAccountingJournalColumnLayout";
+import { useAccountingAccountColumnLayout } from "./useAccountingAccountColumnLayout";
+import { useAccountingConfig } from "../host/useStandardModuleConfig";
+import { useAccountingNavigationController } from "./useAccountingNavigation";
+import type { AccountingSubTabId } from "../index";
+import { useAccountingCurrency } from "./useAccountingCurrency";
+
+import {
+  ACCOUNTING_MODULE_MANIFEST,
+  resolveDefaultFiscalYear,
+  todayISO,
+  type Account,
+  type JournalEntry,
+  type FiscalYear,
+} from "@mms/contracts";
+import { useAccountingFiscalYearsPaginated, useAllAccountingAccounts } from "./useAccountingApi";
+import { useAccountingEntriesPage } from "./accountingListFetch";
+import { useJournalEntriesListQueryState } from "../lib/journalEntriesControllerFilters";
+import { useAccountingPageActions } from "./useAccountingPageActions";
+import {
+  ACCOUNTING_SUB_TAB_ICONS,
+  ACCOUNTING_SUB_TAB_IDS,
+  ACCOUNTING_SUB_TAB_KEYS,
+} from "../index";
+
+export function useAccountingPageController() {
+  const { t } = useTranslation();
+  const {
+    canWrite,
+    canDelete,
+    canReports: canViewReports,
+    canViewSetup,
+  } = useModulePermissions(ACCOUNTING_MODULE_MANIFEST);
+  const pageTabs = useFilteredModuleTierTabs({
+    canViewSetup,
+    canViewReports,
+    workLabelKey: "nav.accounting",
+  });
+  const subTabs = ACCOUNTING_SUB_TAB_IDS.map((subTabId) => ({
+    id: subTabId,
+    label: t(ACCOUNTING_SUB_TAB_KEYS[subTabId]),
+    icon: ACCOUNTING_SUB_TAB_ICONS[subTabId],
+  }));
+  const [activeTab, setActiveTab] = usePersistedTabState<string>("accounting_active_tab", "work");
+  const [activeSubTab, setActiveSubTab] = useState("overview");
+  const [showDeleted, setShowDeleted] = useDirectoryTrashState();
+  const [createJournalRequestKey, setCreateJournalRequestKey] = useState(0);
+  const [createAccountRequestKey, setCreateAccountRequestKey] = useState(0);
+
+  const accountsResult = useAllAccountingAccounts({ includeDeleted: false });
+  const journalList = useJournalEntriesListQueryState(showDeleted);
+  const entriesResult = useAccountingEntriesPage(journalList.query);
+  const fiscalYearsResult = useAccountingFiscalYearsPaginated({ page: 1, limit: 100 });
+
+  const accountsEnvelope = accountsResult.data as {
+    body?: { accounts?: Account[] };
+    accounts?: Account[];
+  } | null;
+  const fiscalYearsEnvelope = fiscalYearsResult.data as {
+    body?: { fiscalYears?: FiscalYear[] };
+    fiscalYears?: FiscalYear[];
+  } | null;
+  const accounts: Account[] = Array.isArray(accountsResult.data)
+    ? accountsResult.data
+    : (accountsEnvelope?.body?.accounts ?? accountsEnvelope?.accounts ?? []);
+  const journalEntries: JournalEntry[] = entriesResult.data?.entries ?? [];
+  const journalTotal = entriesResult.data?.total ?? 0;
+  /**
+   * The Overview dashboard and the register render this server-paginated page; the
+   * whole-ledger figures come from the server metrics and report aggregates. There
+   * is deliberately no "all entries" collection: the old whole-ledger fetch (up to
+   * 50 × 100 full vouchers) is gone, and a page cannot stand in for the ledger.
+   */
+  const fiscalYears: FiscalYear[] =
+    fiscalYearsEnvelope?.body?.fiscalYears ?? fiscalYearsEnvelope?.fiscalYears ?? [];
+  const { settings } = useAccountingConfig();
+  const { activeCurrency } = useAccountingCurrency();
+  const [journalFilteredCount, setJournalFilteredCount] = useState(0);
+  const journalColumnLayout = useAccountingJournalColumnLayout();
+  const accountColumnLayout = useAccountingAccountColumnLayout();
+
+  const {
+    setAccounts,
+    setEntries,
+    setFiscalYears,
+    handleDeleteEntry,
+    handleRestoreEntry,
+    handleBulkDeleteEntries,
+    handleBulkRestoreEntries,
+  } = useAccountingPageActions({ accounts, journalEntries, fiscalYears });
+
+  // The journal/COA tabs report their own filtered count; the aggregate tabs
+  // show the journal total, derived here rather than copied into state by an
+  // effect.
+  const filteredCount =
+    activeSubTab === "journal" || activeSubTab === "coa" ? journalFilteredCount : journalTotal;
+
+  const openJournalCreate = () => {
+    setActiveTab("work");
+    setActiveSubTab("journal");
+    setCreateJournalRequestKey((key) => key + 1);
+  };
+
+  const openAccountCreate = () => {
+    setActiveTab("work");
+    setActiveSubTab("coa");
+    setCreateAccountRequestKey((key) => key + 1);
+  };
+
+  const openSubTab = useCallback(
+    (next: AccountingSubTabId) => {
+      setActiveSubTab(next);
+      if (next !== "journal") setShowDeleted(false);
+    },
+    [setShowDeleted],
+  );
+  const navigate = useAccountingNavigationController({
+    setActiveTab,
+    setActiveSubTab: openSubTab,
+  });
+
+  const { handleShortcutStateChange } = useAccountingPageShortcuts({
+    activeTab,
+    activeSubTab,
+    canWrite,
+    showDeleted,
+    openJournalCreate,
+    journalList,
+  });
+
+  const activeFiscalYear = resolveDefaultFiscalYear(fiscalYears, todayISO()) ?? undefined;
+  const listLoadFailed = accountsResult.isError || entriesResult.isError;
+
+  return {
+    t,
+    canWrite,
+    canDelete,
+    pageTabs,
+    subTabs,
+    activeTab,
+    setActiveTab,
+    activeSubTab,
+    setActiveSubTab,
+    showDeleted,
+    setShowDeleted,
+    createJournalRequestKey,
+    createAccountRequestKey,
+    accounts,
+    journalEntries,
+    fiscalYears,
+    accountsResult,
+    entriesResult,
+    journalTotal,
+    filteredCount,
+    setFilteredCount: setJournalFilteredCount,
+    settings,
+    activeCurrency,
+    activeFiscalYear,
+    listLoadFailed,
+    journalList,
+    journalColumnLayout,
+    accountColumnLayout,
+    setAccounts,
+    setEntries,
+    setFiscalYears,
+    handleDeleteEntry,
+    handleRestoreEntry,
+    handleBulkDeleteEntries,
+    handleBulkRestoreEntries,
+    handleShortcutStateChange,
+    openJournalCreate,
+    openAccountCreate,
+    navigate,
+  };
+}

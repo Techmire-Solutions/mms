@@ -1,12 +1,12 @@
 import type { Dispatch, FormEvent, ReactNode, SetStateAction } from "react";
 import { MODULE_ROW_ACTIONS_TRIGGER_CLASS } from "@mms/ui/app/ModuleRowActionsMenu";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
-import { JournalEntryRowActions } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "./index";
+import { JournalEntryRowActions } from "./index";
 import {
   extractAmountFromNaturalLanguage,
   parseNaturalLanguage,
   type QuickActionType,
-} from "@mms/mod-accounting/frontend/tenant";
+} from "./index";
 
 export function createJournalNlHandlers(
   nlInput: string,

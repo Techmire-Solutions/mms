@@ -7,7 +7,7 @@ export {
 } from "./hooks/accountingMoneyParsers";
 export * from "./accountingPageSubTabs";
 export * from "../components/index";
-export { AccountingPage } from "./AccountingPage";
+export { default as AccountingPage } from "./AccountingPage";
 export { AccountingPageHeaderActions } from "./AccountingPageHeaderActions";
 export { ChartOfAccountsTypeCountsBar } from "./ChartOfAccountsTypeCountsBar";
 export { FxSetupGuideStep } from "./FxSetupGuideStep";

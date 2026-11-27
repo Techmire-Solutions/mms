@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Account, AccountType } from "@mms/mod-accounting/frontend/tenant";
+import type { Account, AccountType } from "../index";
 import { useAccountingLedger } from "./useAccountingQueries";
 
 export interface GeneralLedgerLineWithRunning {

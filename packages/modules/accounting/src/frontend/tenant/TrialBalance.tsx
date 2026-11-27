@@ -8,10 +8,10 @@ import { WorkBatchTableFooter } from "@mms/fe-core/components/WorkBatchTableFoot
 import { WORK_SURFACE_INNER } from "@mms/ui";
 import { StatGrid, StatRow } from "@mms/ui/app/StatGrid";
 import { moneyToCents, resolveDefaultFiscalYear, todayISO } from "@mms/contracts";
-import { ACCOUNT_TYPES, type FiscalYear } from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPES, type FiscalYear } from "./index";
 import { useAccountingReportAggregates } from "./hooks/useAccountingApi";
 import { useAccountingCurrency } from "./hooks/useAccountingCurrency";
-import { AccountingDateFilterBar } from "@mms/mod-accounting/frontend/tenant";
+import { AccountingDateFilterBar } from "./index";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { cn } from "@mms/ui";
 import { balanceToneClass } from "@mms/fe-core/ui/semanticTone";

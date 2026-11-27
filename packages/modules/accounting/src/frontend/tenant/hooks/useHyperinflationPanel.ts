@@ -1,0 +1,149 @@
+import { useState } from "react";
+import {
+  DEFAULT_HYPERINFLATION_SETTINGS,
+  hyperinflationSettingsSchema,
+  priceIndexPointSchema,
+  todayISO,
+  type HyperinflationSettings,
+  type Ias29Run,
+} from "@mms/contracts";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { notify } from "@mms/fe-core/notify";
+import {
+  useHyperinflationSettings,
+  useIas29Runs,
+  usePostIas29,
+  usePreviewIas29,
+  usePriceIndices,
+  useSaveHyperinflationSettings,
+  useSavePriceIndices,
+} from "./useHyperinflation";
+
+const errorText = (error: unknown) => (error instanceof Error ? error.message : String(error));
+
+/** State and actions for Setup → Hyperinflation (IAS 29): settings, price index, restatement. */
+export function useHyperinflationPanel() {
+  const { t } = useTranslation();
+  const settings = useHyperinflationSettings();
+  const saveSettings = useSaveHyperinflationSettings();
+  const indices = usePriceIndices();
+  const saveIndices = useSavePriceIndices();
+  const runs = useIas29Runs();
+  const preview = usePreviewIas29();
+  const post = usePostIas29();
+
+  const [draft, setDraft] = useState<HyperinflationSettings | null>(null);
+  const [settingsFormError, setSettingsFormError] = useState<string | null>(null);
+  const current = draft ?? settings.data ?? DEFAULT_HYPERINFLATION_SETTINGS;
+  const [indexDate, setIndexDate] = useState(todayISO());
+  const [indexValue, setIndexValue] = useState("");
+  const [indexError, setIndexError] = useState<string | null>(null);
+  const [restatementDate, setRestatementDate] = useState(todayISO());
+  const [previewRun, setPreviewRun] = useState<Ias29Run | null>(null);
+
+  const update = <K extends keyof HyperinflationSettings>(
+    field: K,
+    value: HyperinflationSettings[K],
+  ) =>
+    // Functional update: two `update` calls in the same tick must not drop the
+    // first one (a plain `{ ...current }` spread reads a possibly-stale draft).
+    setDraft((previous) => ({
+      ...(previous ?? settings.data ?? DEFAULT_HYPERINFLATION_SETTINGS),
+      [field]: value,
+    }));
+
+  const handleSaveSettings = async (): Promise<void> => {
+    const { updatedAt: _updatedAt, ...body } = current;
+    if (!hyperinflationSettingsSchema.safeParse(body).success) {
+      setSettingsFormError(t("accounting.settings.ias29.invalidSettings"));
+      return;
+    }
+    setSettingsFormError(null);
+    try {
+      await saveSettings.mutateAsync(body);
+      setDraft(null);
+      notify.success(t("accounting.settings.ias29.saved"));
+    } catch (error) {
+      notify.error(t("accounting.settings.ias29.saveFailed"), { description: errorText(error) });
+    }
+  };
+
+  const handleAddIndex = async (): Promise<void> => {
+    const point = { indexDate, value: indexValue.trim(), source: current.indexName };
+    const parsed = priceIndexPointSchema.safeParse(point);
+    if (!parsed.success) {
+      setIndexError(t("accounting.settings.ias29.invalidIndex"));
+      return;
+    }
+    setIndexError(null);
+    try {
+      await saveIndices.mutateAsync([parsed.data]);
+      setIndexValue("");
+      notify.success(t("accounting.settings.ias29.indexSaved"));
+    } catch (error) {
+      notify.error(t("accounting.settings.ias29.indexSaveFailed"), {
+        description: errorText(error),
+      });
+    }
+  };
+
+  const handlePreview = async (): Promise<void> => {
+    try {
+      setPreviewRun(await preview.mutateAsync(restatementDate));
+    } catch (error) {
+      setPreviewRun(null);
+      notify.error(t("accounting.settings.ias29.previewFailed"), { description: errorText(error) });
+    }
+  };
+
+  const handlePost = async (): Promise<void> => {
+    try {
+      const run = await post.mutateAsync(restatementDate);
+      setPreviewRun(null);
+      notify.success(t("accounting.settings.ias29.posted", { amount: run.netMonetaryResult }));
+    } catch (error) {
+      notify.error(t("accounting.settings.ias29.postFailed"), { description: errorText(error) });
+    }
+  };
+
+  return {
+    settings: current,
+    settingsError: settings.isError,
+    settingsFormError,
+    refetchSettings: settings.refetch,
+    settingsDirty: draft !== null,
+    savingSettings: saveSettings.isPending,
+    update,
+    handleSaveSettings,
+    indices: indices.data ?? [],
+    indicesLoading: indices.isPending,
+    indexDate,
+    setIndexDate: (date: string) => {
+      setIndexDate(date);
+      setIndexError(null);
+    },
+    indexValue,
+    setIndexValue: (value: string) => {
+      setIndexValue(value);
+      setIndexError(null);
+    },
+    indexError,
+    savingIndex: saveIndices.isPending,
+    handleAddIndex,
+    restatementDate,
+    setRestatementDate: (date: string) => {
+      setRestatementDate(date);
+      setPreviewRun(null);
+    },
+    previewRun,
+    runs: runs.data ?? [],
+    runsLoading: runs.isPending,
+    alreadyPosted: (runs.data ?? []).some((run) => run.restatementDate === restatementDate),
+    previewing: preview.isPending,
+    posting: post.isPending,
+    handlePreview,
+    handlePost,
+  };
+}
+
+export type HyperinflationPanel = ReturnType<typeof useHyperinflationPanel>;

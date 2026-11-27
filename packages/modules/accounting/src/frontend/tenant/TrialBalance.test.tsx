@@ -4,7 +4,13 @@ import { renderToStaticMarkup } from "react-dom/server";
 
 const aggregatesMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@mms/fe-core/i18n", () => ({
+vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
+  useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
+}));
+
+vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string | number>) =>
       params ? `${key} ${Object.values(params).join(" ")}` : key,

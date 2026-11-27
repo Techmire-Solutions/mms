@@ -1,5 +1,5 @@
 import React from "react";
-import { ACCOUNT_TYPE_META, type AccountType } from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPE_META, type AccountType } from "./index";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { SectionLabel } from "@mms/ui";
 import { WorkBatchTable } from "@mms/fe-core/components/WorkBatchTable";

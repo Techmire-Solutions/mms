@@ -1,11 +1,8 @@
-import { quickActionLabel } from "@mms/mod-accounting/frontend/tenant";
+import { quickActionLabel } from "./index";
 import { createElement } from "react";
 import { Button } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import {
-  getTransactionGroupColorClasses,
-  type QuickActionType,
-} from "@mms/mod-accounting/frontend/tenant";
+import { getTransactionGroupColorClasses, type QuickActionType } from "./index";
 
 interface SimpleTransactionHeaderProps {
   type: QuickActionType;

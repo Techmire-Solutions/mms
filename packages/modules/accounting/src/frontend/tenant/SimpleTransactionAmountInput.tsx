@@ -3,7 +3,7 @@ import { Field } from "@mms/ui";
 import { Input } from "@mms/ui";
 import { isImeSafeEnter } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { parseMoneyInput } from "@mms/mod-accounting/frontend/tenant";
+import { parseMoneyInput } from "./index";
 
 interface SimpleTransactionAmountInputProps {
   prefix: string;

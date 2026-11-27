@@ -2,7 +2,7 @@ import React from "react";
 import { Download } from "lucide-react";
 import { DateRangeFilterBar } from "@mms/fe-core/components/DateRangeFilterBar";
 import { Button } from "@mms/ui";
-import type { FiscalYear } from "@mms/mod-accounting/frontend/tenant";
+import type { FiscalYear } from "./index";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { cn } from "@mms/ui";
 

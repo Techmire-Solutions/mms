@@ -1,28 +1,216 @@
 import React from "react";
-import { Card } from "@mms/ui";
-import { MoneyAmount } from "../components/MoneyAmount";
+import { AnimatePresence } from "framer-motion";
+import { ModulePageShell } from "@mms/fe-core/components/ModulePageShell";
+import { ModuleTierMotion } from "@mms/ui/app/ModuleTierMotion";
+import { ResponsiveAccordionTabs } from "@mms/fe-core/components/ResponsiveAccordionTabs";
+import RouteStatusFallback from "@mms/fe-core/routing/RouteStatusFallback";
+import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
+import { accountingTransferSchema } from "@mms/contracts";
+import { useGenericModuleExport } from "./host/useGenericModuleExport";
+import { AccountingPageHeaderActions } from "./index";
+import { AccountingCsvImportDialog } from "./index";
+import { AccountingWorkTier } from "./components/AccountingWorkTier";
+import { AccountingCommandMetrics } from "./index";
+import { ACCOUNTING_PAGE_ICON } from "./index";
+import { JOURNAL_PAGE_SIZE } from "./lib/journalEntriesControllerFilters";
+import { useAccountingPageController } from "./hooks/useAccountingPageController";
+import { AccountingNavigationContext } from "./hooks/useAccountingNavigation";
 
-export interface AccountingPageProps {
-  /** App-owned reports contribution; the module must not import the app report registry. */
-  reportsTier?: React.ComponentType;
-}
+const AccountingReportsTier = React.lazy(() =>
+  import("./host/ModuleReportsTier").then((m) => ({ default: m.ModuleReportsTier })),
+);
+const AccountingSetupTier = React.lazy(() =>
+  import("./components/AccountingSetupTier").then((m) => ({
+    default: m.AccountingSetupTier,
+  })),
+);
 
 /**
- * Module-owned accounting page shell. The full work/setup tiers are migrated
- * incrementally from the app feature; the page contract is stable for the app
- * route registry.
+ * Accounting and bookkeeping — Work | Reports | Setup.
  */
-export function AccountingPage({
-  reportsTier: ReportsTier,
-}: AccountingPageProps): React.JSX.Element {
+export default function Accounting() {
+  const c = useAccountingPageController();
+  const [importOpen, setImportOpen] = React.useState(false);
+  const { handleExport, isExporting } = useGenericModuleExport({
+    path: "/api/accounting/export/csv",
+    filename: "accounting-journals.csv",
+    auditPath: "/api/accounting/export-audit",
+    columns: accountingTransferSchema.exportColumns,
+    canExport: c.canWrite,
+  });
+  const {
+    t,
+    canWrite,
+    canDelete,
+    pageTabs,
+    subTabs,
+    activeTab,
+    setActiveTab,
+    activeSubTab,
+    setActiveSubTab,
+    showDeleted,
+    setShowDeleted,
+    createJournalRequestKey,
+    createAccountRequestKey,
+    accounts,
+    journalEntries,
+    fiscalYears,
+    accountsResult,
+    entriesResult,
+    journalTotal,
+    filteredCount,
+    setFilteredCount,
+    settings,
+    activeFiscalYear,
+    activeCurrency,
+    listLoadFailed,
+    journalList,
+    journalColumnLayout,
+    accountColumnLayout,
+    setAccounts,
+    setEntries,
+    setFiscalYears,
+    handleDeleteEntry,
+    handleRestoreEntry,
+    handleBulkDeleteEntries,
+    handleBulkRestoreEntries,
+    handleShortcutStateChange,
+    openJournalCreate,
+    navigate,
+  } = c;
+
   return (
-    <Card className="space-y-2 p-4">
-      <h1 className="text-lg font-semibold">Accounting</h1>
-      <p className="text-sm text-muted-foreground">
-        Ledger, chart of accounts, journal entries, fiscal years and consolidation.
-      </p>
-      <MoneyAmount amount={0} currency="USD" />
-      {ReportsTier ? <ReportsTier /> : null}
-    </Card>
+    <ModulePageShell
+      seoTitle={`MMS - ${t("nav.accounting")}`}
+      seoDescription={t("page.accounting.subtitle")}
+      headerIcon={ACCOUNTING_PAGE_ICON}
+      headerTitle={t("nav.accounting")}
+      headerSubtitle={`${t("page.accounting.subtitle")}${activeFiscalYear ? ` · ${activeFiscalYear.label}` : ""} · ${activeCurrency.code}`}
+      headerActions={
+        <AccountingPageHeaderActions
+          canWrite={canWrite}
+          canExport={canWrite}
+          isExporting={isExporting}
+          showDeleted={showDeleted}
+          activeFiscalYear={activeFiscalYear}
+          onCreateJournal={openJournalCreate}
+          onImport={() => setImportOpen(true)}
+          onExport={handleExport}
+        />
+      }
+      metricsStrip={<AccountingCommandMetrics entryTotal={journalTotal} shown={filteredCount} />}
+    >
+      <AccountingNavigationContext value={navigate}>
+        <ResponsiveAccordionTabs
+          tabs={pageTabs}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          panelIdPrefix="accounting-tab"
+        >
+          <AnimatePresence mode="wait">
+            <ModuleTierMotion
+              tier={activeTab + "-" + activeSubTab + "-" + String(showDeleted)}
+              className="space-y-4"
+            >
+              <ErrorBoundary>
+                {activeTab === "reports" && (
+                  <React.Suspense fallback={<RouteStatusFallback />}>
+                    <AccountingReportsTier category="accounting" />
+                  </React.Suspense>
+                )}
+
+                {activeTab === "work" && (
+                  <div className="space-y-5">
+                    <AccountingWorkTier
+                      accounts={accounts}
+                      accountsLoaded={accountsResult.isSuccess}
+                      entries={journalEntries}
+                      fiscalYears={fiscalYears}
+                      settings={settings}
+                      activeSubTab={activeSubTab}
+                      subTabs={subTabs}
+                      showDeleted={showDeleted}
+                      canWrite={canWrite}
+                      canDelete={canDelete}
+                      listLoadFailed={listLoadFailed}
+                      journalFilters={journalList.filters}
+                      onJournalFiltersChange={journalList.patchFilters}
+                      journalPaging={{
+                        page: journalList.page,
+                        limit: JOURNAL_PAGE_SIZE,
+                        total: journalTotal,
+                        hasMore: entriesResult.data?.hasMore ?? false,
+                        onPageChange: journalList.setPage,
+                      }}
+                      createJournalRequestKey={createJournalRequestKey}
+                      createAccountRequestKey={createAccountRequestKey}
+                      onSubTabChange={(next) => {
+                        setActiveSubTab(next);
+                        if (next !== "journal") setShowDeleted(false);
+                      }}
+                      onShowDeletedChange={() => setShowDeleted((prev) => !prev)}
+                      onRetry={() => {
+                        void accountsResult.refetch();
+                        void entriesResult.refetch();
+                      }}
+                      onAccountsChange={setAccounts}
+                      onEntriesChange={setEntries}
+                      onFilteredCountChange={setFilteredCount}
+                      onShortcutStateChange={handleShortcutStateChange}
+                      onDeleteEntry={handleDeleteEntry}
+                      onRestoreEntry={handleRestoreEntry}
+                      onBulkDeleteEntries={handleBulkDeleteEntries}
+                      onBulkRestoreEntries={handleBulkRestoreEntries}
+                      journalColumnProps={{
+                        isColumnVisible: journalColumnLayout.isColumnVisible,
+                        getColumnWidth: journalColumnLayout.getColumnWidth,
+                        onColumnResize: journalColumnLayout.setColumnWidth,
+                        columnCustomizer: {
+                          columnRegistry: journalColumnLayout.columnRegistry,
+                          updateUserColumnLayout: journalColumnLayout.updateUserColumnLayout,
+                          onResetLayout: journalColumnLayout.resetColumnLayout,
+                          labels: journalColumnLayout.customizerLabels,
+                        },
+                      }}
+                      accountColumnProps={{
+                        isColumnVisible: accountColumnLayout.isColumnVisible,
+                        getColumnWidth: accountColumnLayout.getColumnWidth,
+                        onColumnResize: accountColumnLayout.setColumnWidth,
+                        columnCustomizer: {
+                          columnRegistry: accountColumnLayout.columnRegistry,
+                          updateUserColumnLayout: accountColumnLayout.updateUserColumnLayout,
+                          onResetLayout: accountColumnLayout.resetColumnLayout,
+                          labels: accountColumnLayout.customizerLabels,
+                        },
+                      }}
+                      showActiveLabel={t("accounting.trash.showActive")}
+                      showDeletedLabel={t("accounting.trash.showDeleted")}
+                      loadFailedTitle={t("accounting.loadFailed")}
+                    />
+                  </div>
+                )}
+
+                {activeTab === "setup" && (
+                  <React.Suspense fallback={<RouteStatusFallback />}>
+                    <AccountingSetupTier
+                      accounts={accounts}
+                      fiscalYears={fiscalYears}
+                      onSaveFiscalYears={setFiscalYears}
+                      onAccountsChange={setAccounts}
+                    />
+                  </React.Suspense>
+                )}
+              </ErrorBoundary>
+            </ModuleTierMotion>
+          </AnimatePresence>
+        </ResponsiveAccordionTabs>
+      </AccountingNavigationContext>
+
+      <AccountingCsvImportDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        canWrite={canWrite}
+      />
+    </ModulePageShell>
   );
 }

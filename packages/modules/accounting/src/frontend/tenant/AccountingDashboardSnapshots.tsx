@@ -7,7 +7,7 @@ import { EmptyState } from "@mms/ui";
 import { CARD_STRIPE_INSET } from "@mms/fe-core/ui/semanticTone";
 import { cn } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "./index";
 export interface BalanceSheetItem {
   id: string;
   name: string;

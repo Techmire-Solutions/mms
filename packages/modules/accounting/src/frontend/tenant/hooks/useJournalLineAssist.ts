@@ -1,6 +1,6 @@
 import { useState, type Dispatch, type SetStateAction } from "react";
 import { generateClientEntityId, type JournalTemplate } from "@mms/contracts";
-import type { DraftForm, DraftLine } from "@mms/mod-accounting/frontend/tenant";
+import type { DraftForm, DraftLine } from "../index";
 
 import type { NormalBalance } from "@mms/contracts";
 

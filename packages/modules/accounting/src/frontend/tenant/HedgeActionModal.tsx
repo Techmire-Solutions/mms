@@ -20,8 +20,8 @@ import { useTranslation } from "@mms/fe-core/i18n";
 import { mapApiFormError } from "@mms/fe-core/forms/serverFormErrors";
 import { useIdentityReset } from "@mms/fe-core/forms/useIdentityReset";
 import { useDirtySnapshot } from "@mms/fe-core/forms/useDirtySnapshot";
-import { accountOptions } from "@mms/mod-accounting/frontend/tenant";
-import type { HedgeAction, HedgeActionInput } from "@mms/mod-accounting/frontend/tenant";
+import { accountOptions } from "./index";
+import type { HedgeAction, HedgeActionInput } from "./index";
 
 interface HedgeActionModalProps {
   action: HedgeAction;

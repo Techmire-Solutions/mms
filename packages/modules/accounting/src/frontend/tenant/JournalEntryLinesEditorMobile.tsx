@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react";
 import type { AppTranslationKey } from "@mms/contracts";
-import { ACCOUNT_TYPE_META, type Account } from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPE_META, type Account } from "./index";
 import { Badge } from "@mms/ui";
 import { Field } from "@mms/ui";
 import { FormListFieldCard } from "@mms/fe-core/components/FormListFieldCard";
@@ -8,7 +8,7 @@ import { FormSelectWithQuickCreate } from "@mms/fe-core/components/FormSelectWit
 import { Input } from "@mms/ui";
 import { StatGrid, StatRow } from "@mms/ui/app/StatGrid";
 import { useTranslation } from "@mms/fe-core/i18n";
-import type { DraftLine } from "@mms/mod-accounting/frontend/tenant";
+import type { DraftLine } from "./index";
 import type { JournalAmountSide } from "./hooks/useJournalLineAssist";
 
 export interface JournalEntryLinesEditorMobileProps {

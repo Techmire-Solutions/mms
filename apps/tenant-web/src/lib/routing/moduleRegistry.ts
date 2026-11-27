@@ -228,7 +228,7 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "accounting",
     path: TENANT_PATHS.accounting,
     access: moduleAccess("accounting"),
-    loader: () => import("@/tenant/features/accounting/AccountingPage"),
+    loader: () => import("@mms/mod-accounting/frontend/tenant/AccountingPage"),
     nav: { labelKey: "nav.accounting", icon: TrendingUp, order: 7 },
     apexRedirectable: true,
   },

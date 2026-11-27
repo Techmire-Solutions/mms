@@ -1,5 +1,5 @@
 import { generateClientEntityId, todayISO } from "@mms/contracts";
-import type { FiscalYear, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { FiscalYear, JournalEntry } from "../index";
 import { draftLinesFromEntry } from "./journalEntryCurrency";
 import type { DraftForm, DraftLine } from "./journalEntryFormTypes";
 

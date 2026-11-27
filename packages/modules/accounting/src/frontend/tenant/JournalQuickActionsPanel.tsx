@@ -8,9 +8,9 @@ import { type StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge"
 import { SEMANTIC_BADGE } from "@mms/fe-core/ui/semanticTone";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingCurrency } from "./hooks/useAccountingCurrency";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
-import { QUICK_ACTIONS, type QuickActionType } from "@mms/mod-accounting/frontend/tenant";
-import { JournalRecentEntryCard } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "./index";
+import { QUICK_ACTIONS, type QuickActionType } from "./index";
+import { JournalRecentEntryCard } from "./index";
 
 // Cash-flow direction comes from `resolveEntryDirection`, which reads the
 // entry's own transaction type / tags through ONE source — the quick-action

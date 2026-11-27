@@ -1,9 +1,4 @@
-import type {
-  Account,
-  AccountingSettings,
-  FiscalYear,
-  JournalEntry,
-} from "@mms/mod-accounting/frontend/tenant";
+import type { Account, AccountingSettings, FiscalYear, JournalEntry } from "../index";
 import type { ModuleColumnCustomizerProps } from "@mms/fe-core/components/moduleColumnCustomizerTypes";
 
 /** Resolves with the entries as the server saved them (server-assigned voucher refs included). */

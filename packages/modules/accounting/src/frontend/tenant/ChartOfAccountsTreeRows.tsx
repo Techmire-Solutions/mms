@@ -10,7 +10,7 @@ import { cn } from "@mms/ui";
 import { StatusBadge, type StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
 
 import { useTranslation } from "@mms/fe-core/i18n";
-import { ACCOUNT_TYPE_META, type Account } from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPE_META, type Account } from "./index";
 
 export interface AccountRowActionsProps {
   account: Account;

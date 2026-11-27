@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { Account, FiscalYear } from "@mms/mod-accounting/frontend/tenant";
+import type { Account, FiscalYear } from "../index";
 import { resolveDefaultFiscalYear, todayISO, type AppTranslationKey } from "@mms/contracts";
 import { notify } from "@mms/fe-core/notify";
 import {
@@ -9,8 +9,8 @@ import {
   type QuickActionType,
   type TransactionGroup,
   type WizardFormState,
-} from "@mms/mod-accounting/frontend/tenant";
-import { quickActionDescription } from "@mms/mod-accounting/frontend/tenant";
+} from "../index";
+import { quickActionDescription } from "../index";
 
 export const LAST_TYPE_SESSION_KEY = "mms-wizard-last-type-id";
 
