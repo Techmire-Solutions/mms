@@ -276,11 +276,11 @@ const TEMPLATE_MODULE_FILES = [
   "lib/invoiceTemplateFields.ts",
   "tenant/features/students/lib/studentCardTemplateStore.ts",
   "tenant/features/accounting/lib/voucherTemplateModel.ts",
-  "tenant/features/examinations/components/ExaminationTemplateEditor.tsx",
+  "packages/modules/examinations/src/frontend/tenant/components/ExaminationTemplateEditor.tsx",
   "tenant/features/hasanat/components/HasanatTemplateEditor.tsx",
   "tenant/features/students/components/card-template/StudentCardTemplateEditor.tsx",
   "tenant/features/accounting/components/AccountingVoucherTemplateEditor.tsx",
-  "tenant/features/obligations/components/invoice/InvoiceTemplateEditor.tsx",
+  "packages/modules/obligations/src/frontend/tenant/components/invoice/InvoiceTemplateEditor.tsx",
 ].map((rel) => path.join(ROOTS[0].fe, rel));
 
 // Extracted module surfaces that own template layouts stay in this norm's scan set.
