@@ -1,10 +1,52 @@
+/** Earliest sensible year for Date of Birth records. */
+export const MIN_DOB_YEAR = 1900;
+
+/** Earliest sensible ISO date string for Date of Birth inputs (`min` bound). */
+export const MIN_DOB_ISO = "1900-01-01";
+
+/**
+ * Validates that an ISO `YYYY-MM-DD` (or ISO timestamp) represents a real calendar date
+ * without month/day rollover (e.g. rejects `2026-02-30` and `9999-99-99`).
+ */
+export function isValidCalendarIsoDate(value: string | null | undefined): boolean {
+  if (!value || typeof value !== "string") return false;
+  const dateOnly = value.trim().split("T")[0];
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateOnly);
+  if (!match) return false;
+  const year = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10);
+  const day = Number.parseInt(match[3], 10);
+  if (month < 1 || month > 12 || day < 1 || day > 31) return false;
+  const probe = new Date(Date.UTC(year, month - 1, day));
+  return (
+    probe.getUTCFullYear() === year &&
+    probe.getUTCMonth() === month - 1 &&
+    probe.getUTCDate() === day
+  );
+}
+
+/**
+ * Validates a Date of Birth ISO string: must be a real calendar date with
+ * year >= {@link MIN_DOB_YEAR} (1900) and not in the future.
+ */
+export function isValidDobIsoDate(
+  value: string | null | undefined,
+  relativeTo = new Date(),
+): boolean {
+  if (!isValidCalendarIsoDate(value)) return false;
+  const parsed = parseUtcDateParts(value);
+  if (!parsed || parsed.year < MIN_DOB_YEAR) return false;
+  const todayUtc = Date.UTC(relativeTo.getFullYear(), relativeTo.getMonth(), relativeTo.getDate());
+  return parsed.date.getTime() <= todayUtc;
+}
+
 /**
  * Calculate age based on a date of birth string.
  * @param dob - Date of birth string
- * @returns Age in years, or null if invalid/missing
+ * @returns Age in years, or null if invalid/missing/out-of-range
  */
 export function calcAge(dob: string | null | undefined): number | null {
-  if (!dob) return null;
+  if (!dob || !isValidDobIsoDate(dob)) return null;
   const diff = Date.now() - new Date(dob).getTime();
   return Math.floor(diff / (1000 * 60 * 60 * 24 * 365.25));
 }
@@ -44,7 +86,7 @@ export interface SolarAgeParts {
 export function getSolarAgeComponents(dob: string, relativeTo = new Date()): SolarAgeParts | null {
   try {
     const parsed = parseUtcDateParts(dob);
-    if (!parsed || parsed.date > relativeTo) return null;
+    if (!parsed || parsed.year < MIN_DOB_YEAR || parsed.date > relativeTo) return null;
 
     let years = relativeTo.getFullYear() - parsed.year;
     let months = relativeTo.getMonth() - parsed.month;
@@ -139,7 +181,7 @@ export interface LunarAgeParts {
 export function getLunarAgeComponents(dob: string, relativeTo = new Date()): LunarAgeParts | null {
   try {
     const parsed = parseUtcDateParts(dob);
-    if (!parsed || parsed.date > relativeTo) return null;
+    if (!parsed || parsed.year < MIN_DOB_YEAR || parsed.date > relativeTo) return null;
 
     const birthParts = getHijriParts(parsed.date);
     const nowParts = getHijriParts(relativeTo);

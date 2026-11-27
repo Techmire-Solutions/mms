@@ -8,5 +8,6 @@ export default defineConfig({
     environment: "happy-dom",
     execArgv: ["--no-experimental-webstorage"],
     include: ["src/frontend/**/*.test.{ts,tsx}"],
+    setupFiles: ["./src/frontend/test/setup.ts"],
   },
 });

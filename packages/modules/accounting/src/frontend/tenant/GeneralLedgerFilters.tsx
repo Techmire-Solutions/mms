@@ -1,6 +1,6 @@
 import React from "react";
 import type { AppTranslationKey } from "@mms/contracts";
-import { ACCOUNT_TYPES, type AccountType, type Account } from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPES, type AccountType, type Account } from "./index";
 import { DateRangeFilterBar } from "@mms/fe-core/components/DateRangeFilterBar";
 import { FormSelect } from "@mms/fe-core/components/FormSelect";
 import { useTranslation } from "@mms/fe-core/i18n";

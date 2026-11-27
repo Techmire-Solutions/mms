@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# MMS — single entry point for local dev (SQLite/PostgreSQL → backend :3000 → frontend :5173)
+# MMS — single entry point for local dev (PostgreSQL → API :3000 → tenant console :5173)
 #
 # Usage:
 #   ./restart_servers.sh              # start in GNU screen (default, survives agent exit)
@@ -35,7 +35,7 @@ Commands:
   stop                   Stop screen session and free ports
 
 Options:
-  --foreground           Run backend + frontend in this terminal (blocks; Ctrl+C stops)
+  --foreground           Run API + tenant console in this terminal (blocks; Ctrl+C stops)
   --turbo                Legacy: detached turbo (fragile — prefer default screen mode)
   --quick                Skip Vite cache clear / shorten health wait
   --help                 Show this help

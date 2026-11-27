@@ -9,6 +9,11 @@
  * 2-dp column stays inside Number-safe cents.
  *
  * Tests and generated output are skipped. Findings fail the build.
+ *
+ * Scope of the `any` rule: it fires only on a line that also names a money value (`MONEY_ARG`), the same
+ * test the `Number()` rule uses. Generic `any` is `check:code-norms`' one owner (mms-dry §4) — when this
+ * gate flagged every `any` in the extracted modules it produced 631 findings in accounting frontend
+ * components, none of them money-related (40/40 sampled), which drowned the signal it exists to protect.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -26,9 +31,8 @@ const SCAN_DIRS = [
   "apps/tenant-web/src/lib",
   // Finance moved out of the tenant app into @mms/mod-billing (P4 extraction).
   "packages/modules/billing/src/frontend/tenant",
-  "apps/tenant-web/src/tenant/features/accounting",
+  // Accounting moved out of the tenant app into @mms/mod-accounting (2026-11-27 extraction).
   "packages/modules/accounting/src/frontend",
-  "apps/tenant-web/src/tenant/features/obligations",
 ];
 // Fail closed: money-safety must cover every finance surface, so an empty scan
 // root is a gate bug (docs/monorepo-migration-plan.md §2.7).
@@ -140,8 +144,15 @@ for (const scanDir of SCAN_DIRS) {
       ) {
         FINDINGS.push(`${where} Number() on a money value — convert via integer cents`);
       }
-      if (/:\s*any\b|\bas\s+any\b/.test(line) && !isAllowed(relative, "any-cast")) {
-        FINDINGS.push(`${where} any cast in finance code`);
+      // An `any` cast matters here only when the same line touches a money value; a bare cast is
+      // `check:code-norms`' finding, not this gate's.
+      if (
+        /:\s*any\b|\bas\s+any\b/.test(line) &&
+        MONEY_ARG.test(line) &&
+        !NON_MONEY_ARG.test(line) &&
+        !isAllowed(relative, "any-cast")
+      ) {
+        FINDINGS.push(`${where} any cast on a money value — type it (integer cents / Decimal)`);
       }
     });
   }

@@ -1,6 +1,6 @@
 /**
  * Server-authoritative dashboard widget write contract.
- * The FE `CustomWidget` interface (`apps/frontend/src/lib/reports/pinnedWidgetTypes.ts`)
+ * The FE `CustomWidget` interface (`apps/tenant-web/src/lib/reports/pinnedWidgetTypes.ts`)
  * remains the app-side canonical type; this Zod schema is the FE↔BE wire DTO persisted on
  * the typed `dashboard_widgets` table (indexed columns + jsonb `config` for the remainder).
  */

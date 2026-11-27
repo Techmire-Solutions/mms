@@ -98,7 +98,7 @@ export function AppShell({
 
       {/* Mobile Top Header Bar */}
       {mobileHeader ? (
-        <header role="banner" className="lg:hidden sticky top-0 z-sticky">
+        <header role="banner" className="lg:hidden sticky top-0 z-header">
           {mobileHeader}
         </header>
       ) : null}

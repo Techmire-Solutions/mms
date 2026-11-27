@@ -12,6 +12,7 @@ import {
   setAccountingPreferencesMemory,
 } from "./accountingSetupConfigApi";
 import { ACCOUNTING_PREFERENCES_QUERY_KEY } from "./accountingQueryKeys";
+export { ACCOUNTING_PREFERENCES_QUERY_KEY };
 
 const setupConfigHooks = createModuleSetupConfigHooks<AccountingModulePreferences>({
   preferencesQueryKey: ACCOUNTING_PREFERENCES_QUERY_KEY,

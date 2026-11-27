@@ -11,7 +11,7 @@ import { type ModuleColumnCustomizerProps } from "@mms/fe-core/components/module
 import { ModuleWorkToolbar } from "@mms/fe-core/components/ModuleWorkToolbar";
 import { Button } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { ACCOUNT_TYPES, type AccountType } from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPES, type AccountType } from "./index";
 import type { WorkDirectoryViewMode } from "@mms/fe-core/tenant";
 
 interface ChartOfAccountsListFiltersProps {

@@ -60,6 +60,8 @@ assertScanDirs(
  * ratcheted it back down to 4 (only the generated translation dictionaries).
  */
 const BASELINE = {
+  // Cannot be raised: `check:ratchet-baselines` fails any baseline increase ("padding is not
+  // allowed"), so the vertical-module extraction's `any` casts must be typed, not waived.
   anyAnnotations: 0,
   hexColourFiles: 19,
   arbitraryColourExpressions: 0,

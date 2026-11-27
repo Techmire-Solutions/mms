@@ -1,4 +1,4 @@
-import type { JournalEntry, JournalLine } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry, JournalLine } from "../index";
 
 export interface DraftLine extends Omit<JournalLine, "debit" | "credit"> {
   debit: string | number;

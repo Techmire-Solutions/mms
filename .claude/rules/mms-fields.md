@@ -3,8 +3,8 @@ description: System vs custom fields registry, field tabs, delete guards, and co
 paths:
   - "packages/modules/contacts/src/frontend/tenant/lib/useContactConfig*.ts"
   - "packages/contracts/src/contacts/contactField*.ts"
-  - "apps/tenant-web/src/tenant/features/**/*Fields*"
-  - "apps/tenant-web/src/tenant/features/**/*Setup*"
+  - "packages/modules/*/src/frontend/tenant/**/*Fields*"
+  - "packages/modules/*/src/frontend/tenant/**/*Setup*"
   - "apps/platform-web/src/platform/**/*Fields*"
   - "apps/platform-web/src/platform/**/*Setup*"
   - "packages/contracts/src/**/contactTypes.ts"

@@ -4,7 +4,7 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../utils";
 
 export const avatarVariants = cva(
-  "relative flex shrink-0 overflow-hidden rounded-xl border border-border/40 shadow-xs transition-all",
+  "relative isolate flex shrink-0 overflow-hidden rounded-xl border border-border/40 shadow-xs transition-all",
   {
     variants: {
       size: {
@@ -58,7 +58,7 @@ export function AvatarImage({
       decoding={decoding}
       fetchPriority={fetchPriority}
       className={cn(
-        "aspect-square h-full w-full object-cover transition-opacity duration-200",
+        "aspect-square h-full w-full rounded-[inherit] object-cover transition-opacity duration-200",
         className,
       )}
       {...props}
@@ -75,7 +75,7 @@ export function AvatarFallback({
     <AvatarPrimitive.Fallback
       ref={ref}
       className={cn(
-        "flex h-full w-full items-center justify-center rounded-xl bg-muted font-bold select-none leading-none",
+        "flex h-full w-full items-center justify-center rounded-[inherit] bg-muted font-bold select-none leading-none",
         className,
       )}
       {...props}

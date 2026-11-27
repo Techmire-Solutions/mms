@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { ModulePanelSuspenseFallback } from "@mms/fe-core/components/ModulePanelSuspenseFallback";
-import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { TranslationContext, type TranslationFunction } from "@mms/fe-core/i18n";
 
 const mockContext = {
   language: "en",

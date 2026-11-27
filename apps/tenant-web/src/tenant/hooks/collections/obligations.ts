@@ -27,8 +27,8 @@ export {
   useObligationsMetrics,
   useObligationsReportAggregates,
   useObligationsMutations,
-} from "@/tenant/features/obligations/hooks/useObligationsApi";
-export { invalidateObligationsQueries } from "@/tenant/features/obligations/hooks/invalidateObligationsQueries";
+} from "@mms/mod-obligations/frontend/tenant/hooks/useObligationsApi";
+export { invalidateObligationsQueries } from "@mms/mod-obligations/frontend/tenant/hooks/invalidateObligationsQueries";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   obligationsCollectionsListQueryOptions,
@@ -42,15 +42,15 @@ export {
   useObligationsContractRestoreCollection,
   useObligationsContractBulkDeleteCollections,
   useObligationsContractBulkRestoreCollections,
-} from "@/tenant/features/obligations/hooks/useObligationsQueries";
+} from "@mms/mod-obligations/frontend/tenant/hooks/useObligationsQueries";
 export {
   useObligationsSettings,
   loadObligationsSettings,
   saveObligationsSettings,
-} from "@/tenant/features/obligations/hooks/useObligationsSettings";
+} from "@mms/mod-obligations/frontend/tenant/hooks/useObligationsSettings";
 export {
   OBLIGATIONS_PREFERENCES_QUERY_KEY,
   useObligationsPreferencesQuery,
   useObligationsPreferencesMutation,
   useComposedObligationsSettings,
-} from "@/tenant/features/obligations/hooks/useObligationsSetupConfig";
+} from "@mms/mod-obligations/frontend/tenant/hooks/useObligationsSetupConfig";

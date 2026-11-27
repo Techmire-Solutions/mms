@@ -27,6 +27,7 @@ export interface ContactsBulkActionBarProps {
   isExporting?: boolean;
   onRequestBulkDelete: () => void;
   onRequestBulkRestore: () => void;
+  onRequestBulkPermanentDelete?: () => void;
   onClearSelection: () => void;
   onBulkTag?: (tags: string[], mode: BulkTagMode) => Promise<void> | void;
   isTagPending?: boolean;
@@ -49,6 +50,7 @@ export const ContactsBulkActionBar = React.memo(function ContactsBulkActionBar({
   isExporting,
   onRequestBulkDelete,
   onRequestBulkRestore,
+  onRequestBulkPermanentDelete,
   onClearSelection,
   onBulkTag,
   isTagPending,
@@ -71,6 +73,8 @@ export const ContactsBulkActionBar = React.memo(function ContactsBulkActionBar({
         onClearSelection={onClearSelection}
         onRequestBulkDelete={onRequestBulkDelete}
         onRequestBulkRestore={onRequestBulkRestore}
+        onRequestBulkPermanentDelete={onRequestBulkPermanentDelete}
+        permanentDeleteLabel={t("contacts.trash.permanentDelete")}
         messagingTargets={selectedTargets}
         onWhatsApp={onWhatsApp}
         onSms={onSms}

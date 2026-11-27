@@ -2,7 +2,7 @@ import type React from "react";
 import { AlertTriangle, CheckCircle, Sparkles } from "lucide-react";
 import { SectionCard } from "@mms/ui";
 import { cn } from "@mms/ui";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { LlmTestResult } from "@mms/contracts";
 
 interface LlmConfigTestResultPanelProps {

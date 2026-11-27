@@ -36,8 +36,8 @@ import {
   ReportChartCard,
   ReportDataGridContainer,
 } from "@/tenant/components/moduleReports";
-import PinnedWidgets from "@/tenant/features/reports/components/PinnedWidgets";
-import { ReportFilterBanner } from "@/components/reports/ReportFilterBanner";
+import PinnedWidgets from "@mms/mod-analytics/frontend/tenant/features/components/PinnedWidgets";
+import { ReportFilterBanner } from "@mms/mod-analytics/frontend/tenant/components/ReportFilterBanner";
 import { SessionClassSectionSelect } from "@/components/common/SessionClassSectionSelect";
 import { WorkListFiltersScaffold } from "@/components/common";
 

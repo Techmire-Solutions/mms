@@ -7,7 +7,7 @@ import {
 import {
   EXAMINATION_AVAILABLE_FIELDS,
   EXAMINATION_PRESETS,
-} from "@/tenant/features/examinations/lib/examinationTemplateData";
+} from "@mms/mod-examinations/frontend/tenant/lib/examinationTemplateData";
 import {
   HASANAT_AVAILABLE_FIELDS,
   HASANAT_PRESETS,

@@ -50,17 +50,12 @@ jobs:
               - 'packages/be-core/**'
               - 'packages/db/**'
               - 'packages/modules/**'
-              - 'apps/api/src/examinations/**'
-              - 'apps/api/src/routes/tenant/examinations/**'
               - 'packages/db/drizzle.config.ts'
-              - 'apps/api/src/**/repository/**'
-              - 'apps/api/src/**/ledgerPosting/**'
-              - 'apps/api/src/**/use-cases/**'
+              # Domain repositories/use-cases now live in packages/modules/** (above).
               # 66 files under services/ import drizzle-orm or db/repositories
               # directly (grandfathered by check-backend-structure). Their SQL
               # changes must run the real-Postgres suite.
               - 'apps/api/src/services/**'
-              - 'apps/api/src/accounting/**'
               # lib/auditCheckpoint.ts, lib/subjectKeyService.ts and the auth
               # middleware issue real SQL / protect RLS-critical paths; without
               # these a PR can skip both DB integration and the RLS suite.
@@ -353,6 +348,25 @@ jobs:
       - name: Documentation ratchets
         run: pnpm run check:docs
 
+      # Living docs must name only paths that exist (dated audits/ADRs keep their history).
+      - name: Living docs paths
+        run: pnpm run check:docs-paths
+
+      # Ratchet: the two web apps stay independent shells (no app<->app imports,
+      # no cross-audience module imports). Baseline freezes the pre-existing backlog.
+      - name: Web-app isolation ratchet
+        run: pnpm run check:web-app-isolation
+
+      # Ratchet: package layers point only downward (contracts/db/be-core/fe-core/ui
+      # never import a module or an app; modules never import another module).
+      - name: Package boundary ratchet
+        run: pnpm run check:package-boundaries
+
+      # Ratchet: every route the API serves is declared in the contracts inventory
+      # and mounted through the module descriptors — an undeclared route fails CI.
+      - name: Route inventory ratchet
+        run: pnpm run check:routes-inventory
+
       # Ratchet: applied migrations are immutable (forward-only DDL). Rewriting one makes
       # fresh and existing installs diverge, and the change never reaches the latter.
       # `--base HEAD^1` is explicit so an unresolvable ref fails loudly instead of
@@ -381,6 +395,10 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || 'HEAD^1' }}
         run: node scripts/ci/check-ratchet-baselines.mjs --base "${BASE_SHA}"
 
+      # A gate without a test can regress silently; BASELINE_UNTESTED only shrinks.
+      - name: Gate test coverage
+        run: pnpm run check:gate-test-coverage
+
       # Ratchet: frontend structural norms (primitives vs composites in
       # components/ui, canonical feature shape, logic out of features/*/components,
       # UI helpers out of lib/ root, barrel allowlist). Baselines live in the script.
@@ -403,10 +421,18 @@ jobs:
       - name: Module audience boundaries
         run: pnpm run check:module-boundaries
 
-      # Migration ledger (docs/monorepo-migration-plan.md §9.1): a done move whose
-      # source still exists, or a todo move whose target already exists, fails.
-      - name: Migration move ledger
-        run: pnpm run check:move-manifest
+      # Exports map: a .tsx file under a .ts-first wildcard is unreachable until the package
+      # declares an explicit entry; this catches the class app-side (IAM shipped it twice).
+      - name: Module exports resolve
+        run: pnpm run check:module-exports
+
+      # fe-core must not import modules or apps (it is the shared client core).
+      - name: fe-core boundaries
+        run: pnpm run check:fe-core-boundaries
+
+      # Every gate script must be invoked by CI or listed as advisory with a reason.
+      - name: Gate parity
+        run: pnpm run check:ci-gate-parity
 
       # Topology (migration plan P0/P9): catches undeclared app/package/module
       # drift, half-created module dirs, a module root export, and a dropped
@@ -452,6 +478,10 @@ jobs:
           git diff --exit-code -- .agent .cursor .claude .dsh AGENTS.md || (echo "Agent rule/skill mirrors out of sync! Run 'bash .agent/scripts/sync-all.sh'" && exit 1)
           node scripts/verify-rules-integrity.mjs
 
+      # Every skill and rule is discoverable from AGENTS.md and the index READMEs.
+      - name: Agent guide coverage
+        run: pnpm run check:agent-skills-index
+
   build:
     name: Build & Release Artifact
     runs-on: ubuntu-24.04
@@ -483,6 +513,10 @@ jobs:
       # Frontend bundle budget gate: catches chunk bloat and un-lazy-loaded dependencies
       - name: Frontend bundle budget
         run: pnpm run check:bundle
+
+      # The release artifact must ship every runtime dist and no source maps.
+      - name: Deploy artifact
+        run: pnpm run check:deploy-artifact
 
       # Service-worker precache budget: keeps optional vendors/locale packs lazy
       - name: PWA precache budget
@@ -806,7 +840,9 @@ jobs:
     # module change cannot merge with its own tests skipped.
     if: ${{ needs.changes.outputs.backend_unit == 'true' || github.event_name != 'pull_request' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # 21 module suites at --concurrency=2 take ~15 min on a hosted runner (each
+    # runs backend + frontend Vitest); a 15-minute cap cancelled the last suite.
+    timeout-minutes: 30
     steps:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -819,7 +855,7 @@ jobs:
           build-shared: "true"
 
       - name: Run Module Unit Tests
-        run: pnpm turbo run test --filter="./packages/modules/*"
+        run: pnpm turbo run test --concurrency=2 --filter="./packages/modules/*"
 
   test-backend-coverage:
     name: Backend Coverage Gate

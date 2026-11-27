@@ -88,6 +88,8 @@ export interface DatePickerBlurParams {
   commitIso: (iso: string, nextDisplayMonth?: Date) => void;
 }
 
+export type DatePickerBlurResult = "valid" | "invalid" | "out_of_range";
+
 export function processDatePickerBlur({
   inputValue,
   isYearMode,
@@ -103,36 +105,43 @@ export function processDatePickerBlur({
   lastParsedRef,
   onChange,
   commitIso,
-}: DatePickerBlurParams): void {
+}: DatePickerBlurParams): DatePickerBlurResult {
   if (isYearMode) {
     if (!inputValue) {
       clearValue();
-    } else if (inputValue.length === 4) {
+      return "valid";
+    }
+    if (inputValue.length === 4) {
       const num = Number(inputValue);
       if (isYearWithinBounds(num, resolvedMinYear, resolvedMaxYear)) {
         const yearStr = String(num);
         lastParsedRef.current = yearStr;
         onChange?.(yearStr);
         setInputValue(yearStr);
-      } else {
-        setInputValue(selectedYear ? String(selectedYear) : "");
+        return "valid";
       }
-    } else {
-      setInputValue(selectedYear ? String(selectedYear) : "");
+      return "out_of_range";
     }
-    return;
+    void selectedYear;
+    return "invalid";
   }
 
   if (!inputValue) {
     clearValue();
-    return;
+    return "valid";
   }
 
   const parsed = parseDisplayDateToIso(inputValue, dateFormat);
   const parsedDate = parsed ? parseFlexibleIsoDate(parsed) : undefined;
-  if (parsed && parsedDate && isDateWithinIsoBounds(parsedDate, minIsoStr, maxIsoStr)) {
-    commitIso(parsed, parsedDate);
-    return;
+  if (!parsed || !parsedDate) {
+    return "invalid";
   }
-  setInputValue(formatIsoDateToDisplay(rawIsoString || "", dateFormat));
+  if (!isDateWithinIsoBounds(parsedDate, minIsoStr, maxIsoStr)) {
+    return "out_of_range";
+  }
+  void rawIsoString;
+  void formatIsoDateToDisplay;
+  void setInputValue;
+  commitIso(parsed, parsedDate);
+  return "valid";
 }

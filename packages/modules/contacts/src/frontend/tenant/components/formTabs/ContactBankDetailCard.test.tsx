@@ -162,14 +162,14 @@ describe("ContactBankDetailCard", () => {
     expect(html).toContain("contacts.fields.bankAccountNumber");
   });
 
-  it("uses bank name in header typeSelect when enabled", () => {
+  it("renders bank name full-width inside the card body when enabled", () => {
     const html = renderToStaticMarkup(
       <ContactBankDetailCard {...baseProps} idx={1} bankDetail={baseDetail} />,
     );
 
     expect(html).toContain("contacts.fields.bankName");
-    expect(html).toContain('data-testid="card-type-select"');
-    expect(html).not.toContain("contacts.form.bankAccountSequence");
+    expect(html).toContain("contacts.form.bankAccountSequence:2");
+    expect(html).not.toContain('data-testid="card-type-select"');
   });
 
   it("falls back to sequence label when bank name field is disabled", () => {

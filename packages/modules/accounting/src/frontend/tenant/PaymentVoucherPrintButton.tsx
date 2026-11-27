@@ -1,7 +1,7 @@
 import { Printer } from "lucide-react";
 import { Button } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "./index";
 
 /** Icon button that prints a voucher for one entry (Simple-mode lists, Cashbook). */
 export function PaymentVoucherPrintButton({

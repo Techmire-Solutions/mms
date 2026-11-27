@@ -1,14 +1,8 @@
 import React from "react";
 import { CheckCircle2, MapPin } from "lucide-react";
-import {
-  type Contact,
-  hasWhatsApp,
-  getPrimaryAddress,
-  type AppTranslationKey,
-} from "@mms/contracts";
+import { type Contact, getPrimaryAddress, type AppTranslationKey } from "@mms/contracts";
 import { formatContactGenderLabel } from "@mms/fe-core/lib/contactI18n";
 import { GenderIcon } from "@mms/ui/app/GenderIcon";
-import { StatusBadge } from "@mms/fe-core/components/StatusBadge";
 import { Badge } from "@mms/ui";
 import { getGenderIconClass } from "@mms/ui/app/genderUi";
 import { cn } from "@mms/ui";
@@ -77,6 +71,33 @@ export function renderAddressFieldMetadata({
   );
 }
 
-export function renderWhatsAppMetadata({ contact }: { contact: Contact }): React.ReactNode {
-  return <StatusBadge status={hasWhatsApp(contact) ? "success" : "none"} size="sm" />;
+export function renderWhatsAppMetadata({
+  contact,
+  t,
+}: {
+  contact: Contact;
+  t?: Translate;
+}): React.ReactNode {
+  const status = String(contact.whatsappStatus ?? "")
+    .trim()
+    .toUpperCase();
+  if (status === "REGISTERED") {
+    return (
+      <Badge size="sm" tone="success" className="font-semibold">
+        {t ? t("contacts.whatsapp.verified") : "Verified"}
+      </Badge>
+    );
+  }
+  if (status === "NOT_REGISTERED") {
+    return (
+      <Badge size="sm" tone="destructive" className="font-semibold">
+        {t ? t("contacts.whatsapp.notRegistered") : "Not Registered"}
+      </Badge>
+    );
+  }
+  return (
+    <Badge size="sm" tone="muted" className="font-semibold">
+      {t ? t("contacts.whatsapp.unknown") : "Unknown"}
+    </Badge>
+  );
 }

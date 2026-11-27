@@ -48,6 +48,7 @@ export function ContactForm({
   const formDomId = `contact-form-${useId().replace(/:/g, "")}`;
   const { enabledTabIds, isTabFieldEnabled, formTabs } = useContactConfig();
   const firstNameRequired = isTabFieldEnabled("basic", "firstName");
+  const genderRequired = isTabFieldEnabled("basic", "gender");
   const [tab, setTab] = useState("basic");
   const [prevOpen, setPrevOpen] = useState(open);
   if (open !== prevOpen) {
@@ -125,6 +126,7 @@ export function ContactForm({
   const saveDisabled =
     draft.lookupsLoading ||
     (firstNameRequired && !draft.contactDraft.firstName?.trim()) ||
+    (genderRequired && !draft.contactDraft.gender?.trim()) ||
     (Boolean(contact) && !draft.isDirty);
 
   return (
@@ -173,6 +175,7 @@ export function ContactForm({
           collectionCounts={draft.collectionCounts}
           noChanges={Boolean(contact) && !draft.isDirty}
           requireFirstName={firstNameRequired}
+          requireGender={genderRequired}
           t={t}
         />
       }

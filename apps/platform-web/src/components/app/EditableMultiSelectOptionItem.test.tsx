@@ -1,7 +1,7 @@
 import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import { EditableMultiSelectOptionItem } from "@mms/fe-core/components/EditableMultiSelectOptionItem";
 
 declare global {

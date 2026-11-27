@@ -2,6 +2,7 @@ import { contactsRepository, type ContactsRepository } from "../repository/index
 import * as loadUseCases from "./contactLoadUseCases.js";
 import * as writeUseCases from "./contactWriteUseCases.js";
 import * as softDeleteUseCases from "./contactSoftDeleteUseCases.js";
+import * as permanentDeleteUseCases from "./contactPermanentDeleteUseCases.js";
 import * as validationUseCases from "./contactValidationUseCases.js";
 import * as inferenceUseCases from "./contactInferenceUseCases.js";
 
@@ -9,6 +10,7 @@ import * as inferenceUseCases from "./contactInferenceUseCases.js";
 export * from "./contactLoadUseCases.js";
 export * from "./contactWriteUseCases.js";
 export * from "./contactSoftDeleteUseCases.js";
+export * from "./contactPermanentDeleteUseCases.js";
 export * from "./contactValidationUseCases.js";
 export * from "./contactInferenceUseCases.js";
 export * from "./contactDuplicateScanUseCases.js";
@@ -87,6 +89,10 @@ export function createContactsUseCases(repo: ContactsRepository = contactsReposi
       softDeleteUseCases.softDeleteContactById(id, deletedBy, deletionReason, repo),
     bulkSoftDeleteContacts: (ids: string[], deletedBy: string, deletionReason?: string) =>
       softDeleteUseCases.bulkSoftDeleteContacts(ids, deletedBy, deletionReason, repo),
+    permanentDeleteContactById: (id: string, actorId: string) =>
+      permanentDeleteUseCases.permanentDeleteContactById(id, actorId, repo),
+    bulkPermanentDeleteContacts: (ids: string[], actorId: string) =>
+      permanentDeleteUseCases.bulkPermanentDeleteContacts(ids, actorId, repo),
     matchContactIdentityIndex: (
       candidates: Parameters<typeof inferenceUseCases.matchContactIdentityIndex>[0],
     ) => inferenceUseCases.matchContactIdentityIndex(candidates, repo),

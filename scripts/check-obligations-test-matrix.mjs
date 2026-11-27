@@ -10,6 +10,8 @@
  */
 import { readFileSync } from "node:fs";
 
+import { resolveRequirement } from "./lib/spec-lookup.mjs";
+
 const REQUIRED = [
   {
     file: "apps/api/src/__tests__/db-integration/obligationsPersistenceDb.integration.test.ts",
@@ -98,24 +100,32 @@ const REQUIRED = [
     names: ["refuses the delete and reports what would cascade"],
   },
   {
-    file: "apps/tenant-web/src/tenant/features/obligations/hooks/useObligationsPageActions.test.tsx",
+    file: "packages/modules/obligations/src/frontend/tenant/hooks/useObligationsPageActions.test.tsx",
     names: ["sends exactly one record, not the cached directory"],
   },
   {
-    file: "apps/tenant-web/src/tenant/features/obligations/hooks/invalidateObligationsQueries.test.ts",
+    file: "packages/modules/obligations/src/frontend/tenant/hooks/invalidateObligationsQueries.test.ts",
     names: ["invalidates every declared obligation cache"],
   },
   {
-    file: "apps/tenant-web/src/tenant/features/obligations/lib/obligationsSummaryCalculations.test.ts",
+    file: "packages/modules/obligations/src/frontend/tenant/lib/obligationsSummaryCalculations.test.ts",
     names: ["sums 2-dp amounts without float drift"],
   },
 ];
 
 let missing = 0;
-for (const { file, names } of REQUIRED) {
+for (const requirement of REQUIRED) {
+  const { names } = requirement;
+  const resolved = resolveRequirement(requirement);
+  if (resolved.missing) {
+    console.error(`✗ required obligations spec is missing: ${resolved.spec}`);
+    missing += 1;
+    continue;
+  }
+  const file = resolved.movedFrom ?? requirement.file ?? resolved.path;
   let source;
   try {
-    source = readFileSync(file, "utf8");
+    source = readFileSync(resolved.path, "utf8");
   } catch {
     console.error(`✗ required obligations spec is missing: ${file}`);
     missing += 1;

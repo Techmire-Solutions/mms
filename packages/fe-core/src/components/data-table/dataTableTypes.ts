@@ -111,6 +111,8 @@ export interface DataTableProps<
   filterChips?: WorkTaskToolbarProps["filterChips"];
   /** Whether a background search is in flight (toolbar spinner). */
   isSearching?: boolean;
+  /** True when external/server search or filters are active (shows "No matches" instead of first-run `emptyState`). */
+  hasActiveFilters?: boolean;
   /** Shown when the source data is empty (not when search/filters exclude everything). */
   emptyState?: React.ReactNode;
   /** Initial view; defaults to table at md+ and cards below. */

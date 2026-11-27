@@ -21,6 +21,7 @@ export interface ContactsListDesktopTableProps {
   onEdit: (contact: Contact) => void;
   onDelete: (contactId: number | string) => void;
   onRestore?: (contactId: number | string) => void;
+  onPermanentDelete?: (contactId: number | string) => void;
   showArchived?: boolean;
   onWhatsApp?: (contacts: Contact[]) => void;
   onSms?: (contacts: Contact[]) => void;
@@ -53,6 +54,7 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
   onEdit,
   onDelete,
   onRestore,
+  onPermanentDelete,
   showArchived = false,
   onWhatsApp,
   onSms,
@@ -202,6 +204,7 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
           onEdit={onEdit}
           onDelete={onDelete}
           onRestore={onRestore}
+          onPermanentDelete={onPermanentDelete}
           onWhatsApp={onWhatsApp}
           onSms={onSms}
           onEmail={onEmail}

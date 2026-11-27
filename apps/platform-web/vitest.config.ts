@@ -3,17 +3,6 @@ import os from "node:os";
 import { defineConfig } from "vitest/config";
 import { DurationShardSequencer } from "./src/test/shardSequencer.ts";
 
-/**
- * Platform console test harness.
- *
- * Mirrors `apps/tenant-web/vitest.config.ts` (same aliases, DOM environment, setup file and
- * shard sequencer) so the two consoles behave identically under Vitest. Without this file the
- * app ran with Vitest defaults — `node` environment, no `@` alias, no setup — which failed
- * every DOM test in the suite.
- *
- * Coverage: no thresholds yet. Tenant-web's floors describe its much larger tree; this app's
- * baseline must be measured before floors are set, otherwise CI fails on an invented number.
- */
 export default defineConfig({
   resolve: {
     alias: {
@@ -79,8 +68,16 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     // Node 26 ships an experimental global `localStorage` getter that shadows
     // happy-dom's storage and resolves to `undefined` without --localstorage-file.
+    // Disable it so happy-dom's window.localStorage is installed.
     execArgv: ["--no-experimental-webstorage"],
     include: ["src/**/*.test.{ts,tsx}", "src/**/*.spec.{ts,tsx}"],
+    // Pre-bundle the heaviest imports into single files. Isolated test files each
+    // re-evaluate their whole module graph; @mms/contracts alone is ~500 dist modules
+    // (~5–7s per test file on Windows) and drops to ~1s once bundled. `force`
+    // re-bundles once per run: Vite's cache key ignores linked workspace builds,
+    // so a cached bundle would serve a stale @mms/contracts after a rebuild.
+    // recharts stays out: tests replace it with factory `vi.mock('recharts')`
+    // stubs, and the pre-bundled interop reads a `default` export they lack.
     deps: {
       optimizer: {
         client: {
@@ -108,8 +105,22 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
+      // Without `include`, Vitest only instruments files a test loaded, so ~25% of
+      // `src` never entered the denominator (2,104 of 2,820 files) and the old
+      // floors described that subset, not the app. Include the whole tree; test
+      // files and `src/test/**` stay excluded.
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.test.{ts,tsx}", "src/**/*.spec.{ts,tsx}", "src/test/**", "**/*.d.ts"],
+      // Re-baselined 2026-10-30 over the whole source tree (2,823 files):
+      // lines 42.41 / statements 41.48 / functions 34.58 / branches 40.95.
+      // The previous 56/55/46/51 floors covered only the 2,104 files a test had
+      // loaded; these are the same gate with the missing ~25% counted.
+      thresholds: {
+        lines: 42,
+        statements: 41,
+        functions: 34,
+        branches: 40,
+      },
     },
   },
 });

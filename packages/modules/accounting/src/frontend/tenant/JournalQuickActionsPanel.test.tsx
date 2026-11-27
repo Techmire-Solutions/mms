@@ -2,15 +2,21 @@ import React, { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { JournalQuickActionsPanel } from "./JournalQuickActionsPanel";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
-import { QUICK_ACTIONS } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "./index";
+import { QUICK_ACTIONS } from "./index";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-vi.mock("@mms/fe-core/i18n", () => ({
+vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
+  useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
+}));
+
+vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string | number>) =>
       params?.label ? `${key}:${params.label}` : key,
@@ -24,7 +30,7 @@ vi.mock("./hooks/useAccountingCurrency", () => ({
   }),
 }));
 
-vi.mock("@/components/app/StatusBadge", () => ({
+vi.mock("@mms/fe-core/components/StatusBadge", () => ({
   StatusBadge: ({ status }: { status: string }) => <span data-testid="status-badge">{status}</span>,
 }));
 

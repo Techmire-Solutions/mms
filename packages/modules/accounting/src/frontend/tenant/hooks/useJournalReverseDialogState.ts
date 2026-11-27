@@ -11,8 +11,8 @@ import {
   type JournalReversalRequest,
   type PostingPeriod,
 } from "@mms/contracts";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
-import { closedPostingPeriodFor } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "../index";
+import { closedPostingPeriodFor } from "../index";
 
 export type OriginalPeriodStatus = "open" | "closed" | "unconfigured";
 

@@ -1,6 +1,6 @@
 ---
 description: Printable document-template engine — server-authoritative layouts, optimistic concurrency, shared editor/renderer/print path, and localized field catalogs
-globs: packages/fe-core/src/components/template-editor/**,packages/fe-core/src/components/TemplateEditor.tsx,packages/fe-core/src/components/DocumentTemplateEditor.tsx,packages/fe-core/src/documentTemplates/**,apps/tenant-web/src/lib/invoiceTemplate*.ts,apps/tenant-web/src/tenant/features/**/components/*TemplateEditor.tsx,apps/tenant-web/src/tenant/features/**/lib/*Template*.ts,apps/tenant-web/src/tenant/features/**/lib/reportCard*.ts,packages/modules/documents/src/backend/routes/**,packages/modules/documents/src/backend/**,packages/contracts/src/contracts/documentTemplates.contract.ts,packages/contracts/src/documents/**
+globs: packages/fe-core/src/components/template-editor/**,packages/fe-core/src/components/TemplateEditor.tsx,packages/fe-core/src/components/DocumentTemplateEditor.tsx,packages/fe-core/src/documentTemplates/**,apps/tenant-web/src/lib/invoiceTemplate*.ts,packages/modules/*/src/frontend/tenant/**/components/*TemplateEditor.tsx,packages/modules/*/src/frontend/tenant/**/lib/*Template*.ts,packages/modules/examinations/src/frontend/tenant/**/reportCard*.ts,packages/modules/documents/src/backend/routes/**,packages/modules/documents/src/backend/**,packages/contracts/src/contracts/documentTemplates.contract.ts,packages/contracts/src/documents/**
 alwaysApply: false
 ---
 

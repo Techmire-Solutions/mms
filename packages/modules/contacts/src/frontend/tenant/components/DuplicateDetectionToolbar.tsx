@@ -82,7 +82,7 @@ export function DuplicateDetectionToolbar({
             variant="default"
             disabled={batchMerging}
             onClick={onBatchMergeClick}
-            className="min-h-11 rounded-xl px-3.5 py-2 text-xs font-semibold gap-1.5 ms-auto bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
+            className="min-h-11 w-full sm:w-auto sm:ms-auto rounded-xl px-3.5 py-2 text-xs font-semibold gap-1.5 bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
           >
             <GitMerge className="w-3.5 h-3.5" aria-hidden="true" />
             <span>

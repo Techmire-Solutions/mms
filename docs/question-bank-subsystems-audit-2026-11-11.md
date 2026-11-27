@@ -17,7 +17,7 @@ contacts only.
 
 | # | Sev | Where | Finding |
 |---|---|---|---|
-| BP1 | P1 | [`QuestionBankWorkTier.tsx:132`](../apps/tenant-web/src/tenant/features/question-bank/components/QuestionBankWorkTier.tsx) | **No assembly engine.** The `generate` sub-tab was one button that opened the manual paper builder. No topic weightage, difficulty distribution, type quota, marks budget, recently-used exclusion or randomness existed anywhere — so determinism, constraint satisfaction and "criteria cannot be met" had no implementation to audit. |
+| BP1 | P1 | [`QuestionBankWorkTier.tsx:132`](../packages/modules/question-bank/src/frontend/tenant/components/QuestionBankWorkTier.tsx) | **No assembly engine.** The `generate` sub-tab was one button that opened the manual paper builder. No topic weightage, difficulty distribution, type quota, marks budget, recently-used exclusion or randomness existed anywhere — so determinism, constraint satisfaction and "criteria cannot be met" had no implementation to audit. |
 | BP2 | P2 | [`examinationTestTables.ts:30`](../packages/db/src/schema/examinationTestTables.ts) | `tests.difficulty` accepts `"mixed"` but nothing derives a mix; `total_marks` was unrelated to the selected questions. |
 | BP3 | P2 | `questionBankTestsHydrate.ts` | No recently-used signal was read, although `test_questions` + `tests.created_at` make it available. |
 | BP4 | P3 | `questionBankModuleManifest.ts` | `directoryViews: ["questions","generate"]` promised a generator the module did not have. |

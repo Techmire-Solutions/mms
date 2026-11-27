@@ -109,8 +109,6 @@ const APP_AUDIENCES = {
 };
 const SUBTREE_AUDIENCES = [
   { prefix: "apps/tenant-web/src/tenant/", audience: "tenant" },
-  { prefix: "apps/tenant-web/src/platform/", audience: "platform" },
-  { prefix: "apps/platform-web/src/tenant/", audience: "tenant" },
   { prefix: "apps/platform-web/src/platform/", audience: "platform" },
 ];
 

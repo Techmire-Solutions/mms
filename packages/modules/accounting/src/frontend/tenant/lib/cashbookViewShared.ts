@@ -1,6 +1,6 @@
 import type { AppTranslationKey } from "@mms/contracts";
 import { moneyToCents } from "@mms/contracts";
-import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { Account, JournalEntry } from "../index";
 import { classifyEntry, getEntryAmount } from "./cashbookClassification";
 
 export { classifyEntry, getEntryAmount };

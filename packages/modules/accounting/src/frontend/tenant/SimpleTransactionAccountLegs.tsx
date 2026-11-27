@@ -2,7 +2,7 @@ import { AlertTriangle } from "lucide-react";
 import { Field } from "@mms/ui";
 import { FormSelectWithQuickCreate } from "@mms/fe-core/components/FormSelectWithQuickCreate";
 import { useTranslation } from "@mms/fe-core/i18n";
-import type { WizardFormState } from "@mms/mod-accounting/frontend/tenant";
+import type { WizardFormState } from "./index";
 
 export interface AccountLegConfig {
   id: string;

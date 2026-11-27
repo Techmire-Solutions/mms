@@ -9,7 +9,7 @@ import {
 } from "@/components/entry";
 import { PasswordStrengthMeter } from "@mms/fe-core/components/PasswordStrengthMeter";
 import PlatformAuthLayout from "@/platform/features/auth/components/PlatformAuthLayout";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 interface PlatformSetupRegisterFormProps {
   t: TranslationFunction;

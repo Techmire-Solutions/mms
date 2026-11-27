@@ -3,7 +3,7 @@ import { Input } from "@mms/ui";
 import { FormModal } from "@mms/fe-core/components/FormModal";
 import { Field } from "@mms/fe-core/components/FormPrimitives";
 import { useDirtySnapshot } from "@mms/fe-core/forms/useDirtySnapshot";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 interface BrandSaveCustomPresetModalProps {
   open: boolean;

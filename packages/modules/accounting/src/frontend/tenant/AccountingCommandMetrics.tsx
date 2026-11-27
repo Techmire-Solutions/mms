@@ -1,7 +1,7 @@
 import React from "react";
 import { BookOpen, Filter, CheckCircle2, FileEdit } from "lucide-react";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { useAccountingMetrics } from "@mms/mod-accounting/frontend/tenant";
+import { useAccountingMetrics } from "./index";
 import { ModuleCommandMetricsGrid } from "@mms/fe-core/components/ModuleCommandMetricsGrid";
 
 interface AccountingCommandMetricsProps {

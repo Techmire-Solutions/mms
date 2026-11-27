@@ -50,7 +50,8 @@ describe("ContactBasicAvatarSection Component", () => {
 
     expect(html).toContain("Zayd Harith");
     expect(html).toContain("Identity Meta");
-    expect(html).toContain("before:-inset-2");
+    // Single camera upload icon (no overlapping duplicate corner badge).
+    expect(html.match(/lucide-camera/g)).toHaveLength(1);
   });
 
   it("renders remove photo action when avatar exists and triggers updateDraft on click", async () => {

@@ -10,7 +10,7 @@ import {
   getJournalEntryLineTotals,
   getJournalTagLabel,
   type JournalEntriesListProps,
-} from "@mms/mod-accounting/frontend/tenant";
+} from "./index";
 
 export type JournalEntriesListCardsProps = Omit<
   JournalEntriesListProps,

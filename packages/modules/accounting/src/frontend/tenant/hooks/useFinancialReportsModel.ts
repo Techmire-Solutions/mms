@@ -1,0 +1,159 @@
+import { useCallback, useState } from "react";
+import { resolveDefaultFiscalYear, todayISO, type FiscalYear } from "@mms/contracts";
+import { useAccountingCurrency } from "./useAccountingCurrency";
+
+import { useTranslation } from "@mms/fe-core/i18n";
+import {
+  useAccountingFiscalYearsPaginated,
+  useAccountingReportAggregates,
+} from "./useAccountingApi";
+import {
+  buildFinancialReportExportRows,
+  getFinancialReportExportColumns,
+} from "../lib/financialReportsExportHelpers";
+
+export type FinancialReportViewType = "income" | "balance" | "cashflow" | "fx" | "aging";
+
+export function useFinancialReportsModel() {
+  const { t } = useTranslation();
+  const { formatCurrency } = useAccountingCurrency();
+
+  const fiscalYearsResult = useAccountingFiscalYearsPaginated({ page: 1, limit: 100 });
+  const fiscalYears: FiscalYear[] =
+    fiscalYearsResult.data?.status === 200 ? fiscalYearsResult.data.body.fiscalYears : [];
+
+  const [view, setView] = useState<FinancialReportViewType>("income");
+  const activeFiscalYear = resolveDefaultFiscalYear(fiscalYears, todayISO()) ?? undefined;
+  const [dateFrom, setDateFrom] = useState(activeFiscalYear?.startDate ?? "");
+  const [dateTo, setDateTo] = useState(activeFiscalYear?.endDate ?? "");
+  const [hasUserSetRange, setHasUserSetRange] = useState(false);
+
+  // The fiscal-year list resolves after first paint, so adopt its range as the
+  // default once it lands; an explicit user range always wins. Adopted during
+  // render instead of in an effect.
+  const activeRangeKey = activeFiscalYear
+    ? `${activeFiscalYear.startDate}:${activeFiscalYear.endDate}`
+    : "";
+  const [prevActiveRangeKey, setPrevActiveRangeKey] = useState(activeRangeKey);
+  if (prevActiveRangeKey !== activeRangeKey) {
+    setPrevActiveRangeKey(activeRangeKey);
+    if (activeFiscalYear && !hasUserSetRange) {
+      setDateFrom(activeFiscalYear.startDate);
+      setDateTo(activeFiscalYear.endDate);
+    }
+  }
+
+  const handleDateFromChange = useCallback((value: string) => {
+    setHasUserSetRange(true);
+    setDateFrom(value);
+  }, []);
+
+  const handleDateToChange = useCallback((value: string) => {
+    setHasUserSetRange(true);
+    setDateTo(value);
+  }, []);
+
+  const aggregatesResult = useAccountingReportAggregates({
+    dateFrom: dateFrom || undefined,
+    dateTo: dateTo || undefined,
+  });
+
+  const isError = aggregatesResult.isError || fiscalYearsResult.isError;
+  const isLoading = aggregatesResult.isLoading || fiscalYearsResult.isLoading;
+
+  const agg = aggregatesResult.data;
+  const metrics = agg
+    ? {
+        revenue: agg.revenue,
+        expenses: agg.expenses,
+        netSurplus: agg.netSurplus,
+        assets: agg.assets,
+        liabilities: agg.liabilities,
+        equity: agg.equity,
+        netCashFlow: agg.netCashFlow,
+        netCashFlowIndirect: agg.netCashFlowIndirect,
+        cashInflow: agg.cashInflow,
+        cashOutflow: agg.cashOutflow,
+        tb: agg.incomeStatementTrialBalance ?? agg.trialBalance,
+        balanceSheetTb: agg.balanceSheetTrialBalance,
+        cashFlowAdjustments: agg.cashFlowAdjustments,
+        cashFlowSections: agg.cashFlowSections,
+      }
+    : {
+        revenue: 0,
+        expenses: 0,
+        netSurplus: 0,
+        assets: 0,
+        liabilities: 0,
+        equity: 0,
+        netCashFlow: 0,
+        netCashFlowIndirect: 0,
+        cashInflow: 0,
+        cashOutflow: 0,
+        tb: [],
+        balanceSheetTb: [],
+        cashFlowAdjustments: { depreciation: 0, receivables: 0, payables: 0, other: 0 },
+        cashFlowSections: {
+          operating: { inflow: 0, outflow: 0, net: 0, indirect: 0 },
+          investing: { inflow: 0, outflow: 0, net: 0, indirect: 0 },
+          financing: { inflow: 0, outflow: 0, net: 0, indirect: 0 },
+        },
+      };
+
+  const getRowsByAccountType = (type: string) =>
+    metrics.tb.filter((trialBalanceRow) => trialBalanceRow.type === type);
+  const getBalanceSheetRowsByAccountType = (type: string) =>
+    metrics.balanceSheetTb.filter((trialBalanceRow) => trialBalanceRow.type === type);
+
+  const depreciationAdjustment = metrics.cashFlowAdjustments.depreciation;
+  const receivablesChange = metrics.cashFlowAdjustments.receivables;
+  const payablesChange = metrics.cashFlowAdjustments.payables;
+  const otherAdjustment = metrics.cashFlowAdjustments.other;
+
+  const exportColumns = getFinancialReportExportColumns(t);
+  // FX and aging export from their own panels (different columns/data source).
+  const exportRows =
+    view === "fx" || view === "aging"
+      ? []
+      : buildFinancialReportExportRows({
+          view,
+          tb: metrics.tb,
+          balanceSheetTb: metrics.balanceSheetTb,
+          revenue: metrics.revenue,
+          expenses: metrics.expenses,
+          netSurplus: metrics.netSurplus,
+          assets: metrics.assets,
+          liabilities: metrics.liabilities,
+          equity: metrics.equity,
+          depreciationAdjustment,
+          receivablesChange,
+          payablesChange,
+          netCashFlowIndirect: metrics.netCashFlowIndirect,
+          netCashFlow: metrics.netCashFlow,
+          cashInflow: metrics.cashInflow,
+          cashOutflow: metrics.cashOutflow,
+          formatCurrency,
+          t,
+        });
+
+  return {
+    t,
+    view,
+    setView,
+    dateFrom,
+    dateTo,
+    handleDateFromChange,
+    handleDateToChange,
+    isLoading,
+    isError,
+    metrics,
+    getRowsByAccountType,
+    getBalanceSheetRowsByAccountType,
+    exportColumns,
+    exportRows,
+    activeFiscalYear,
+    otherAdjustment,
+    refetchAggregates: aggregatesResult.refetch,
+    refetchFiscalYears: fiscalYearsResult.refetch,
+  };
+}

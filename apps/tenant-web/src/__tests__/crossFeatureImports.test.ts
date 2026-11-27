@@ -56,7 +56,10 @@ describe("no-cross-feature-imports", () => {
 
     it("allows the sanctioned reports/settings targets", () => {
       expect(
-        lint(`import { K } from "@/tenant/features/reports/components/KPISummary";`, STUDENT_HOOK),
+        lint(
+          `import { K } from "@mms/mod-analytics/frontend/tenant/features/components/KPISummary";`,
+          STUDENT_HOOK,
+        ),
       ).toEqual([]);
     });
 
@@ -110,9 +113,9 @@ describe("no-cross-feature-imports", () => {
       ["src/components/dashboard-widgets/FeeCollectionSummary.tsx"],
       ["src/tenant/hooks/notifications/useTenantNotifications.ts"],
     ])("flags %s importing a feature internal", (filename) => {
-      expect(
-        lint(`import { a } from "@/tenant/features/dashboard/hooks/useDashboardData";`, filename),
-      ).toEqual(["sharedLayer"]);
+      expect(lint(`import { a } from "@/tenant/features/x/hooks/y";`, filename)).toEqual([
+        "sharedLayer",
+      ]);
     });
 
     it("flags a dynamic import from a shared layer", () => {

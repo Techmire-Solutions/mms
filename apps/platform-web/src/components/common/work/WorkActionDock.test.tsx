@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { WorkActionDock } from "@/components/common/work/WorkActionDock";
-import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { TranslationContext, type TranslationFunction } from "@mms/fe-core/i18n";
 
 const mockContext = {
   language: "en",

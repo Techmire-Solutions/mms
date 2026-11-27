@@ -5,7 +5,7 @@ import { Button } from "@mms/ui";
 import { Field } from "@mms/ui";
 import { Input } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { JOURNAL_TAGS } from "@mms/mod-accounting/frontend/tenant";
+import { JOURNAL_TAGS } from "./index";
 
 interface SimpleTransactionTagSelectorProps {
   typeTag?: string;

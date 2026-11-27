@@ -13,7 +13,7 @@ import {
   getDashboardWidgetRequiredPermission,
   selectAggregateWidgets,
 } from "@/lib/dashboardCollections";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 
 const cardWidget = (overrides: Partial<CustomWidget> = {}): CustomWidget => ({
   id: "w1",

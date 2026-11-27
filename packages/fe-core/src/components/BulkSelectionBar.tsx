@@ -24,8 +24,10 @@ export interface BulkSelectionBarProps<T = unknown> {
   // Delete / Restore
   deleteLabel?: string;
   restoreLabel?: string;
+  permanentDeleteLabel?: string;
   onRequestBulkDelete: () => void;
   onRequestBulkRestore: () => void;
+  onRequestBulkPermanentDelete?: () => void;
   // Status mutation
   statusConfig?: Record<string, StatusBadgeConfigItem>;
   onBulkStatusChange?: (status: string) => void;
@@ -70,8 +72,10 @@ export function BulkSelectionBar<T>({
   onClearSelection,
   deleteLabel,
   restoreLabel,
+  permanentDeleteLabel,
   onRequestBulkDelete,
   onRequestBulkRestore,
+  onRequestBulkPermanentDelete,
   statusConfig,
   onBulkStatusChange,
   statusPending = false,
@@ -134,6 +138,14 @@ export function BulkSelectionBar<T>({
           ? {
               label: deleteLabel ?? t("common.delete"),
               onClick: onRequestBulkDelete,
+            }
+          : undefined
+      }
+      permanentDeleteAction={
+        viewingDeleted && canDelete && onRequestBulkPermanentDelete && permanentDeleteLabel
+          ? {
+              label: permanentDeleteLabel,
+              onClick: onRequestBulkPermanentDelete,
             }
           : undefined
       }

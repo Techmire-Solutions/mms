@@ -6,6 +6,7 @@ import {
   toMessagingRecipient,
   type Contact,
 } from "@mms/contracts";
+import { useContactConfig } from "../components/ContactConfigContext.js";
 import { useMessageComposerState } from "./useMessageComposerState.js";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { notify } from "@mms/fe-core/notify";
@@ -25,7 +26,10 @@ import {
 export function useContactsMessagingActions() {
   const { messagingTarget, openComposer, closeComposer, canWriteMessaging } =
     useMessageComposerState();
+  const { prefs, countryCodesMap } = useContactConfig();
   const { t } = useTranslation();
+
+  const defaultCountryCode = (prefs.defaultCountry && countryCodesMap[prefs.defaultCountry]) || "";
 
   const openChannel = useCallback(
     (channel: ContactMessagingChannel, contacts: Contact[]) => {
@@ -33,7 +37,11 @@ export function useContactsMessagingActions() {
         openComposer(
           channel,
           contacts.map((c) =>
-            toMessagingRecipient(c, { getDisplayName, getPrimaryPhone, getPrimaryEmail }),
+            toMessagingRecipient(c, {
+              getDisplayName,
+              getPrimaryPhone: (contact) => getPrimaryPhone(contact, defaultCountryCode),
+              getPrimaryEmail,
+            }),
           ),
         );
         return;
@@ -42,7 +50,7 @@ export function useContactsMessagingActions() {
       if (contacts.length === 1 && only && openContactDeviceChannel(channel, only)) return;
       notify.error(t("messaging.writeDenied"));
     },
-    [canWriteMessaging, openComposer, t],
+    [canWriteMessaging, defaultCountryCode, openComposer, t],
   );
 
   const handleWhatsApp = useCallback(

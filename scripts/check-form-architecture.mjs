@@ -36,8 +36,8 @@ assertExemptionReasons(SAVING_EXEMPT, "SAVING_EXEMPT");
 assertExemptionReasons(DIRTY_EXEMPT, "DIRTY_EXEMPT");
 
 const ROOT = process.cwd();
-// Live console trees only — `apps/platform-web/src/tenant/**` is an unrouted copy awaiting the
-// P11a prune (`pnpm run report:dead-sources`), so it is deliberately out of this audit.
+// Live console trees only. `apps/platform-web/src/tenant/**` (the duplicate tenant copy) was removed
+// on 2026-11-27, so both consoles now audit only their own trees.
 const FE_SRC_ROOTS = ["apps/tenant-web/src", "apps/platform-web/src/platform"].map((rel) =>
   path.join(ROOT, rel),
 );

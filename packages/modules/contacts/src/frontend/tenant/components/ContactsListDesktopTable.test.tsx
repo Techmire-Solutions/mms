@@ -140,14 +140,18 @@ describe("ContactsListDesktopTable Component", () => {
       [
         { id: "name", label: "Name" },
         { id: "phone", label: "Phone" },
+        { id: "city", label: "City" },
         { id: "lunarDob", label: "Lunar DOB" },
       ],
     );
     const thead = html.slice(html.indexOf("<thead"), html.indexOf("</thead>"));
-    const sortIndicators = thead.match(/lucide-chevron-(up|down)/g) ?? [];
+    const activeSortIndicators = thead.match(/lucide-chevron-(up|down)/g) ?? [];
+    const inactiveSortIndicators = thead.match(/lucide-arrow-up-down/g) ?? [];
 
-    // Name and Lunar DOB (sorts by `dob`) are sortable; Phone is not.
-    expect(sortIndicators).toHaveLength(2);
+    // Only the actively sorted column (`name`) renders a directional chevron;
+    // `city` renders the hover-only ArrowUpDown; `phone` and `lunarDob` are not sortable.
+    expect(activeSortIndicators).toHaveLength(1);
+    expect(inactiveSortIndicators).toHaveLength(1);
     expect(thead).toMatch(/>Phone</);
     expect(thead).not.toMatch(/<button[^>]*>Phone/);
   });

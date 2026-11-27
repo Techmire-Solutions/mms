@@ -1,12 +1,12 @@
 import { moneyToCents } from "@mms/contracts";
-import type { Account, JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { Account, JournalEntry } from "../index";
 import {
   isCashInstrumentAccount,
   resolveVoucherPrintKind,
   voucherPrintLayout,
   type VoucherPrintKind,
   type VoucherPrintLayout,
-} from "@mms/mod-accounting/frontend/tenant";
+} from "../index";
 
 export interface SalaryVoucherRef {
   staffId: string;

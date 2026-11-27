@@ -3,7 +3,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ThemeSettingsPaletteSection } from "./ThemeSettingsPaletteSection";
 
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

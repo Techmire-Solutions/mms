@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
-import type { Account } from "@mms/mod-accounting/frontend/tenant";
+import type { Account } from "../index";
 
 export type AccountQuickCreateTarget =
   { kind: "line"; lineIndex: number } | { kind: "field"; field: "debitAcc" | "creditAcc" };

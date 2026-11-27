@@ -7,8 +7,8 @@ import { ModuleCommandMetricsGrid } from "@mms/fe-core/components/ModuleCommandM
 interface SessionsCommandMetricsProps {
   /** All-session fallback when the metrics endpoint has not supplied a total. */
   total: number;
-  /** Total matching the active directory filters (not the current page size). */
-  filteredTotal: number;
+  /** Total matching the active directory filters (omit off the Work tab). */
+  filteredTotal?: number;
 }
 
 export const SessionsCommandMetrics = function SessionsCommandMetrics({
@@ -37,12 +37,16 @@ export const SessionsCommandMetrics = function SessionsCommandMetrics({
       sub: isError ? t("sessions.loadFailed") : undefined,
       accent: "primary" as const,
     },
-    {
-      icon: Filter,
-      label: t("sessions.metrics.filtered"),
-      value: value(filteredTotal),
-      accent: "info" as const,
-    },
+    ...(filteredTotal !== undefined
+      ? [
+          {
+            icon: Filter,
+            label: t("sessions.metrics.filtered"),
+            value: value(filteredTotal),
+            accent: "info" as const,
+          },
+        ]
+      : []),
     {
       icon: CheckCircle2,
       label: t("sessions.metrics.active"),

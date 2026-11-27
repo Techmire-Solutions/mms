@@ -688,7 +688,7 @@ shared handler (or log it and return the generic stage message + request id).
 - **F43** Live-push sockets have no per-user or global cap (a 30 s ping timer per socket) and the
   duplicate root `/ws` registration is outside `/api`, so it is exempt from the limiter
   ([`websocket.ts:94`](../apps/api/src/routes/common/websocket.ts#L94),
-  [`livePushConnections.ts:78-92`](../apps/api/src/lib/livePushConnections.ts#L78-L92)). Socket
+  [`realtime/caps.ts`](../packages/be-core/src/realtime/caps.ts)). Socket
   auth itself is sound.
 - **F44** `requestHostname` falls back to the client's `X-Forwarded-Host` whenever `Host` is an
   IP/localhost ([`requestHost.ts:22-33`](../apps/api/src/lib/requestHost.ts#L22-L33)), and that

@@ -15,9 +15,9 @@ const SURFACE_FIELD_TYPE: Record<string, FieldValueType> = {
   reportingFacultyName: "text",
   specialization: "text",
   qualification: "text",
-  joinDate: "text",
+  joinDate: "date",
   status: "status",
-  updatedAt: "text",
+  updatedAt: "date",
 };
 
 /**

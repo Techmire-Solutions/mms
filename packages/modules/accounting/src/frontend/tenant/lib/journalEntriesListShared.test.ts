@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "../index";
 import {
   getJournalBalanceDifference,
   getJournalEntryLineTotals,

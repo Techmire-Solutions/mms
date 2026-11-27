@@ -1,9 +1,10 @@
 # Protected zones (mms-core §1) require owner review.
 /.github/                                   @hasnainwasaya88
 /scripts/deploy-*.sh                        @hasnainwasaya88
-/packages/db/migrations_drizzle/   @hasnainwasaya88
-/apps/api/src/middleware/authenticate*  @hasnainwasaya88
-/apps/api/src/services/auth/            @hasnainwasaya88
+/packages/db/migrations_drizzle/            @hasnainwasaya88
+/apps/api/src/middleware/authenticate*      @hasnainwasaya88
+/apps/api/src/services/auth/                @hasnainwasaya88
+/apps/api/src/plugins/registerWebApps.ts    @hasnainwasaya88
 
 # Ratchets, quality gates, and the agent-standards source/mirror trees.
 # A baseline bump (scripts/check-*.mjs) or a direct mirror edit must be reviewed.
@@ -15,6 +16,20 @@
 /.agent/                                    @hasnainwasaya88
 /.cursor/                                   @hasnainwasaya88
 /.claude/                                   @hasnainwasaya88
-/packages/be-core/   @hasnainwasaya88
-/packages/fe-core/   @hasnainwasaya88
-/packages/ui/        @hasnainwasaya88
+/.dsh/                                      @hasnainwasaya88
+
+# Shared packages: the kernel, the contracts, the UI and the tooling presets.
+/packages/be-core/                          @hasnainwasaya88
+/packages/fe-core/                          @hasnainwasaya88
+/packages/contracts/                        @hasnainwasaya88
+/packages/ui/                               @hasnainwasaya88
+/tooling/                                   @hasnainwasaya88
+
+# Vertical modules own their domain; the two web consoles are separate products.
+/packages/modules/                          @hasnainwasaya88
+/apps/tenant-web/                           @hasnainwasaya88
+/apps/platform-web/                         @hasnainwasaya88
+
+# Architecture decision records and the migration milestones register.
+/docs/adr/                                  @hasnainwasaya88
+/docs/migration-milestones.md               @hasnainwasaya88

@@ -11,8 +11,8 @@ import {
   hasSeededDashboardWidgets,
   markDashboardWidgetsSeeded,
   peekSeedWidgets,
-} from "@/lib/reports/widgetDefaults";
-import type { CustomWidget } from "@/lib/reports/pinnedWidgetTypes";
+} from "@mms/mod-analytics/frontend/tenant/lib/widgetDefaults";
+import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import { reportClientError, reportClientWarn } from "@mms/fe-core/reporting/clientErrorReporting";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { notify } from "@mms/fe-core/notify";

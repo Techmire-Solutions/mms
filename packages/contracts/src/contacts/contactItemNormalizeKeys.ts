@@ -5,6 +5,8 @@
  */
 
 export const PHONE_SYSTEM_KEYS = new Set([
+  "id",
+  "_localId",
   "label",
   "type",
   "number",
@@ -17,6 +19,8 @@ export const PHONE_SYSTEM_KEYS = new Set([
   "whatsappStatus",
 ]);
 export const EMAIL_SYSTEM_KEYS = new Set([
+  "id",
+  "_localId",
   "label",
   "type",
   "address",
@@ -26,6 +30,8 @@ export const EMAIL_SYSTEM_KEYS = new Set([
   "isVerified",
 ]);
 export const ADDRESS_SYSTEM_KEYS = new Set([
+  "id",
+  "_localId",
   "label",
   "type",
   "line1",
@@ -38,8 +44,18 @@ export const ADDRESS_SYSTEM_KEYS = new Set([
   "country",
   "isPrimary",
 ]);
-export const SOCIAL_SYSTEM_KEYS = new Set(["platform", "type", "url", "link", "value"]);
+export const SOCIAL_SYSTEM_KEYS = new Set([
+  "id",
+  "_localId",
+  "platform",
+  "type",
+  "url",
+  "link",
+  "value",
+]);
 export const EDUCATION_SYSTEM_KEYS = new Set([
+  "id",
+  "_localId",
   "degree",
   "institution",
   "fieldOfStudy",
@@ -53,6 +69,8 @@ export const EDUCATION_SYSTEM_KEYS = new Set([
   "value",
 ]);
 export const EXPERIENCE_SYSTEM_KEYS = new Set([
+  "id",
+  "_localId",
   "title",
   "organization",
   "company",
@@ -67,6 +85,8 @@ export const EXPERIENCE_SYSTEM_KEYS = new Set([
   "value",
 ]);
 export const SKILL_SYSTEM_KEYS = new Set([
+  "id",
+  "_localId",
   "name",
   "skill",
   "title",
@@ -90,6 +110,7 @@ export const RELATIONSHIP_SYSTEM_KEYS = new Set([
   "type",
   "contactId",
   "id",
+  "_localId",
   "targetId",
   "name",
   "phone",
@@ -99,6 +120,8 @@ export const RELATIONSHIP_SYSTEM_KEYS = new Set([
 ]);
 
 export const BANK_DETAIL_SYSTEM_KEYS = new Set([
+  "id",
+  "_localId",
   "bankName",
   "bank",
   "accountType",

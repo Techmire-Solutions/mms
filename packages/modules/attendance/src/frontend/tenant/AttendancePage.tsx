@@ -142,7 +142,7 @@ export default function Attendance() {
       metricsStrip={
         <AttendanceCommandMetrics
           total={c.shownCount}
-          shown={c.shownCount}
+          shown={c.effectiveTab === "work" ? c.shownCount : undefined}
           selectedDate={c.filters.date}
         />
       }

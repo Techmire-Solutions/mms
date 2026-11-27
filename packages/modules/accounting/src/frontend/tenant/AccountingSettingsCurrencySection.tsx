@@ -7,8 +7,8 @@ import { SectionCard } from "@mms/ui";
 import { ModuleSetupSaveFooter } from "@mms/fe-core/components/ModuleSetupSaveFooter";
 import { Field } from "@mms/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
-import { DATE_FORMATS } from "@mms/mod-accounting/frontend/tenant";
-import { useAccountingCurrencySettings } from "@mms/mod-accounting/frontend/tenant";
+import { DATE_FORMATS } from "./index";
+import { useAccountingCurrencySettings } from "./index";
 
 type CurrencyOption = {
   code: string;

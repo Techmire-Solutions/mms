@@ -4,8 +4,8 @@ import { EmptyState } from "@mms/ui";
 
 import { WorkBatchTable, type WorkBatchTableColumn } from "@mms/fe-core/components/WorkBatchTable";
 import type { WorkBatchTableFooterRow } from "@mms/fe-core/components/workBatchTableTypes";
-import { GeneralLedgerCardsView } from "@mms/mod-accounting/frontend/tenant";
-import { type Account } from "@mms/mod-accounting/frontend/tenant";
+import { GeneralLedgerCardsView } from "./index";
+import { type Account } from "./index";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { useAccountingCurrency } from "./hooks/useAccountingCurrency";
 import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@mms/fe-core/tenant";

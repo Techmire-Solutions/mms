@@ -6,6 +6,7 @@ import {
   classifyPrecacheEntries,
   countLazyChunks,
   evaluateBudgets,
+  findForbiddenClosureEntries,
   parsePrecacheEntries,
 } from "../../scripts/check-pwa-precache.mjs";
 
@@ -111,4 +112,21 @@ test("budgetsFromEnv honours overrides and ignores invalid values", () => {
     PWA_PRECACHE_MAX_MB: "-1",
   });
   assert.deepEqual(invalid, DEFAULT_BUDGETS);
+});
+
+test("findForbiddenClosureEntries flags host bridges in the entry closure", () => {
+  const closure = [
+    "/assets/index-abc.js",
+    "/assets/IamHostBridge-def.js",
+    "/assets/TenantModuleHostBridges-ghi.js",
+    "/assets/sessionsModuleManifest-jkl.js",
+  ];
+  const hits = findForbiddenClosureEntries(closure);
+  assert.equal(hits.length, 2);
+  assert.ok(hits.every((entry) => /Bridge/.test(entry)));
+});
+
+test("module manifests may legitimately sit in the entry closure", () => {
+  const closure = ["/assets/attendanceModuleManifest-abc.js", "/assets/vendor-react-def.js"];
+  assert.deepEqual(findForbiddenClosureEntries(closure), []);
 });

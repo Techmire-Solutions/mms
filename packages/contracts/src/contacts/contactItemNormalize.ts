@@ -72,6 +72,13 @@ export function ensureSinglePrimaryFlag<T extends { isPrimary?: boolean }>(items
   return items.map((item, index) => ({ ...item, isPrimary: index === keepIndex }));
 }
 
+function stripTransientKeys<T extends object>(row: T, stripId: boolean): T {
+  const copy = { ...(row as Record<string, unknown>) };
+  delete copy._localId;
+  if (stripId) delete copy.id;
+  return copy as T;
+}
+
 /** Strips blank phones, emails, addresses, socials, relationship contacts, and custom-tab rows. */
 export function cleanContactDraft(draft: Partial<Contact>): Partial<Contact> {
   const result = hydrateContactRelationshipFields(
@@ -97,53 +104,71 @@ export function cleanContactDraft(draft: Partial<Contact>): Partial<Contact> {
     result.phones = ensureSinglePrimaryFlag(
       result.phones
         .filter((phone) => !isBlankContactListRow(phone, ["number"], PHONE_SYSTEM_KEYS))
-        .map((phone) => ({
-          ...phone,
-          number: (phone.number || "").trim(),
-          countryCode:
-            typeof phone.countryCode === "string" ? phone.countryCode.trim() : phone.countryCode,
-        })),
+        .map((phone) =>
+          stripTransientKeys(
+            {
+              ...phone,
+              number: (phone.number || "").trim(),
+              countryCode:
+                typeof phone.countryCode === "string"
+                  ? phone.countryCode.trim()
+                  : phone.countryCode,
+            },
+            true,
+          ),
+        ),
     );
   }
   if (Array.isArray(result.emails)) {
     result.emails = ensureSinglePrimaryFlag(
       result.emails
         .filter((email) => !isBlankContactListRow(email, ["address"], EMAIL_SYSTEM_KEYS))
-        .map((email) => ({ ...email, address: (email.address || "").trim().toLowerCase() })),
+        .map((email) =>
+          stripTransientKeys(
+            { ...email, address: (email.address || "").trim().toLowerCase() },
+            true,
+          ),
+        ),
     );
   }
   if (Array.isArray(result.addresses)) {
     result.addresses = ensureSinglePrimaryFlag(
-      result.addresses.filter(
-        (a) =>
-          !isBlankContactListRow(a, ["line1", "city", "state", "country"], ADDRESS_SYSTEM_KEYS),
-      ),
+      result.addresses
+        .filter(
+          (a) =>
+            !isBlankContactListRow(a, ["line1", "city", "state", "country"], ADDRESS_SYSTEM_KEYS),
+        )
+        .map((a) => stripTransientKeys(a, true)),
     );
   }
   if (Array.isArray(result.socials)) {
-    result.socials = result.socials.filter(
-      (s) => !isBlankContactListRow(s, ["url"], SOCIAL_SYSTEM_KEYS),
-    );
+    result.socials = result.socials
+      .filter((s) => !isBlankContactListRow(s, ["url"], SOCIAL_SYSTEM_KEYS))
+      .map((s) => stripTransientKeys(s, true));
   }
   if (Array.isArray(result.education)) {
-    result.education = result.education.filter(
-      (edu) =>
-        !isBlankContactListRow(
-          edu,
-          ["institution", "fieldOfStudy", "year", "grade"],
-          EDUCATION_SYSTEM_KEYS,
-        ),
-    );
+    result.education = result.education
+      .filter(
+        (edu) =>
+          !isBlankContactListRow(
+            edu,
+            ["institution", "fieldOfStudy", "year", "grade"],
+            EDUCATION_SYSTEM_KEYS,
+          ),
+      )
+      .map((edu) => stripTransientKeys(edu, false));
   }
   if (Array.isArray(result.experience)) {
-    result.experience = result.experience.filter(
-      (exp) => !isBlankContactListRow(exp, ["title", "organization"], EXPERIENCE_SYSTEM_KEYS),
-    );
+    result.experience = result.experience
+      .filter(
+        (exp) => !isBlankContactListRow(exp, ["title", "organization"], EXPERIENCE_SYSTEM_KEYS),
+      )
+      .map((exp) => stripTransientKeys(exp, false));
   }
   if (Array.isArray(result.skills)) {
-    result.skills = result.skills.filter(
-      (sk) => !isBlankContactListRow(sk, ["name"], SKILL_SYSTEM_KEYS),
-    );
+    result.skills = result.skills
+      .filter((sk) => !isBlankContactListRow(sk, ["name"], SKILL_SYSTEM_KEYS))
+      .map((sk) => stripTransientKeys(sk, false));
   }
   if (Array.isArray(result.bankDetails)) {
     result.bankDetails = result.bankDetails
@@ -155,33 +180,45 @@ export function cleanContactDraft(draft: Partial<Contact>): Partial<Contact> {
             BANK_DETAIL_SYSTEM_KEYS,
           ),
       )
-      .map((b) => ({
-        ...b,
-        bankName: typeof b.bankName === "string" ? b.bankName.trim() : (b.bankName ?? ""),
-        accountTitle:
-          typeof b.accountTitle === "string"
-            ? b.accountTitle.trim()
-            : (((b as Record<string, unknown>).title as string) ?? ""),
-        accountNumber:
-          typeof b.accountNumber === "string"
-            ? b.accountNumber.trim()
-            : (((b as Record<string, unknown>).iban as string) ?? b.accountNumber ?? ""),
-      }));
+      .map((b) =>
+        stripTransientKeys(
+          {
+            ...b,
+            bankName: typeof b.bankName === "string" ? b.bankName.trim() : (b.bankName ?? ""),
+            accountTitle:
+              typeof b.accountTitle === "string"
+                ? b.accountTitle.trim()
+                : (((b as Record<string, unknown>).title as string) ?? ""),
+            accountNumber:
+              typeof b.accountNumber === "string"
+                ? b.accountNumber.trim()
+                : (((b as Record<string, unknown>).iban as string) ?? b.accountNumber ?? ""),
+          },
+          false,
+        ),
+      );
   }
   if (Array.isArray(result.relationshipContacts)) {
     result.relationshipContacts = result.relationshipContacts
       .filter(
         (link) => !isBlankContactListRow(link, ["contactId", "name"], RELATIONSHIP_SYSTEM_KEYS),
       )
-      .map((link) => ({
-        ...link,
-        contactId:
-          link.contactId !== undefined && link.contactId !== null && String(link.contactId).trim()
-            ? String(link.contactId).trim()
-            : undefined,
-        relationship:
-          typeof link.relationship === "string" ? link.relationship.trim() : link.relationship,
-      }));
+      .map((link) =>
+        stripTransientKeys(
+          {
+            ...link,
+            contactId:
+              link.contactId !== undefined &&
+              link.contactId !== null &&
+              String(link.contactId).trim()
+                ? String(link.contactId).trim()
+                : undefined,
+            relationship:
+              typeof link.relationship === "string" ? link.relationship.trim() : link.relationship,
+          },
+          true,
+        ),
+      );
     if (result.relationshipContacts.length === 0) result.relationships = [];
   }
 

@@ -92,7 +92,10 @@ describe("useBackgroundJobs", () => {
       window.dispatchEvent(new CustomEvent("mms-background-jobs-changed"));
     });
 
-    expect(invalidateSpy).toHaveBeenCalledWith({ queryKey: BACKGROUND_JOBS_QUERY_KEY });
+    expect(invalidateSpy).toHaveBeenCalledWith(
+      { queryKey: BACKGROUND_JOBS_QUERY_KEY },
+      { cancelRefetch: false },
+    );
     unmount();
   });
 });

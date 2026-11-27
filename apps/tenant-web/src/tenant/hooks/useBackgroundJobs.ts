@@ -18,6 +18,8 @@ import { useAuth } from "@mms/fe-core/auth/AuthContext";
 export { BACKGROUND_JOBS_QUERY_KEY } from "@mms/fe-core/backgroundJobs";
 import { BACKGROUND_JOBS_QUERY_KEY } from "@mms/fe-core/backgroundJobs";
 
+let lastBackgroundJobsInvalidateAt = 0;
+
 /**
  * Background jobs for the signed-in user: server list refreshed on store change
  * events (no ad-hoc polling), merged with the locally-tracked running jobs.
@@ -37,7 +39,14 @@ export function useBackgroundJobs() {
   useEffect(() => {
     const handler = () => {
       setLocalTick((n) => n + 1);
-      void queryClient.invalidateQueries({ queryKey: BACKGROUND_JOBS_QUERY_KEY });
+      // Coalesce simultaneous listeners (desktop + mobile TopBarActions) and never cancel in-flight fetches.
+      const now = Date.now();
+      if (now - lastBackgroundJobsInvalidateAt < 150) return;
+      lastBackgroundJobsInvalidateAt = now;
+      void queryClient.invalidateQueries(
+        { queryKey: BACKGROUND_JOBS_QUERY_KEY },
+        { cancelRefetch: false },
+      );
     };
     window.addEventListener(BACKGROUND_JOBS_EVENT, handler);
     return () => window.removeEventListener(BACKGROUND_JOBS_EVENT, handler);
@@ -53,7 +62,10 @@ export function useBackgroundJobs() {
 
   const refresh = () => {
     setLocalTick((n) => n + 1);
-    void queryClient.invalidateQueries({ queryKey: BACKGROUND_JOBS_QUERY_KEY });
+    void queryClient.invalidateQueries(
+      { queryKey: BACKGROUND_JOBS_QUERY_KEY },
+      { cancelRefetch: false },
+    );
   };
 
   return {

@@ -67,11 +67,12 @@ export function renderContactTableCell({
         countryCodesMap,
         countryCodes,
         widthStyle,
+        showArchived,
         t,
         onWhatsApp,
       });
     case "email":
-      return renderContactEmailCell({ contact, widthStyle, t });
+      return renderContactEmailCell({ contact, widthStyle, showArchived, t });
     default:
       return (
         <ContactMetadataCell

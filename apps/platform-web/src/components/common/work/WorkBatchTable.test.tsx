@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { createRoot, type Root } from "react-dom/client";
 import { WorkBatchTable } from "@mms/fe-core/components/WorkBatchTable";
-import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { TranslationContext, type TranslationFunction } from "@mms/fe-core/i18n";
 
 declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean | undefined;

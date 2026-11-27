@@ -36,6 +36,7 @@ export function DataTable<TData extends { id: string | number }>({
   trashToggle,
   filterChips,
   isSearching,
+  hasActiveFilters: externalHasActiveFilters = false,
   emptyState,
   defaultViewMode,
   columnLayout,
@@ -75,6 +76,7 @@ export function DataTable<TData extends { id: string | number }>({
   );
 
   const sourceEmpty = !isLoading && data.length === 0;
+  const effectiveHasActiveFilters = Boolean(externalHasActiveFilters || state.hasActiveFilters);
   const noMatches = (
     <EmptyState
       icon={SearchX}
@@ -135,7 +137,7 @@ export function DataTable<TData extends { id: string | number }>({
         {toolbarExtras}
       </WorkTaskToolbar>
 
-      {sourceEmpty && emptyState ? (
+      {sourceEmpty && !effectiveHasActiveFilters && emptyState ? (
         emptyState
       ) : !isLoading && state.rows.length === 0 ? (
         noMatches

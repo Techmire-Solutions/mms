@@ -8,6 +8,8 @@
  */
 import { readFileSync } from "node:fs";
 
+import { resolveRequirement } from "./lib/spec-lookup.mjs";
+
 const REQUIRED = [
   {
     file: "packages/contracts/src/examinations/resultScoring.test.ts",
@@ -82,23 +84,23 @@ const REQUIRED = [
     ],
   },
   {
-    file: "apps/tenant-web/src/tenant/features/examinations/lib/marksGridNavigation.test.ts",
+    file: "packages/modules/examinations/src/frontend/tenant/lib/marksGridNavigation.test.ts",
     names: ["tabs forward/backward but lets Tab leave the grid at an edge"],
   },
   {
-    file: "apps/tenant-web/src/tenant/features/examinations/lib/examFormValidation.test.ts",
+    file: "packages/modules/examinations/src/frontend/tenant/lib/examFormValidation.test.ts",
     names: ["flags passing above total, non-positive totals and a blank duration immediately"],
   },
   {
-    file: "apps/tenant-web/src/tenant/features/examinations/components/EnterMarksTable.test.tsx",
+    file: "packages/modules/examinations/src/frontend/tenant/components/EnterMarksTable.test.tsx",
     names: ["moves focus down/up between student rows with ArrowDown/ArrowUp"],
   },
   {
-    file: "apps/tenant-web/src/tenant/features/examinations/components/EnterMarks.test.tsx",
+    file: "packages/modules/examinations/src/frontend/tenant/components/EnterMarks.test.tsx",
     names: ["keeps the draft when a background results refetch arrives while dirty"],
   },
   {
-    file: "apps/tenant-web/src/tenant/features/examinations/components/useExaminationForm.test.ts",
+    file: "packages/modules/examinations/src/frontend/tenant/components/useExaminationForm.test.ts",
     names: [
       "flags an invalid numeric frame live and becomes dirty only after an edit",
       "shows a save failure inline without losing the draft",
@@ -306,10 +308,18 @@ const REQUIRED = [
 ];
 
 let missing = 0;
-for (const { file, names } of REQUIRED) {
+for (const requirement of REQUIRED) {
+  const { names } = requirement;
+  const resolved = resolveRequirement(requirement);
+  if (resolved.missing) {
+    console.error(`✗ required examinations spec is missing: ${resolved.spec}`);
+    missing += 1;
+    continue;
+  }
+  const file = resolved.movedFrom ?? requirement.file ?? resolved.path;
   let source;
   try {
-    source = readFileSync(file, "utf8");
+    source = readFileSync(resolved.path, "utf8");
   } catch {
     console.error(`✗ required examinations spec is missing: ${file}`);
     missing += 1;

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Plus, Sparkles, Tag } from "lucide-react";
 import type { JournalTemplate } from "@mms/contracts";
-import { JOURNAL_TAGS } from "@mms/mod-accounting/frontend/tenant";
+import { JOURNAL_TAGS } from "./index";
 import { SectionCard } from "@mms/ui";
 import { Button } from "@mms/ui";
 import { Badge } from "@mms/ui";
@@ -9,7 +9,7 @@ import { Input } from "@mms/ui";
 import { isImeSafeEnter } from "@mms/ui";
 import type { TranslationFunction } from "@mms/fe-core/i18n";
 import { getJournalTagLabel } from "./lib/journalEntriesListShared";
-import type { DraftForm } from "@mms/mod-accounting/frontend/tenant";
+import type { DraftForm } from "./index";
 
 interface JournalEntryFormTagsSectionProps {
   t: TranslationFunction;

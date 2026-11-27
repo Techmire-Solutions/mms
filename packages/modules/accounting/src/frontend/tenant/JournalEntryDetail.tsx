@@ -4,11 +4,7 @@ import { formatDate, isJournalEntryBalanced, moneyToCents } from "@mms/contracts
 import { Button } from "@mms/ui";
 import { Badge } from "@mms/ui";
 import { DetailDrawerShell } from "@mms/fe-core/components/DetailDrawerShell";
-import {
-  ACCOUNT_TYPE_META,
-  type Account,
-  type JournalEntry,
-} from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPE_META, type Account, type JournalEntry } from "./index";
 import { StatusBadge, type StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
 import { SEMANTIC_BADGE, balanceToneClass } from "@mms/fe-core/ui/semanticTone";
 import { cn } from "@mms/ui";

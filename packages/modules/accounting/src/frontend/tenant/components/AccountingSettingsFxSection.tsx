@@ -1,0 +1,139 @@
+import type React from "react";
+import { Globe2 } from "lucide-react";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { EditableMultiSelect } from "@mms/fe-core/components/EditableMultiSelect";
+import { Field } from "@mms/ui";
+import { FormSelect } from "@mms/fe-core/components/FormSelect";
+import { ModuleSetupSaveFooter } from "@mms/fe-core/components/ModuleSetupSaveFooter";
+import { SectionCard } from "@mms/ui";
+import { Alert } from "@mms/ui";
+import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { useAccountingFxSettingsDraft } from "../hooks/useAccountingFxSettingsDraft";
+import { AccountingSettingsExchangeabilitySection } from "./AccountingSettingsExchangeabilitySection";
+import { FxSetupGuide } from "./FxSetupGuide";
+import { FX_SETUP_ANCHORS } from "../index";
+
+interface AccountingSettingsFxSectionProps {
+  canEditSetup: boolean;
+}
+
+/** IAS 21 functional / presentation currency, enabled currencies and the rate table. */
+export function AccountingSettingsFxSection({
+  canEditSetup,
+}: AccountingSettingsFxSectionProps): React.JSX.Element {
+  const { t } = useTranslation();
+  const fx = useAccountingFxSettingsDraft();
+  const fieldErrors = fx.fieldErrors ?? {};
+  const readOnly = !canEditSetup;
+
+  return (
+    <SectionCard
+      title={t("accounting.settings.secFx")}
+      icon={Globe2}
+      className={SETUP_SECTION_CARD_CLASS}
+      headingId={FX_SETUP_ANCHORS.currencies}
+    >
+      <p className="m-0 mb-3 text-xs text-muted-foreground text-pretty">
+        {t("accounting.settings.fx.hint")}
+      </p>
+      <FxSetupGuide className="mb-4" />
+
+      {fx.isError ? (
+        <ErrorState
+          compact
+          description={t("accounting.settings.fx.loadFailed")}
+          onRetry={() => void fx.refetch()}
+        />
+      ) : (
+        <>
+          {fx.locked && (
+            <Alert tone="info" description={t("accounting.settings.fx.functionalLockedHint")} />
+          )}
+          <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field
+              id="accounting-functional-currency"
+              label={t("accounting.settings.fx.functionalCurrency")}
+              hint={t("accounting.settings.fx.functionalCurrencyHint")}
+              error={fieldErrors.functionalCurrency}
+            >
+              <FormSelect
+                id="accounting-functional-currency"
+                name="functionalCurrency"
+                value={fx.draft.functionalCurrency}
+                onChange={(value) =>
+                  fx.setDraft((current) => ({ ...current, functionalCurrency: value }))
+                }
+                options={fx.functionalOptions}
+                searchable
+                disabled={readOnly || fx.locked || fx.isLoading}
+              />
+            </Field>
+            <Field
+              id="accounting-presentation-currency"
+              label={t("accounting.settings.fx.presentationCurrency")}
+              hint={t("accounting.settings.fx.presentationCurrencyHint")}
+              error={fieldErrors.presentationCurrency}
+            >
+              <FormSelect
+                id="accounting-presentation-currency"
+                name="presentationCurrency"
+                value={fx.draft.presentationCurrency}
+                onChange={(value) =>
+                  fx.setDraft((current) => ({ ...current, presentationCurrency: value }))
+                }
+                options={fx.currencyOptions}
+                searchable
+                disabled={readOnly || fx.isLoading}
+              />
+            </Field>
+            <div className="sm:col-span-2">
+              <Field
+                id="accounting-enabled-currencies"
+                label={t("accounting.settings.fx.enabledCurrencies")}
+                hint={t("accounting.settings.fx.enabledCurrenciesHint")}
+                error={fieldErrors.enabledCurrencies}
+              >
+                {readOnly ? (
+                  <p id="accounting-enabled-currencies" className="m-0 font-mono text-sm">
+                    {fx.draft.enabledCurrencies.join(", ") || "—"}
+                  </p>
+                ) : (
+                  <EditableMultiSelect
+                    id="accounting-enabled-currencies"
+                    name="enabledCurrencies"
+                    options={fx.currencyCodes.filter(
+                      (code) => code !== fx.draft.functionalCurrency,
+                    )}
+                    values={fx.draft.enabledCurrencies}
+                    onChange={(values) =>
+                      fx.setDraft((current) => ({ ...current, enabledCurrencies: values }))
+                    }
+                    placeholder={t("accounting.settings.fx.enabledCurrenciesPlaceholder")}
+                  />
+                )}
+              </Field>
+            </div>
+          </div>
+          {canEditSetup && (
+            <ModuleSetupSaveFooter
+              dirty={fx.dirty}
+              saving={fx.saving}
+              saved={false}
+              saveLabel={fx.saving ? t("global.saving") : t("common.save")}
+              savedLabel={t("settings.savedBadge")}
+              onSave={fx.handleSave}
+              disableUnsavedGuard
+              footerClassName="mt-4 pt-3"
+            />
+          )}
+        </>
+      )}
+
+      <AccountingSettingsExchangeabilitySection
+        enabledCurrencies={fx.draft.enabledCurrencies}
+        canEditSetup={canEditSetup}
+      />
+    </SectionCard>
+  );
+}

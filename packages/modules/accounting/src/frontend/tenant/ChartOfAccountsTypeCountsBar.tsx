@@ -1,11 +1,7 @@
 import React from "react";
 import { type AppTranslationKey } from "@mms/contracts";
 import { Badge } from "@mms/ui";
-import {
-  ACCOUNT_TYPES,
-  ACCOUNT_TYPE_META,
-  type Account,
-} from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPES, ACCOUNT_TYPE_META, type Account } from "./index";
 import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 export interface ChartOfAccountsTypeCountsBarProps {

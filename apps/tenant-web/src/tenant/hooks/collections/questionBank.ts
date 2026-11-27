@@ -8,7 +8,7 @@ export {
   QUESTION_BANK_TESTS_QUERY_KEY,
   QUESTION_BANK_RESULTS_QUERY_KEY,
   QUESTION_BANK_REPORT_AGGREGATES_QUERY_KEY,
-} from "@/tenant/features/question-bank/hooks/questionBankQueryKeys";
+} from "@mms/mod-question-bank/frontend/tenant/hooks/questionBankQueryKeys";
 export {
   useQuestionBankQuestions,
   useQuestionBankQuestionsCollection,
@@ -20,9 +20,9 @@ export {
   questionBankCommandMetricsQueryOptions,
   useQuestionBankMetrics,
   useQuestionBankReportAggregates,
-} from "@/tenant/features/question-bank/hooks/useQuestionBankApi";
-export { useQuestionBankConfig } from "@/tenant/features/question-bank/hooks/useQuestionBankConfig";
-export { invalidateQuestionBankQueries } from "@/tenant/features/question-bank/hooks/invalidateQuestionBankQueries";
+} from "@mms/mod-question-bank/frontend/tenant/hooks/useQuestionBankApi";
+export { useQuestionBankConfig } from "@mms/mod-question-bank/frontend/tenant/hooks/useQuestionBankConfig";
+export { invalidateQuestionBankQueries } from "@mms/mod-question-bank/frontend/tenant/hooks/invalidateQuestionBankQueries";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   questionBankQuestionsListQueryOptions,
@@ -33,4 +33,4 @@ export {
   useQuestionBankContractBulkRestore,
   useQuestionBankContractDeleteQuestion,
   useQuestionBankContractRestoreQuestion,
-} from "@/tenant/features/question-bank/hooks/useQuestionBankQueries";
+} from "@mms/mod-question-bank/frontend/tenant/hooks/useQuestionBankQueries";

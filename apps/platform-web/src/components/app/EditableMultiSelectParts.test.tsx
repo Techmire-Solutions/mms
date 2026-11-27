@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { EditableMultiSelectOptionList } from "@mms/fe-core/components/EditableMultiSelectParts";
 
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 const mockT: TranslationFunction = ((key: string) => key) as unknown as TranslationFunction;
 

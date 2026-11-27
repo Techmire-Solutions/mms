@@ -1,5 +1,10 @@
 import React, { type ReactNode } from "react";
-import { formatMoney } from "@mms/contracts";
+import {
+  DEFAULT_GLOBAL_SETTINGS,
+  formatIsoDateToDisplay,
+  formatMoney,
+  type DateFormatId,
+} from "@mms/contracts";
 import { StatusBadge } from "./StatusBadge.js";
 import { SEMANTIC_BADGE } from "../ui/semanticTone.js";
 import type { FieldDefinition } from "./entityRegistryTypes.js";
@@ -25,8 +30,13 @@ export function formatFieldValueDefault<T>(
     case "boolean":
       return rawValue ? "Yes" : "No";
     case "date":
-    case "datetime":
-      return String(rawValue).slice(0, 10);
+    case "datetime": {
+      const isoPrefix = String(rawValue).slice(0, 10);
+      return (
+        formatIsoDateToDisplay(isoPrefix, DEFAULT_GLOBAL_SETTINGS.dateFormat as DateFormatId) ||
+        isoPrefix
+      );
+    }
     case "badge":
     case "status": {
       const strVal = String(rawValue);

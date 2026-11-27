@@ -1,0 +1,132 @@
+import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
+import { ErrorState } from "@mms/fe-core/components/ErrorState";
+import { Skeleton } from "@mms/ui";
+import { ModuleTierMotion } from "@mms/ui/app/ModuleTierMotion";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ObligationCollectionsList } from "./ObligationCollectionsList";
+import type { useObligationColumnLayout } from "../hooks/useObligationColumnLayout";
+import type {
+  ObligationCollection,
+  ObligationType,
+  Mujtahid,
+  MujtahidRep,
+} from "../lib/obligationsData";
+
+interface ObligationsWorkTierProps {
+  collections: ObligationCollection[];
+  obligationTypes: ObligationType[];
+  reps: MujtahidRep[];
+  mujtahids: Mujtahid[];
+  listLoadFailed: boolean;
+  listLoading?: boolean;
+  canWrite: boolean;
+  canDelete: boolean;
+  showDeleted: boolean;
+  canWriteMessaging: boolean;
+  columnLayout: ReturnType<typeof useObligationColumnLayout>;
+  onAddNew: () => void;
+  onView: (collection: ObligationCollection) => void;
+  onFilteredCountChange: (count: number) => void;
+  onToggleShowDeleted: () => void;
+  onDelete: (id: string) => Promise<void>;
+  onRestore: (id: string) => Promise<void>;
+  onBulkDelete: (ids: string[]) => Promise<void>;
+  onBulkRestore: (ids: string[]) => Promise<void>;
+  onRetry: () => void;
+  onMessage: (channel: "sms" | "whatsapp" | "email", collections: ObligationCollection[]) => void;
+  onViewVoucher?: (collection: ObligationCollection) => void;
+  selectedIds?: string[];
+  onToggleSelectedCollection?: (id: string, checked: boolean) => void;
+  onToggleSelectAll?: (checked: boolean, visibleIds: string[]) => void;
+  onClearSelection?: () => void;
+}
+
+export function ObligationsWorkTier({
+  collections,
+  obligationTypes,
+  reps,
+  mujtahids,
+  listLoadFailed,
+  listLoading = false,
+  canWrite,
+  canDelete,
+  showDeleted,
+  canWriteMessaging,
+  columnLayout,
+  onAddNew,
+  onView,
+  onFilteredCountChange,
+  onToggleShowDeleted,
+  onDelete,
+  onRestore,
+  onBulkDelete,
+  onBulkRestore,
+  onRetry,
+  onMessage,
+  onViewVoucher,
+  selectedIds,
+  onToggleSelectedCollection,
+  onToggleSelectAll,
+  onClearSelection,
+}: ObligationsWorkTierProps) {
+  const { t } = useTranslation();
+
+  if (listLoading) {
+    return (
+      <div className="space-y-3" aria-busy="true" aria-label={t("common.loading")}>
+        {Array.from({ length: 5 }, (_unused: any, index: any) => (
+          <Skeleton key={index} className="h-row-xl w-full rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (listLoadFailed) {
+    return (
+      <ErrorState
+        title={t("obligations.loadFailed")}
+        description={t("obligations.loadFailedHint")}
+        onRetry={onRetry}
+      />
+    );
+  }
+
+  return (
+    <ErrorBoundary>
+      <ModuleTierMotion tier="work" className="space-y-4">
+        <ObligationCollectionsList
+          collections={collections}
+          obligationTypes={obligationTypes}
+          reps={reps}
+          mujtahids={mujtahids}
+          onAddNew={onAddNew}
+          onView={onView}
+          onFilteredCountChange={onFilteredCountChange}
+          canWrite={canWrite}
+          canDelete={canDelete}
+          showDeleted={showDeleted}
+          onToggleShowDeleted={onToggleShowDeleted}
+          onDelete={onDelete}
+          onRestore={onRestore}
+          onBulkDelete={onBulkDelete}
+          onBulkRestore={onBulkRestore}
+          selectedIds={selectedIds}
+          onToggleSelectedCollection={onToggleSelectedCollection}
+          onToggleSelectAll={onToggleSelectAll}
+          onClearSelection={onClearSelection}
+          isColumnVisible={columnLayout.isColumnVisible}
+          getColumnWidth={columnLayout.getColumnWidth}
+          onColumnResize={columnLayout.setColumnWidth}
+          columnCustomizer={{
+            columnRegistry: columnLayout.columnRegistry,
+            updateUserColumnLayout: columnLayout.updateUserColumnLayout,
+            onResetLayout: columnLayout.resetColumnLayout,
+            labels: columnLayout.customizerLabels,
+          }}
+          onMessage={canWriteMessaging && !showDeleted ? onMessage : undefined}
+          onViewVoucher={onViewVoucher}
+        />
+      </ModuleTierMotion>
+    </ErrorBoundary>
+  );
+}

@@ -237,12 +237,14 @@ describe("DatePicker Component", () => {
     expect(input.value).toBe("30/02/2026");
     expect(onChange).not.toHaveBeenCalled();
 
-    // User blurs field: should revert to last valid date
+    // User blurs field: preserves invalid text and renders inline validation error
     await act(async () => {
       input.focus();
       input.blur();
     });
-    expect(input.value).toBe("21/07/2026");
+    expect(input.value).toBe("30/02/2026");
+    expect(input.getAttribute("aria-invalid")).toBe("true");
+    expect(container.querySelector('[role="alert"]')).not.toBeNull();
   });
 
   it("enforces min and max bounds during typing", async () => {
@@ -476,12 +478,14 @@ describe("DatePicker Component", () => {
       });
       expect(onChange).not.toHaveBeenCalled();
 
-      // Blur should revert to previous valid value
+      // Blur preserves out-of-range input and renders inline alert
       await act(async () => {
         input.focus();
         input.blur();
       });
-      expect(input.value).toBe("2024");
+      expect(input.value).toBe("2018");
+      expect(input.getAttribute("aria-invalid")).toBe("true");
+      expect(container.querySelector('[role="alert"]')).not.toBeNull();
       expect(onBlur).toHaveBeenCalled();
 
       // Typing in-bounds year: 2027

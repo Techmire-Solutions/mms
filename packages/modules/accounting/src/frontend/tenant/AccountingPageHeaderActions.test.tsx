@@ -3,7 +3,13 @@ import { createRoot, type Root } from "react-dom/client";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { AccountingPageHeaderActions } from "./AccountingPageHeaderActions";
 
-vi.mock("@mms/fe-core/i18n", () => ({
+vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
+  useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
+}));
+
+vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
   useTranslation: () => ({ t: (k: string) => k }),
 }));
 

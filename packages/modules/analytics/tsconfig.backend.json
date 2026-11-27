@@ -6,6 +6,6 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/shared/**/*.ts", "src/backend/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

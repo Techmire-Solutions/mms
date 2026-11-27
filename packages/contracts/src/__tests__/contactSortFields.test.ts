@@ -13,8 +13,9 @@ describe("Contacts sort field SSOT", () => {
     expect(unsupported).toEqual([]);
   });
 
-  it("maps columns to their declared sortField (lunar DOB sorts by dob)", () => {
-    expect(resolveContactColumnSortField("lunarDob")).toBe("dob");
+  it("maps columns to their declared sortField (lunar DOB does not alias dob to avoid dual sort arrows)", () => {
+    expect(resolveContactColumnSortField("lunarDob")).toBeUndefined();
+    expect(resolveContactColumnSortField("dob")).toBe("dob");
     expect(resolveContactColumnSortField("name")).toBe("name");
     expect(resolveContactColumnSortField("city")).toBe("city");
   });

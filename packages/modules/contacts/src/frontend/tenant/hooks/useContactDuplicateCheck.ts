@@ -8,6 +8,18 @@ export interface UseContactDuplicateCheckOptions {
   contactDraft: Partial<Contact>;
 }
 
+const MIN_PHONE_DUPLICATE_DIGITS = 10;
+
+function hasCompletePhone(number?: string): boolean {
+  if (!number) return false;
+  return number.replace(/\D/g, "").length >= MIN_PHONE_DUPLICATE_DIGITS;
+}
+
+function hasValidEmailCandidate(address?: string): boolean {
+  if (!address) return false;
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(address.trim());
+}
+
 /** Identity of the fields the duplicate probe actually queries. */
 function contactCandidateSignature(draft: Partial<Contact>): string {
   return JSON.stringify({
@@ -15,8 +27,14 @@ function contactCandidateSignature(draft: Partial<Contact>): string {
     firstName: draft.firstName ?? "",
     lastName: draft.lastName ?? "",
     cnic: draft.cnic ?? "",
-    phones: (draft.phones ?? []).map((phone) => phone.number ?? "").join("|"),
-    emails: (draft.emails ?? []).map((email) => email.address ?? "").join("|"),
+    phones: (draft.phones ?? [])
+      .filter((phone) => hasCompletePhone(phone.number))
+      .map((phone) => phone.number ?? "")
+      .join("|"),
+    emails: (draft.emails ?? [])
+      .filter((email) => hasValidEmailCandidate(email.address))
+      .map((email) => email.address ?? "")
+      .join("|"),
   });
 }
 
@@ -41,9 +59,10 @@ export function useContactDuplicateCheck({
     (deferredDraft.name?.trim() ||
       deferredDraft.firstName?.trim() ||
       deferredDraft.lastName?.trim() ||
-      (deferredDraft.phones && deferredDraft.phones.some((p) => p.number?.trim())) ||
-      (deferredDraft.emails && deferredDraft.emails.some((e) => e.address?.trim())) ||
-      deferredDraft.cnic?.trim()),
+      (deferredDraft.phones && deferredDraft.phones.some((p) => hasCompletePhone(p.number))) ||
+      (deferredDraft.emails &&
+        deferredDraft.emails.some((e) => hasValidEmailCandidate(e.address))) ||
+      (deferredDraft.cnic && deferredDraft.cnic.replace(/\D/g, "").length === 13)),
   );
   // A result only describes the candidate it was requested for: changing the name
   // (or phone/email/cnic) immediately falls back to 0 instead of a stale count.
@@ -70,9 +89,17 @@ export function useContactDuplicateCheck({
 
     const timer = setTimeout(async () => {
       try {
-        // The tag property is a computed frontend-only UI state added by normalization
+        // The tag property is a computed frontend-only UI state added by normalization.
+        // Strip incomplete phone numbers (< 10 digits) so partial typing never triggers 400s.
         const { tag: _tag, ...cleanDraft } = deferredDraft as Record<string, unknown>;
-        const contact = contactId != null ? { ...cleanDraft, id: contactId } : cleanDraft;
+        const filteredPhones = Array.isArray(deferredDraft.phones)
+          ? deferredDraft.phones.filter((p) => hasCompletePhone(p.number))
+          : undefined;
+        const sanitizedDraft = {
+          ...cleanDraft,
+          ...(filteredPhones !== undefined ? { phones: filteredPhones } : {}),
+        };
+        const contact = contactId != null ? { ...sanitizedDraft, id: contactId } : sanitizedDraft;
         const res = await apiContract.contacts.duplicateCheck({
           body: { contact },
           fetchOptions: { signal: abortController.signal },

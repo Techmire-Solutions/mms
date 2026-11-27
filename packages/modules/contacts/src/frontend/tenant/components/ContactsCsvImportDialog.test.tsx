@@ -237,7 +237,8 @@ describe("ContactsCsvImportDialog", () => {
 
     const fileInput = document.body.querySelector('input[type="file"]') as HTMLInputElement;
     expect(fileInput).not.toBeNull();
-    expect(fileInput.getAttribute("accept")).toBe(".csv,text/csv");
+    expect(fileInput.getAttribute("accept")).toContain(".csv");
+    expect(fileInput.getAttribute("accept")).toContain(".xlsx");
 
     const clickSpy = vi.spyOn(fileInput, "click");
 

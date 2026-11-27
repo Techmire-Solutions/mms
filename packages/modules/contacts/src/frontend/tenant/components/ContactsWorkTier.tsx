@@ -47,6 +47,7 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
   isExporting,
   onRequestBulkDelete,
   onRequestBulkRestore,
+  onRequestBulkPermanentDelete,
   onBulkTag,
   onCreate,
   onImport,
@@ -129,6 +130,7 @@ export const ContactsWorkTier = React.memo(function ContactsWorkTier({
         isExporting={isExporting}
         onRequestBulkDelete={onRequestBulkDelete}
         onRequestBulkRestore={onRequestBulkRestore}
+        onRequestBulkPermanentDelete={onRequestBulkPermanentDelete}
         onClearSelection={onClearSelection}
         onBulkTag={onBulkTag}
       />

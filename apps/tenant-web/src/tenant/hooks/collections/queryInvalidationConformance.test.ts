@@ -34,15 +34,15 @@ import {
 import {
   ACCOUNTING_ACCOUNTS_QUERY_KEY,
   ACCOUNTING_ENTRIES_QUERY_KEY,
-} from "@/tenant/features/accounting/hooks/accountingQueryKeys";
+} from "@mms/mod-accounting/frontend/tenant/hooks/accountingQueryKeys";
 import {
   EXAMINATIONS_EXAMS_QUERY_KEY,
   EXAMINATIONS_RESULTS_QUERY_KEY,
-} from "@/tenant/features/examinations/hooks/examinationsQueryKeys";
+} from "@mms/mod-examinations/frontend/tenant/hooks/examinationsQueryKeys";
 import {
   OBLIGATIONS_COLLECTIONS_QUERY_KEY,
   OBLIGATIONS_WAKALA_QUERY_KEY,
-} from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
+} from "@mms/mod-obligations/frontend/tenant/hooks/obligationsQueryKeys";
 import { HASANAT_DISTRIBUTIONS_QUERY_KEY } from "@mms/mod-hasanat/frontend/tenant/hooks/hasanatQueryKeys";
 import { attendanceQueryKeys } from "@mms/mod-attendance/frontend/tenant/hooks/attendanceQueryKeys";
 

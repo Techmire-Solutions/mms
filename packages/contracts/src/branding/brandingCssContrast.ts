@@ -19,7 +19,7 @@ function withAbsoluteLightness(color: HslColor, targetLightness: number): HslCol
  * Strongest same-token tint allowed behind same-token text AT REST.
  *
  * `0.15` in both modes is the **documented design contract**, stated in
- * `apps/frontend/src/index.css`: the semantic token values are "solved against a `/15`
+ * `apps/tenant-web/src/index.css`: the semantic token values are "solved against a `/15`
  * tint", and "tints stronger than `/15` (e.g. a resting `bg-primary/20`) must use
  * `-foreground` or a lighter tint, because no single hue satisfies every step". So
  * `/15` is the binding constraint on how light a token may be.

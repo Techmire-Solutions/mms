@@ -282,10 +282,7 @@ describe("Hasanat schema & persistence invariants (0225–0232)", () => {
     expect(repo).toMatch(/kind = 'reversal'/);
 
     const component = await readFile(
-      join(
-        process.cwd(),
-        "../../../apps/tenant-web/src/tenant/features/reports/components/HasanatReport.tsx",
-      ),
+      join(process.cwd(), "../analytics/src/frontend/tenant/features/components/HasanatReport.tsx"),
       "utf-8",
     );
     expect(component).toMatch(/useHasanatStudentReport/);

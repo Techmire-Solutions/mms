@@ -3,8 +3,8 @@ import { SETTINGS_PREVIEW_EVENT } from "@mms/fe-core/lib/settingsPreview";
 import { subscribePlatformBranding } from "@mms/fe-core/lib/platformBrandingStore";
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import RouterBridge from "@/components/routing/RouterBridge";
-import { AppProviders } from "@/providers/AppProviders";
 import { MotionPreferences } from "@/providers/MotionPreferences";
+import { PlatformProviders } from "@/providers/PlatformProviders";
 import { PlatformAuthProvider } from "@/platform/features/auth/lib/PlatformAuthContext";
 
 const ApexRoutesWithSuspense = React.lazy(() =>
@@ -38,7 +38,7 @@ function App(): React.JSX.Element {
   }, []);
 
   return (
-    <AppProviders>
+    <PlatformProviders>
       <MotionPreferences>
         <PlatformAuthProvider>
           <RouterBridge />
@@ -47,7 +47,7 @@ function App(): React.JSX.Element {
           </Suspense>
         </PlatformAuthProvider>
       </MotionPreferences>
-    </AppProviders>
+    </PlatformProviders>
   );
 }
 

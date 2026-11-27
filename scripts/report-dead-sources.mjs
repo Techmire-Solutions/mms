@@ -145,6 +145,24 @@ export function recentlyModified(roots, { repoRoot = ROOT, minutes = 0, now = Da
   return count;
 }
 
+/** Files named by the app's build/test/tool configs (they are loaded by path, not by import). */
+function collectConfigReferenced(srcRoot, appDir) {
+  const referenced = new Set();
+  let entries = [];
+  try {
+    entries = fs.readdirSync(appDir).filter((name) => /\.config\.[cm]?[jt]s$/.test(name));
+  } catch {
+    return referenced;
+  }
+  for (const name of entries) {
+    const text = fs.readFileSync(path.join(appDir, name), "utf8");
+    for (const match of text.matchAll(/["'`](\.{1,2}\/[^"'`]+\.(?:ts|tsx|mjs|cjs))["'`]/g)) {
+      referenced.add(path.resolve(appDir, match[1]));
+    }
+  }
+  return referenced;
+}
+
 function groupByTopDir(files, srcRoot) {
   const groups = {};
   for (const file of files) {
@@ -164,17 +182,32 @@ export function analyseApp(appDir, options = {}) {
   // test graphs separately keeps the "safe to delete" set honest instead of flagging test fixtures.
   const testRoots = walkTests(srcRoot);
   const reachableFromTests = reachableFrom(testRoots, srcRoot);
-  const dead = all.filter((file) => !reachable.has(file) && !reachableFromTests.has(file));
+  // Config-referenced files are invisible to an import graph: `vitest.config.ts` names
+  // `src/test/setup.ts` by path, and a Vite config imports `src/lib/vendorChunks.ts`. Round 46 deleted
+  // `src/test/setup.ts` as "dead" and took the whole platform suite down, so the dead set excludes
+  // anything a config names or any file under a test-support directory.
+  const configReferenced = collectConfigReferenced(srcRoot, appDir);
+  const isConfigOrSupport = (file) =>
+    configReferenced.has(file) ||
+    file.includes(`${path.sep}src${path.sep}test${path.sep}`) ||
+    file.endsWith(".d.ts");
+  const dead = all.filter(
+    (file) => !reachable.has(file) && !reachableFromTests.has(file) && !isConfigOrSupport(file),
+  );
   const unrouted = all.filter((file) => !reachable.has(file));
   let duplicates = null;
   if (options.duplicates) {
     const index = contentIndex(options.repoRoot ?? ROOT, srcRoot);
+    const deadSet = new Set(dead);
     duplicates = { copied: [], unique: [] };
     for (const file of unrouted) {
       const key = crypto.createHash("sha1").update(fs.readFileSync(file)).digest("hex");
       const twin = index.get(key);
-      if (twin) duplicates.copied.push({ file, twin });
-      else duplicates.unique.push(file);
+      // `dead` says whether the file is unreachable from the app *and* every test. Only a dead AND
+      // byte-identical copy is safe to delete; an unrouted file that a test still imports is not
+      // (round 46 deleted ten such files and had to restore them).
+      if (twin) duplicates.copied.push({ file, twin, dead: deadSet.has(file) });
+      else duplicates.unique.push(file); // stays a string: existing callers expect paths
     }
   }
   return {
@@ -183,6 +216,9 @@ export function analyseApp(appDir, options = {}) {
     reachable: all.length - dead.length,
     unreachable: dead.length,
     unreachableFromAppOnly: unrouted.length,
+    // The deletable set: unreachable from the app *and* from every test. Callers that prune must use
+    // this, not `unreachableFromAppOnly` — a test-only import is still a live reference.
+    dead: dead.map((file) => path.relative(options.repoRoot ?? ROOT, file)),
     duplicates,
     unreachableByDir: groupByTopDir(dead, srcRoot),
     reachableByDir: groupByTopDir(

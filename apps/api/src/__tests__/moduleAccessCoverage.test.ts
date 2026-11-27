@@ -302,9 +302,14 @@ function matchesPrefix(url: string, prefix: string): boolean {
     : url === prefix || url.startsWith(`${prefix}/`);
 }
 
+/** Canonical `/api/tenant/<m>/…` aliases classify exactly like their legacy `/api/<m>/…` route. */
+function toLegacyUrl(url: string): string {
+  return url.startsWith("/api/tenant/") ? `/api/${url.slice("/api/tenant/".length)}` : url;
+}
+
 function moduleFor(url: string): string | undefined {
   const prefix = Object.keys(MODULE_ROUTE_PREFIXES)
-    .filter((p) => matchesPrefix(url, p))
+    .filter((p) => matchesPrefix(toLegacyUrl(url), p))
     .sort((a, b) => b.length - a.length)[0];
   return prefix ? MODULE_ROUTE_PREFIXES[prefix] : undefined;
 }
@@ -457,8 +462,11 @@ describe("module access coverage", () => {
           if (access?.moduleId !== expected || !access.action || !guarded) {
             ungated.push(`${key} → stamped ${access?.moduleId ?? "none"}, guard ${guarded}`);
           }
+          const legacyKey = `${method} ${toLegacyUrl(url)}`;
           const expectedAction =
-            EXPECTED_MODULE_ROUTE_ACTIONS[key] ?? defaultImportExportAction(url);
+            EXPECTED_MODULE_ROUTE_ACTIONS[key] ??
+            EXPECTED_MODULE_ROUTE_ACTIONS[legacyKey] ??
+            defaultImportExportAction(toLegacyUrl(url));
           if (expectedAction) {
             seenActions.add(key);
             if (access?.action !== expectedAction) {

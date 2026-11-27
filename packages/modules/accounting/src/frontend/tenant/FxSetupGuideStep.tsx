@@ -4,7 +4,7 @@ import type { AppTranslationKey } from "@mms/contracts";
 import { Button } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { cn } from "@mms/ui";
-import type { FxSetupStep } from "@mms/mod-accounting/frontend/tenant";
+import type { FxSetupStep } from "./index";
 
 const ACCOUNT_LABEL_KEYS: Record<string, AppTranslationKey> = {
   fxRealizedAccountId: "accounting.settings.fields.fxRealizedAccount",

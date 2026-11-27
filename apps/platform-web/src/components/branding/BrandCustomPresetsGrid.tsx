@@ -2,7 +2,7 @@ import React from "react";
 import { Check, Trash2 } from "lucide-react";
 import { Button } from "@mms/ui";
 import { cn } from "@mms/ui";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { CustomThemePreset } from "./brandColorPanelShared";
 
 interface BrandCustomPresetsGridProps {

@@ -99,7 +99,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "home",
     path: TENANT_PATHS.home,
     access: { kind: "landing", moduleId: "dashboard" },
-    loader: () => import("@/tenant/features/dashboard/DashboardPage"),
+    loader: () =>
+      import("@mms/mod-analytics/frontend/tenant").then((m) => ({ default: m.DashboardPage })),
     nav: { labelKey: "nav.dashboard", icon: LayoutDashboard, order: 0 },
   },
   {
@@ -187,7 +188,10 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "examinations",
     path: TENANT_PATHS.examinations,
     access: moduleAccess("examination"),
-    loader: () => import("@/tenant/features/examinations/ExaminationsPage"),
+    loader: () =>
+      import("@mms/mod-examinations/frontend/tenant").then((m) => ({
+        default: m.ExaminationsPage,
+      })),
     nav: { labelKey: "nav.examinations", icon: FileText, order: 5, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },
@@ -195,7 +199,10 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "questionBank",
     path: TENANT_PATHS.questionBank,
     access: moduleAccess("questionBank"),
-    loader: () => import("@/tenant/features/question-bank/QuestionBankPage"),
+    loader: () =>
+      import("@mms/mod-question-bank/frontend/tenant").then((m) => ({
+        default: m.QuestionBankPage,
+      })),
     nav: { labelKey: "nav.questionBank", icon: Library, order: 6, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },
@@ -203,7 +210,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "workshops",
     path: TENANT_PATHS.workshops,
     access: moduleAccess("workshops"),
-    loader: () => import("@/tenant/features/workshops/WorkshopsPage"),
+    loader: () =>
+      import("@mms/mod-workshops/frontend/tenant").then((m) => ({ default: m.WorkshopsPage })),
     nav: { labelKey: "nav.workshops", icon: Presentation, order: 7, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },
@@ -220,7 +228,7 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "accounting",
     path: TENANT_PATHS.accounting,
     access: moduleAccess("accounting"),
-    loader: () => import("@/tenant/features/accounting/AccountingPage"),
+    loader: () => import("@mms/mod-accounting/frontend/tenant/AccountingPage"),
     nav: { labelKey: "nav.accounting", icon: TrendingUp, order: 7 },
     apexRedirectable: true,
   },
@@ -228,7 +236,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "obligations",
     path: TENANT_PATHS.obligations,
     access: moduleAccess("obligations"),
-    loader: () => import("@/tenant/features/obligations/ObligationsPage"),
+    loader: () =>
+      import("@mms/mod-obligations/frontend/tenant").then((m) => ({ default: m.ObligationsPage })),
     nav: { labelKey: "nav.obligations", icon: Scale, order: 8 },
     apexRedirectable: true,
   },
@@ -236,7 +245,7 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "users",
     path: TENANT_PATHS.users,
     access: moduleAccess("users"),
-    loader: () => import("@/tenant/features/users/UsersPage"),
+    loader: () => import("@mms/mod-iam/frontend/tenant").then((m) => ({ default: m.UsersPage })),
     nav: { labelKey: "nav.users", icon: UserCog, order: 9 },
     apexRedirectable: true,
   },
@@ -244,7 +253,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "profile",
     path: TENANT_PATHS.profile,
     access: { kind: "open", reason: "the signed-in user's own account" },
-    loader: () => import("@/tenant/features/profile/AccountProfilePage"),
+    loader: () =>
+      import("@mms/mod-iam/frontend/tenant").then((m) => ({ default: m.AccountProfilePage })),
     apexRedirectable: true,
   },
   {
@@ -254,7 +264,10 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
       kind: "open",
       reason: "the signed-in user's own alerts; each alert gates its module permission",
     },
-    loader: () => import("@/tenant/features/notifications/NotificationsPage"),
+    loader: () =>
+      import("@mms/mod-notifications/frontend/tenant").then((m) => ({
+        default: m.NotificationsPage,
+      })),
     apexRedirectable: true,
   },
   {

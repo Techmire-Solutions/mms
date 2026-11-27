@@ -2,10 +2,16 @@ import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { GeneralLedgerEntries } from "./GeneralLedgerEntries";
-import type { Account } from "@mms/mod-accounting/frontend/tenant";
+import type { Account } from "./index";
 import type { GeneralLedgerLineWithRunning } from "./hooks/useGeneralLedger";
 
-vi.mock("@mms/fe-core/i18n", () => ({
+vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
+  useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
+}));
+
+vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
   useTranslation: () => ({
     t: (key: string, params?: Record<string, string | number>) =>
       params ? `${key} ${Object.values(params).join(" ")}` : key,
@@ -16,7 +22,8 @@ vi.mock("./hooks/useAccountingCurrency", () => ({
   useAccountingCurrency: () => ({ formatCurrency: (val: number) => `$${val}` }),
 }));
 
-vi.mock("@/hooks/useWorkDirectoryViewMode", () => ({
+vi.mock("@mms/fe-core/tenant", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
   useWorkDirectoryViewMode: () => ({
     viewMode: "table" as const,
     setViewMode: vi.fn(),

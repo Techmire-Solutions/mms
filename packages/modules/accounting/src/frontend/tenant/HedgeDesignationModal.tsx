@@ -15,12 +15,12 @@ import { Input } from "@mms/ui";
 import { Textarea } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { useZodDraftForm } from "@mms/fe-core/forms/useZodDraftForm";
-import { accountOptions } from "@mms/mod-accounting/frontend/tenant";
+import { accountOptions } from "./index";
 import {
   emptyHedgeDesignationDraft,
   hedgeDesignationToRecord,
   type HedgeDesignationDraft,
-} from "@mms/mod-accounting/frontend/tenant";
+} from "./index";
 
 interface HedgeDesignationModalProps {
   open: boolean;

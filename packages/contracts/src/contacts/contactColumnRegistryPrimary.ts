@@ -80,8 +80,7 @@ export const CONTACT_PRIMARY_COLUMNS: ColumnRegistryEntry[] = [
     labelKey: "contacts.columns.lunarDob",
     enabled: true,
     order: 8,
-    sortable: true,
-    sortField: "dob",
+    sortable: false,
     width: 150,
   },
   {

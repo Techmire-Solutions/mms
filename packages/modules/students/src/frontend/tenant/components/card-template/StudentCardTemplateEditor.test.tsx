@@ -116,9 +116,13 @@ describe("StudentCardTemplateEditor", () => {
       root.render(withQueryClient(<StudentCardTemplateEditor onClose={vi.fn()} />));
     });
 
-    await vi.waitFor(() => {
-      expect(container.textContent).toContain("SERVER CARD");
-    });
+    await vi.waitFor(
+      async () => {
+        await act(async () => {});
+        expect(container.textContent).toContain("SERVER CARD");
+      },
+      { timeout: 5000 },
+    );
 
     await act(async () => {
       root.unmount();

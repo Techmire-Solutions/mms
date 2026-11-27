@@ -37,6 +37,10 @@
       "import": "./dist/i18n/appTranslationsFa.js",
       "default": "./dist/i18n/appTranslationsFa.js",
       "types": "./dist/i18n/appTranslationsFa.d.ts"
+    },
+    "./routing": {
+      "types": "./dist/routing/index.d.ts",
+      "import": "./dist/routing/index.js"
     }
   },
   "scripts": {

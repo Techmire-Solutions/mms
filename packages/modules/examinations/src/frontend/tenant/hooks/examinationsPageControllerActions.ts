@@ -1,0 +1,156 @@
+import type { TranslationFunction } from "@mms/fe-core/i18n";
+import { type Exam, type ExamResult } from "@mms/contracts";
+import { notify } from "@mms/fe-core/notify";
+import { NotifiedMutationError } from "@mms/fe-core/lib/notifiedMutationError";
+
+export interface ExaminationsMutationDeps {
+  exams: Exam[];
+  examResults: ExamResult[];
+  t: TranslationFunction;
+  replaceExams: { mutateAsync: (exams: Exam[]) => Promise<unknown> };
+  replaceExamResults: { mutateAsync: (results: ExamResult[]) => Promise<unknown> };
+  deleteExam: { mutateAsync: (id: string) => Promise<unknown> };
+  restoreExam: { mutateAsync: (id: string) => Promise<unknown> };
+  bulkDeleteExams: {
+    mutateAsync: (ids: string[]) => Promise<{ succeeded: number; failed: number }>;
+  };
+  bulkRestoreExams: {
+    mutateAsync: (ids: string[]) => Promise<{ succeeded: number; failed: number }>;
+  };
+  setShowExamForm: (open: boolean) => void;
+  setEditExam: (exam: Exam | null) => void;
+}
+
+export function createExaminationsNotifySaveFailure(t: TranslationFunction) {
+  return (error: unknown) => {
+    if (error instanceof NotifiedMutationError) return;
+    notify.error(t("examinations.saveFailed"), {
+      description: error instanceof Error ? error.message : String(error),
+    });
+  };
+}
+
+export function createExaminationsSaveExamHandler(deps: ExaminationsMutationDeps) {
+  const notifySaveFailure = createExaminationsNotifySaveFailure(deps.t);
+
+  return async (exam: Exam): Promise<void> => {
+    const existingExam = deps.exams.find((candidate: any) => candidate.id === exam.id);
+    try {
+      await deps.replaceExams.mutateAsync(
+        existingExam
+          ? deps.exams.map((candidate: any) => (candidate.id === exam.id ? exam : candidate))
+          : [...deps.exams, exam],
+      );
+      deps.setShowExamForm(false);
+      deps.setEditExam(null);
+    } catch (error: unknown) {
+      notifySaveFailure(error);
+      throw new NotifiedMutationError(error instanceof Error ? error.message : String(error));
+    }
+  };
+}
+
+export function createExaminationsSaveResultsHandler(
+  deps: Pick<ExaminationsMutationDeps, "replaceExamResults" | "t">,
+) {
+  const notifySaveFailure = createExaminationsNotifySaveFailure(deps.t);
+
+  return async (_examId: string, newResults: ExamResult[]): Promise<void> => {
+    try {
+      // Send only the rows being saved. The endpoint upserts by (exam, student), so re-sending the
+      // rest of the collection bought nothing — and it actively broke OCC: a stale version on an
+      // untouched exam would have refused the whole batch with 409. It also kept every save's
+      // payload proportional to the workspace's total marks history instead of one roster.
+      await deps.replaceExamResults.mutateAsync(newResults);
+    } catch (error: unknown) {
+      notifySaveFailure(error);
+      throw new NotifiedMutationError(error instanceof Error ? error.message : String(error));
+    }
+  };
+}
+
+export function createExaminationsDeleteExamHandler(
+  deps: Pick<ExaminationsMutationDeps, "deleteExam" | "t">,
+) {
+  return async (id: string) => {
+    try {
+      await deps.deleteExam.mutateAsync(id);
+      notify.success(deps.t("examinations.trash.deleted"));
+    } catch (error: unknown) {
+      notify.error(deps.t("examinations.trash.actionFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  };
+}
+
+export function createExaminationsRestoreExamHandler(
+  deps: Pick<ExaminationsMutationDeps, "restoreExam" | "t">,
+) {
+  return async (id: string) => {
+    try {
+      await deps.restoreExam.mutateAsync(id);
+      notify.success(deps.t("examinations.trash.restored"));
+    } catch (error: unknown) {
+      notify.error(deps.t("examinations.trash.actionFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  };
+}
+
+export function createExaminationsBulkDeleteHandler(
+  deps: Pick<ExaminationsMutationDeps, "bulkDeleteExams" | "t">,
+) {
+  return async (ids: string[]) => {
+    try {
+      const result = await deps.bulkDeleteExams.mutateAsync(ids);
+      if (result.failed > 0) {
+        notify.warning(
+          deps.t("examinations.trash.bulkPartial", {
+            succeeded: result.succeeded,
+            failed: result.failed,
+          }),
+        );
+      } else if (result.succeeded > 1) {
+        notify.success(deps.t("examinations.trash.bulkDeleted", { count: result.succeeded }));
+      } else {
+        notify.success(deps.t("examinations.trash.deleted"));
+      }
+    } catch (error: unknown) {
+      notify.error(deps.t("examinations.trash.actionFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  };
+}
+
+export function createExaminationsBulkRestoreHandler(
+  deps: Pick<ExaminationsMutationDeps, "bulkRestoreExams" | "t">,
+) {
+  return async (ids: string[]) => {
+    try {
+      const result = await deps.bulkRestoreExams.mutateAsync(ids);
+      if (result.failed > 0) {
+        notify.warning(
+          deps.t("examinations.trash.bulkPartial", {
+            succeeded: result.succeeded,
+            failed: result.failed,
+          }),
+        );
+      } else if (result.succeeded > 1) {
+        notify.success(deps.t("examinations.trash.bulkRestored", { count: result.succeeded }));
+      } else {
+        notify.success(deps.t("examinations.trash.restored"));
+      }
+    } catch (error: unknown) {
+      notify.error(deps.t("examinations.trash.actionFailed"), {
+        description: error instanceof Error ? error.message : String(error),
+      });
+      throw error;
+    }
+  };
+}

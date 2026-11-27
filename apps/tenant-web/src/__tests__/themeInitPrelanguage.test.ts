@@ -7,7 +7,7 @@ import { getLanguageDirection } from "@mms/contracts";
 import { ENTRY_PATHS, ROUTES } from "@mms/fe-core/config/routes";
 import { TENANT_PATHS } from "@/lib/routing/moduleRegistry";
 
-// Vitest runs with the frontend package as cwd (`pnpm --filter mms-frontend test`).
+// Vitest runs with the tenant-web package as cwd (`pnpm --filter mms-tenant-web test`).
 const THEME_INIT_PATH = path.resolve(process.cwd(), "public/theme-init.js");
 const themeInitSource = readFileSync(THEME_INIT_PATH, "utf8");
 

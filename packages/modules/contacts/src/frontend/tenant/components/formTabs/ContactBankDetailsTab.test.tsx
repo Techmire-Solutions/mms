@@ -221,8 +221,8 @@ describe("ContactBankDetailsTab Component", () => {
     expect(html).toContain("Meezan Bank");
     expect(html).toContain("HBL");
     expect(html).toContain("contacts.fields.bankName");
-    expect(html).toContain('data-testid="card-type-select"');
-    expect(html).not.toContain("contacts.form.bankAccountSequence");
+    expect(html).toContain("contacts.form.bankAccountSequence:1");
+    expect(html).toContain("contacts.form.bankAccountSequence:2");
     expect(html).not.toContain("contacts.form.primary");
     expect(html).not.toContain("contacts.form.setPrimary");
   });

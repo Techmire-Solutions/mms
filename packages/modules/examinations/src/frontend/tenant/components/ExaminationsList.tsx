@@ -1,0 +1,195 @@
+import React, { useEffect, useRef } from "react";
+import { useTranslation } from "@mms/fe-core/i18n";
+import { ModuleWorkListStateShell } from "@mms/fe-core/components/ModuleWorkListStateShell";
+import { useExamSelection } from "../hooks/useExamSelection";
+import { useSessionsCollection } from "../host/useSessions";
+import { useEnrollmentsCollection } from "../host/useEnrollments";
+import { ExaminationsListContent } from "./ExaminationsListContent";
+import { ExaminationsListFilters } from "./ExaminationsListFilters";
+import { ExaminationsBulkActionBar } from "./ExaminationsBulkActionBar";
+import { ExaminationsTrashDialogs } from "./ExaminationsTrashDialogs";
+import {
+  resolveExaminationStatusConfig,
+  resolveExaminationStatusLabels,
+} from "../lib/examinationStatusConfig";
+import { useWorkDirectoryViewMode } from "@mms/fe-core/tenant";
+import { useExaminationsTrashState } from "../hooks/useExaminationsTrashState";
+import { useExaminationsDirectoryQuery } from "../hooks/useExaminationsDirectoryQuery";
+import type { ExaminationsListProps } from "../lib/examinationsListTypes";
+
+export type { ExaminationsListProps };
+
+const ALWAYS_COLUMN_VISIBLE = (_key: string): boolean => true;
+
+/**
+ * Renders the dashboard list of created exams (cards or table) — server-paged.
+ */
+export default function ExaminationsList(props: ExaminationsListProps): React.JSX.Element {
+  const {
+    onNew,
+    onEdit,
+    canWrite = true,
+    canDelete = false,
+    showDeleted = false,
+    onToggleDeleted,
+    createRequestKey = 0,
+    onDelete,
+    onRestore,
+    onBulkDelete,
+    onBulkRestore,
+    isColumnVisible,
+    getColumnWidth,
+    onColumnResize,
+    columnCustomizer,
+    onRowClick,
+  } = props;
+  const { t } = useTranslation();
+  const { viewMode, setViewMode } = useWorkDirectoryViewMode();
+  const query = useExaminationsDirectoryQuery(props);
+
+  const sessions = useSessionsCollection();
+  const enrollments = useEnrollmentsCollection();
+  const classes = sessions.flatMap((session: any) =>
+    (session.classes || []).map((sessionClass: any) => ({
+      id: sessionClass.id,
+      name: `${session.name} - ${sessionClass.name}`,
+    })),
+  );
+
+  const statusLabels = resolveExaminationStatusLabels(t);
+
+  // Latest-callback ref: `onNew` is an inline closure on the page, so including it in the effect
+  // deps would re-fire the open on every parent render while `createRequestKey > 0`. Writing the
+  // ref in an effect keeps render pure and lets the effect depend only on the trigger key.
+  const onNewRef = useRef(onNew);
+  useEffect(() => {
+    onNewRef.current = onNew;
+  });
+
+  useEffect(() => {
+    if (createRequestKey > 0 && canWrite && !showDeleted) onNewRef.current();
+  }, [createRequestKey, canWrite, showDeleted]);
+
+  const {
+    selectedIds,
+    setSelectedIds,
+    allVisibleSelected,
+    someVisibleSelected,
+    toggleSelectAll,
+    toggleSelectedExam,
+  } = useExamSelection(query.pageExams);
+
+  const trash = useExaminationsTrashState({
+    ...props,
+    selectedIds,
+    onClearSelection: () => setSelectedIds([]),
+  });
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [showDeleted, query.listPage, query.debouncedSearch, query.filterStatus, setSelectedIds]);
+
+  const columnVisible = isColumnVisible ?? ALWAYS_COLUMN_VISIBLE;
+  const statusConfig = resolveExaminationStatusConfig(statusLabels);
+  const canBulkTrash = canDelete && Boolean(showDeleted ? onBulkRestore : onBulkDelete);
+  const isInitialLoading = query.examsPageQuery.isPending && !query.examsPageQuery.data;
+  const isError =
+    query.examsPageQuery.isError ||
+    (query.examsPageQuery.data != null && query.examsPageQuery.data.status !== 200);
+
+  return (
+    <section
+      className="space-y-4"
+      aria-label={t("examinations.exams")}
+      aria-busy={query.examsPageQuery.isFetching}
+    >
+      <ExaminationsListFilters
+        viewMode={viewMode}
+        onViewModeChange={setViewMode}
+        search={query.search}
+        filterStatus={query.filterStatus}
+        canWrite={canWrite}
+        canDelete={canDelete}
+        showDeleted={showDeleted}
+        onToggleDeleted={onToggleDeleted}
+        columnCustomizer={columnCustomizer}
+        statusLabels={statusLabels}
+        onSearchChange={query.setSearch}
+        onToggleStatus={query.toggleStatus}
+        onClearStatuses={query.clearStatuses}
+        onNew={onNew}
+      />
+
+      {canBulkTrash && (
+        <ExaminationsBulkActionBar
+          selectedCount={selectedIds.length}
+          showDeleted={showDeleted}
+          canDelete={canDelete}
+          onRequestBulkDelete={() => trash.setConfirmBulkOpen(true)}
+          onRequestBulkRestore={() => trash.setConfirmBulkOpen(true)}
+          onClearSelection={() => setSelectedIds([])}
+        />
+      )}
+
+      <ModuleWorkListStateShell
+        isError={isError}
+        isLoading={isInitialLoading}
+        isFetching={query.examsPageQuery.isFetching}
+        onRetry={() => {
+          void query.examsPageQuery.refetch();
+        }}
+        errorTitle={t("examinations.loadFailed")}
+        errorHint={t("examinations.loadFailedHint")}
+        viewMode={viewMode}
+        skeletonColumnCount={6}
+        useServerWork={true}
+        pageData={{
+          page: query.serverPage,
+          total: query.serverTotal,
+          limit: query.serverLimit,
+          hasMore: query.serverHasMore,
+        }}
+        onPageChange={query.setListPage}
+        i18nNamespace="examinations"
+        showPagination={true}
+        loadingLabel={t("common.loading")}
+      >
+        <ExaminationsListContent
+          viewMode={viewMode}
+          exams={query.pageExams}
+          selectedIds={selectedIds}
+          isColumnVisible={columnVisible}
+          classes={classes}
+          enrollments={enrollments}
+          allVisibleSelected={allVisibleSelected}
+          someVisibleSelected={someVisibleSelected}
+          canWrite={canWrite}
+          canDelete={canDelete}
+          showDeleted={showDeleted}
+          canTrashRows={canDelete && Boolean(showDeleted ? onRestore : onDelete)}
+          statusConfig={statusConfig}
+          getColumnWidth={getColumnWidth}
+          onColumnResize={onColumnResize}
+          onEdit={onEdit}
+          onToggleSelectAll={toggleSelectAll}
+          onToggleSelectedExam={toggleSelectedExam}
+          onRowClick={onRowClick}
+          onTrashAction={(id: any) => {
+            if (showDeleted) void onRestore?.(id);
+            else trash.setPendingTrashId(id);
+          }}
+        />
+      </ModuleWorkListStateShell>
+      <ExaminationsTrashDialogs
+        pendingTrashId={trash.pendingTrashId}
+        onPendingTrashIdChange={trash.setPendingTrashId}
+        confirmBulkOpen={trash.confirmBulkOpen}
+        onConfirmBulkOpenChange={trash.setConfirmBulkOpen}
+        showDeleted={showDeleted}
+        selectedCount={selectedIds.length}
+        onConfirmRowTrash={trash.confirmRowTrash}
+        onConfirmBulkTrash={trash.confirmBulkTrash}
+      />
+    </section>
+  );
+}

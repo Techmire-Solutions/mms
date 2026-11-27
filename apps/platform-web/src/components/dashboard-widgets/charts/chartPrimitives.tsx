@@ -1,7 +1,7 @@
 import type { TooltipContentProps } from "recharts";
 import { ChartTooltip } from "@/components/app/ChartTooltip";
 import { useTranslation } from "@mms/fe-core/i18n";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 
 /** Shared `axisLine`/`tickLine` props for dashboard chart axes (repeated 8× before extraction). */
 export const CHART_AXIS_LINE_PROPS = { axisLine: false, tickLine: false } as const;

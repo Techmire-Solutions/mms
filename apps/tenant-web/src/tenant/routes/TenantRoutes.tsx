@@ -10,6 +10,7 @@ import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AuthPageFrame } from "@/components/entry";
 import { ErrorState } from "@mms/fe-core/components/ErrorState";
 import { useTranslation } from "@mms/fe-core/i18n";
+import { loadLoginPage } from "@/tenant/routes/preloadLogin";
 
 const ModuleAccessRoute = React.lazy(() => import("@/tenant/components/guards/ModuleAccessRoute"));
 const RequirePermission = React.lazy(() => import("@/tenant/components/guards/RequirePermission"));
@@ -22,8 +23,7 @@ const WorkspaceDisabledScreen = React.lazy(
 
 const AppLayout = React.lazy(() => import("@/tenant/components/layout/AppLayout"));
 const PageNotFound = React.lazy(() => import("@/tenant/components/PageNotFound"));
-
-const Login = React.lazy(() => import("@/tenant/pages/auth/Login"));
+const Login = React.lazy(loadLoginPage);
 const ForgotPassword = React.lazy(() => import("@/tenant/pages/auth/ForgotPassword"));
 const TwoFactorAuth = React.lazy(() => import("@/tenant/pages/auth/TwoFactorAuth"));
 const ForcePasswordChange = React.lazy(() => import("@/tenant/pages/auth/ForcePasswordChange"));

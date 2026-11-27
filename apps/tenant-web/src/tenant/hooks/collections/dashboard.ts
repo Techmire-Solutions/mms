@@ -16,7 +16,7 @@ export {
   useDashboardWidgetDeleteMutation,
   useDashboardWidgetsReorderMutation,
   useDashboardSummaryQuery,
-} from "@/tenant/features/dashboard/hooks/useDashboardSetupConfig";
+} from "@mms/mod-analytics/frontend/tenant/features/dashboard/hooks/useDashboardSetupConfig";
 export { invalidateDashboardDataQueries } from "@mms/fe-core/query/dashboardDataInvalidation";
-export { useDashboardData } from "@/tenant/features/dashboard/hooks/useDashboardData";
-export { percentChange } from "@/tenant/features/dashboard/hooks/dashboardMetricTrends";
+export { useDashboardData } from "@mms/mod-analytics/frontend/tenant/features/dashboard/hooks/useDashboardData";
+export { percentChange } from "@mms/mod-analytics/frontend/tenant/features/dashboard/hooks/dashboardMetricTrends";

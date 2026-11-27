@@ -1,12 +1,12 @@
 import React from "react";
 import type { AppTranslationKey } from "@mms/contracts";
 import { Download } from "lucide-react";
-import { ACCOUNT_TYPE_META, type Account } from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPE_META, type Account } from "./index";
 import { Button } from "@mms/ui";
 import { Badge } from "@mms/ui";
 import { Card } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { useAccountingCurrency } from "@mms/mod-accounting/frontend/tenant";
+import { useAccountingCurrency } from "./index";
 
 interface GeneralLedgerAccountSummaryProps {
   activeAccount: Account;

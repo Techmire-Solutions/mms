@@ -1,5 +1,5 @@
 import type React from "react";
-import { MapPin, Building, Landmark } from "lucide-react";
+import { MapPin, Building } from "lucide-react";
 import {
   CardPrimaryButton,
   EditableSelect,
@@ -13,7 +13,7 @@ import { cn } from "@mms/ui";
 import { FORM_INPUT_ERROR } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { resolveAddressLabel } from "@mms/fe-core/lib/contactI18n";
-import type { Address } from "@mms/contracts";
+import { getProvincesForCountry, type Address } from "@mms/contracts";
 
 export interface ContactAddressEntryCardProps {
   addr: Address;
@@ -165,17 +165,16 @@ export function ContactAddressEntryCard({
                 error={stateError}
                 id={`cf-${formInstanceId}-address-state-${idx}`}
               >
-                <LeadingIconInput
-                  icon={Landmark}
+                <EditableSelect
                   id={`cf-${formInstanceId}-address-state-${idx}`}
                   name={`cf-${formInstanceId}-address-state-${idx}`}
-                  autoComplete="address-level1"
-                  autoCapitalize="words"
-                  enterKeyHint="next"
+                  options={getProvincesForCountry(
+                    addr.country || defaultCountry || countryOptions[0],
+                  )}
                   value={addr.state || ""}
-                  onChange={(e) => onUpdateAddress({ state: e.target.value })}
+                  onChange={(val) => onUpdateAddress({ state: val })}
                   placeholder={t("contacts.fields.state")}
-                  className={cn(stateError && FORM_INPUT_ERROR)}
+                  className={cn("w-full min-w-0", stateError && FORM_INPUT_ERROR)}
                 />
               </Field>
             ) : null}
@@ -189,7 +188,15 @@ export function ContactAddressEntryCard({
                 <EditableSelect
                   options={countryOptions}
                   value={addr.country || defaultCountry || countryOptions[0] || ""}
-                  onChange={(val) => onUpdateAddress({ country: val })}
+                  onChange={(val) => {
+                    const nextProvinces = getProvincesForCountry(val);
+                    const currentState = addr.state?.trim() ?? "";
+                    const keepState =
+                      !currentState ||
+                      nextProvinces.length === 0 ||
+                      nextProvinces.some((p) => p.toLowerCase() === currentState.toLowerCase());
+                    onUpdateAddress(keepState ? { country: val } : { country: val, state: "" });
+                  }}
                   onUpdateOptions={onUpdateCountryOptions}
                   className="w-full min-w-0"
                   id={`cf-${formInstanceId}-address-country-${idx}`}

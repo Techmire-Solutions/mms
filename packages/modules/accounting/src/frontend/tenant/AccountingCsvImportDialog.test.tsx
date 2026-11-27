@@ -3,11 +3,17 @@ import { createRoot, type Root } from "react-dom/client";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { AccountingCsvImportDialog } from "./AccountingCsvImportDialog";
 
+vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
+  useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
+}));
+
 vi.mock("@mms/fe-core/api/download", () => ({
   triggerFileDownload: vi.fn(),
 }));
 
-vi.mock("@mms/fe-core/notify", () => ({
+vi.mock("@mms/fe-core/notify", async (importOriginal) => ({
+  ...(await importOriginal<any>()),
   notify: {
     success: vi.fn(),
     error: vi.fn(),

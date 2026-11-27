@@ -284,6 +284,9 @@ importers:
       '@mms/mod-accounting':
         specifier: workspace:*
         version: link:../../packages/modules/accounting
+      '@mms/mod-attendance':
+        specifier: workspace:*
+        version: link:../../packages/modules/attendance
       '@mms/mod-billing':
         specifier: workspace:*
         version: link:../../packages/modules/billing
@@ -311,6 +314,9 @@ importers:
       '@mms/mod-students':
         specifier: workspace:*
         version: link:../../packages/modules/students
+      '@mms/mod-tasks':
+        specifier: workspace:*
+        version: link:../../packages/modules/tasks
       '@mms/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -528,6 +534,9 @@ importers:
       '@mms/mod-accounting':
         specifier: workspace:*
         version: link:../../packages/modules/accounting
+      '@mms/mod-analytics':
+        specifier: workspace:*
+        version: link:../../packages/modules/analytics
       '@mms/mod-attendance':
         specifier: workspace:*
         version: link:../../packages/modules/attendance
@@ -540,6 +549,9 @@ importers:
       '@mms/mod-enrollments':
         specifier: workspace:*
         version: link:../../packages/modules/enrollments
+      '@mms/mod-examinations':
+        specifier: workspace:*
+        version: link:../../packages/modules/examinations
       '@mms/mod-faculty':
         specifier: workspace:*
         version: link:../../packages/modules/faculty
@@ -552,6 +564,15 @@ importers:
       '@mms/mod-messaging':
         specifier: workspace:*
         version: link:../../packages/modules/messaging
+      '@mms/mod-notifications':
+        specifier: workspace:*
+        version: link:../../packages/modules/notifications
+      '@mms/mod-obligations':
+        specifier: workspace:*
+        version: link:../../packages/modules/obligations
+      '@mms/mod-question-bank':
+        specifier: workspace:*
+        version: link:../../packages/modules/question-bank
       '@mms/mod-sessions':
         specifier: workspace:*
         version: link:../../packages/modules/sessions
@@ -561,6 +582,9 @@ importers:
       '@mms/mod-tasks':
         specifier: workspace:*
         version: link:../../packages/modules/tasks
+      '@mms/mod-workshops':
+        specifier: workspace:*
+        version: link:../../packages/modules/workshops
       '@mms/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -1031,6 +1055,9 @@ importers:
 
   packages/modules/accounting:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^7.0.8
+        version: 7.0.8(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(zod@4.6.7)
       '@mms/be-core':
         specifier: workspace:*
         version: link:../../be-core
@@ -1058,14 +1085,29 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      html2canvas:
+        specifier: ^1.4.1
+        version: 1.4.1
+      jspdf:
+        specifier: ^4.2.1
+        version: 4.2.1
       lru-cache:
         specifier: ^11.5.3
         version: 11.5.3
       lucide-react:
         specifier: ^1.78.0
         version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-hook-form:
+        specifier: ^7.92.0
+        version: 7.92.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: ^7.18.6
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       recharts:
-        specifier: ^3.11.0
+        specifier: ^3.3.0
         version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
       zod:
         specifier: 'catalog:'
@@ -1110,6 +1152,9 @@ importers:
 
   packages/modules/analytics:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^7.0.8
+        version: 7.0.8(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(zod@4.6.7)
       '@mms/be-core':
         specifier: workspace:*
         version: link:../../be-core
@@ -1119,9 +1164,45 @@ importers:
       '@mms/db':
         specifier: workspace:*
         version: link:../../db
+      '@mms/fe-core':
+        specifier: workspace:*
+        version: link:../../fe-core
+      '@mms/ui':
+        specifier: workspace:*
+        version: link:../../ui
+      '@tanstack/react-query':
+        specifier: 'catalog:'
+        version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-virtual':
+        specifier: ^3.13.0
+        version: 3.14.28(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      html2canvas:
+        specifier: ^1.4.1
+        version: 1.4.1
+      jspdf:
+        specifier: ^4.2.1
+        version: 4.2.1
+      jspdf-autotable:
+        specifier: ^5.0.9
+        version: 5.0.9(jspdf@4.2.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-hook-form:
+        specifier: ^7.92.0
+        version: 7.92.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: ^7.18.6
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.3.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
     devDependencies:
       '@mms/eslint-config':
         specifier: workspace:*
@@ -1660,6 +1741,9 @@ importers:
 
   packages/modules/examinations:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^7.0.8
+        version: 7.0.8(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(zod@4.6.7)
       '@mms/be-core':
         specifier: workspace:*
         version: link:../../be-core
@@ -1678,6 +1762,9 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-virtual':
+        specifier: ^3.13.0
+        version: 3.14.28(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@ts-rest/core':
         specifier: ^3.52.1
         version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
@@ -1687,6 +1774,21 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-hook-form:
+        specifier: ^7.92.0
+        version: 7.92.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: ^7.18.6
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      recharts:
+        specifier: ^3.3.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -1900,6 +2002,9 @@ importers:
 
   packages/modules/iam:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^7.0.8
+        version: 7.0.8(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(zod@4.6.7)
       '@mms/be-core':
         specifier: workspace:*
         version: link:../../be-core
@@ -1918,6 +2023,9 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-virtual':
+        specifier: ^3.14.28
+        version: 3.14.28(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@ts-rest/core':
         specifier: ^3.52.1
         version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
@@ -1927,6 +2035,18 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-hook-form:
+        specifier: ^7.92.0
+        version: 7.92.0(@types/react@19.3.0)(react@19.3.1)
+      react-router-dom:
+        specifier: 'catalog:'
+        version: 7.18.6(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -2088,6 +2208,9 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -2158,6 +2281,21 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      html2canvas:
+        specifier: ^1.4.1
+        version: 1.4.1
+      jspdf:
+        specifier: ^4.2.1
+        version: 4.2.1
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      recharts:
+        specifier: ^3.3.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -2289,6 +2427,9 @@ importers:
 
   packages/modules/question-bank:
     dependencies:
+      '@hookform/resolvers':
+        specifier: ^7.0.8
+        version: 7.0.8(@standard-schema/spec@1.1.0)(ajv-formats@3.0.1(ajv@8.20.0))(ajv@8.20.0)(react-hook-form@7.92.0(@types/react@19.3.0)(react@19.3.1))(zod@4.6.7)
       '@mms/be-core':
         specifier: workspace:*
         version: link:../../be-core
@@ -2307,6 +2448,9 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.108.4(@types/react@19.3.0)(react@19.3.1)
+      '@tanstack/react-virtual':
+        specifier: ^3.13.0
+        version: 3.14.28(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@ts-rest/core':
         specifier: ^3.52.1
         version: 3.52.1(@types/node@26.6.6)(zod@4.6.7)
@@ -2316,6 +2460,18 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
+      react-hook-form:
+        specifier: ^7.92.0
+        version: 7.92.0(@types/react@19.3.0)(react@19.3.1)
+      recharts:
+        specifier: ^3.3.0
+        version: 3.11.0(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react-is@16.13.1)(react@19.3.1)(redux@5.0.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.7
@@ -2650,6 +2806,12 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      framer-motion:
+        specifier: ^14.14.0
+        version: 14.14.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.7

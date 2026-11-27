@@ -56,6 +56,21 @@ test("a file only a test imports is not reported as dead", () => {
   assert.equal(report.unreachable, 0, "test graphs keep their imported sources alive");
 });
 
+test("a config-referenced file is never reported as dead", () => {
+  const root = makeRepo({
+    "apps/demo/src/main.tsx": "export const main = 1;\n",
+    // Loaded by path from vitest.config.ts, invisible to an import graph. Round 46 deleted this as
+    // "dead" and took the whole suite down.
+    "apps/demo/src/test/setup.ts": "export const setup = 1;\n",
+    "apps/demo/vitest.config.ts":
+      'export default { test: { setupFiles: ["./src/test/setup.ts"] } };\n',
+    "apps/demo/src/orphan.d.ts": "declare const x: number;\n",
+  });
+  const report = analyseApp(path.join(root, "apps/demo"), { repoRoot: root });
+  const deadRel = report.dead ?? [];
+  assert.equal(deadRel.length, 0, `expected no dead files, got ${deadRel.join(", ")}`);
+});
+
 test("duplicates mode separates exact copies from files with no twin", () => {
   const root = makeRepo({
     "apps/demo/src/main.tsx": "export const main = 1;\n",

@@ -1,3 +1,62 @@
+const REDIS_STORE = vi.hoisted(() => new Map<string, string>());
+vi.mock("../../../../packages/be-core/dist/redis/client.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../../packages/be-core/dist/redis/client.js")>()),
+  checkIsRedisConnected: () => true,
+  getRedisClient: () => ({
+    get: async (k: string) => REDIS_STORE.get(k) ?? null,
+    set: async (k: string, v: string) => {
+      REDIS_STORE.set(k, v);
+      return "OK";
+    },
+    del: async (k: string) => (REDIS_STORE.delete(k) ? 1 : 0),
+  }),
+  getRedisConnectionState: () => "ready",
+}));
+vi.mock("../../../../packages/be-core/dist/redis/cacheOperations.js", async (importOriginal) => ({
+  ...(await importOriginal<
+    typeof import("../../../../packages/be-core/dist/redis/cacheOperations.js")
+  >()),
+  redisGet: async (k: string) => REDIS_STORE.get(k) ?? null,
+  redisSet: async (k: string, v: string) => {
+    REDIS_STORE.set(k, v);
+  },
+  redisDel: async (k: string) => {
+    REDIS_STORE.delete(k);
+  },
+  redisExists: async (k: string) => REDIS_STORE.has(k),
+  redisBatch: async () => [],
+}));
+vi.mock("../../../../packages/be-core/dist/redis/index.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../../../packages/be-core/dist/redis/index.js")>()),
+  redisGet: async (k: string) => REDIS_STORE.get(k) ?? null,
+  redisSet: async (k: string, v: string) => {
+    REDIS_STORE.set(k, v);
+  },
+  redisDel: async (k: string) => {
+    REDIS_STORE.delete(k);
+  },
+  redisGetStrict: async (k: string) => REDIS_STORE.get(k) ?? null,
+}));
+vi.mock("../lib/redis.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../lib/redis.js")>()),
+  redisGet: async (k: string) => REDIS_STORE.get(k) ?? null,
+  redisGetStrict: async (k: string) => REDIS_STORE.get(k) ?? null,
+  redisSet: async (k: string, v: string) => {
+    REDIS_STORE.set(k, v);
+  },
+  redisDel: async (k: string) => {
+    REDIS_STORE.delete(k);
+  },
+  getRedisClient: () => ({
+    get: async (k: string) => REDIS_STORE.get(k) ?? null,
+    set: async (k: string, v: string) => {
+      REDIS_STORE.set(k, v);
+      return "OK";
+    },
+    del: async (k: string) => (REDIS_STORE.delete(k) ? 1 : 0),
+  }),
+}));
+
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hashRefreshToken } from "../services/auth/authCookieService.js";
 import { ContactUniqueFieldError } from "@mms/mod-contacts/backend/services";

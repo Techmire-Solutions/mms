@@ -3,8 +3,8 @@ import { Filter } from "lucide-react";
 import { ModuleFilterDropdown, ModuleFilterRadioGroup } from "@mms/ui/app/ModuleFiltersMenuButton";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { JOURNAL_ENTRY_STATUSES, type AppTranslationKey } from "@mms/contracts";
-import { JOURNAL_TAGS } from "@mms/mod-accounting/frontend/tenant";
-import { getJournalTagLabel } from "@mms/mod-accounting/frontend/tenant";
+import { JOURNAL_TAGS } from "./index";
+import { getJournalTagLabel } from "./index";
 
 interface AccountingFiltersMenuButtonProps {
   statusFilter: string;

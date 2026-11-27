@@ -15,7 +15,7 @@ vi.mock("@/lib/db", () => ({
   getCollection: (...args: unknown[]) => getCollection(...args),
 }));
 
-import { findCachedCollectionRecord, readQueryCollection } from "@/lib/queryCacheCollections";
+import { findCachedCollectionRecord, readQueryCollection } from "./queryCacheCollections";
 
 describe("queryCacheCollections", () => {
   beforeEach(() => {

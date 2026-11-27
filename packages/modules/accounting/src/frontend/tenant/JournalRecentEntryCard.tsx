@@ -4,10 +4,10 @@ import { Badge } from "@mms/ui";
 import { Card } from "@mms/ui";
 import { StatusBadge, type StatusBadgeConfigItem } from "@mms/fe-core/components/StatusBadge";
 import { useTranslation } from "@mms/fe-core/i18n";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
-import { resolveEntryDirection } from "@mms/mod-accounting/frontend/tenant";
-import { getJournalEntryLineTotals, getJournalTagLabel } from "@mms/mod-accounting/frontend/tenant";
-import { PaymentVoucherPrintButton } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "./index";
+import { resolveEntryDirection } from "./index";
+import { getJournalEntryLineTotals, getJournalTagLabel } from "./index";
+import { PaymentVoucherPrintButton } from "./index";
 
 interface JournalRecentEntryCardProps {
   entry: JournalEntry;

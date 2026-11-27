@@ -63,7 +63,7 @@ export const WORK_SURFACE_INNER = "rounded-xl border border-foreground/8 bg-mute
 export const OVERLAY_BACKDROP = "bg-background/80 backdrop-blur-xs";
 
 /** Sticky Work directory table header cells (checkbox / frozen name cols). */
-export const WORK_STICKY_HEAD = "bg-card/95 border-b border-border/80";
+export const WORK_STICKY_HEAD = "bg-card border-b border-border/80";
 
 /** Work toolbar filter / trash / clear trigger base. */
 export const WORK_TOOLBAR_TRIGGER =

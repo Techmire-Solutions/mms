@@ -1,7 +1,7 @@
 import { memo } from "react";
 import { Trash2 } from "lucide-react";
 import type { AppTranslationKey } from "@mms/contracts";
-import { ACCOUNT_TYPE_META, type Account } from "@mms/mod-accounting/frontend/tenant";
+import { ACCOUNT_TYPE_META, type Account } from "./index";
 import { Button } from "@mms/ui";
 import { Badge } from "@mms/ui";
 import { FieldErrorMessage } from "@mms/ui";
@@ -9,7 +9,7 @@ import { FormSelectWithQuickCreate } from "@mms/fe-core/components/FormSelectWit
 import { Input } from "@mms/ui";
 import { TableCell, TableRow } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import type { DraftLine } from "@mms/mod-accounting/frontend/tenant";
+import type { DraftLine } from "./index";
 import type { JournalAmountSide } from "./hooks/useJournalLineAssist";
 
 interface JournalEntryLineRowProps {

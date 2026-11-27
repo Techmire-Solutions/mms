@@ -6,7 +6,7 @@ export {
   WORKSHOPS_QUERY_KEY,
   WORKSHOPS_LIST_QUERY_KEY,
   WORKSHOP_DETAIL_QUERY_KEY,
-} from "@/tenant/features/workshops/hooks/workshopsQueryKeys";
+} from "@mms/mod-workshops/frontend/tenant/hooks/workshopsQueryKeys";
 
 export {
   useWorkshops,
@@ -22,4 +22,4 @@ export {
   useSaveWorkshopAttendance,
   useSaveWorkshopScores,
   invalidateWorkshopsQueries,
-} from "@/tenant/features/workshops/hooks/useWorkshopsApi";
+} from "@mms/mod-workshops/frontend/tenant/hooks/useWorkshopsApi";

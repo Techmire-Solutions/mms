@@ -124,7 +124,7 @@ export function ContactBasicAvatarSection({
         <div className="absolute -inset-1 rounded-2xl bg-gradient-to-tr from-primary/30 via-accent/30 to-secondary/30 group-hover:from-primary/60 group-hover:via-accent/60 group-hover:to-secondary/60 blur-subtle transition-all duration-500 opacity-75 group-hover:opacity-100" />
         <div
           className={cn(
-            "relative w-20 h-20 rounded-2xl bg-card overflow-hidden flex items-center justify-center border-2 border-border/80 shadow-surface transition-all duration-300 group-hover:scale-105",
+            "relative isolate w-20 h-20 rounded-2xl bg-card overflow-hidden flex items-center justify-center border-2 border-border/80 shadow-surface transition-all duration-300 group-hover:scale-105",
             isDragging && "ring-2 ring-primary border-primary scale-105",
           )}
         >
@@ -136,7 +136,7 @@ export function ContactBasicAvatarSection({
               height={80}
               loading="lazy"
               decoding="async"
-              className="w-full h-full object-cover"
+              className="w-full h-full rounded-[inherit] object-cover"
             />
           ) : (
             <div
@@ -168,16 +168,6 @@ export function ContactBasicAvatarSection({
             />
           </Label>
         </div>
-
-        {/* Change Photo Badge */}
-        <Label
-          htmlFor={avatarInputId}
-          className="absolute -bottom-1 -end-1 flex h-7 w-7 cursor-pointer items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-md border-2 border-card hover:scale-110 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-transform before:absolute before:-inset-2 before:content-['']"
-          title={t("account.changePhoto")}
-        >
-          <span className="sr-only">{t("account.changePhoto")}</span>
-          <Camera className="h-3.5 w-3.5" aria-hidden />
-        </Label>
 
         {/* Remove Photo Action */}
         {contactDraft.avatar ? (

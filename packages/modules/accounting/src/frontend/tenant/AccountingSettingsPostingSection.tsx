@@ -1,19 +1,16 @@
 import { postingRulesUpdateSchema, type Account, type PostingRules } from "@mms/contracts";
 import { BookOpen } from "lucide-react";
 import { FormSelect } from "@mms/fe-core/components/FormSelect";
-import { accountOptions } from "@mms/mod-accounting/frontend/tenant";
+import { accountOptions } from "./index";
 import { Field, FieldErrorMessage } from "@mms/ui";
 import { SectionCard } from "@mms/ui";
 import { Button } from "@mms/ui";
 import { SETUP_SECTION_CARD_CLASS } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { notify } from "@mms/fe-core/notify";
-import {
-  useAccountingPostingRules,
-  useSaveAccountingPostingRules,
-} from "@mms/mod-accounting/frontend/tenant";
+import { useAccountingPostingRules, useSaveAccountingPostingRules } from "./index";
 import React, { useState } from "react";
-import { AccountingSettingsFxPostingFields } from "@mms/mod-accounting/frontend/tenant";
+import { AccountingSettingsFxPostingFields } from "./index";
 
 /**
  * Mirrors the server's `POSTING_RULE_ACCOUNT_TYPES`: `arAccountId`/`cashAccountId`

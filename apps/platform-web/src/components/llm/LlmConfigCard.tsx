@@ -5,7 +5,7 @@ import { Button } from "@mms/ui";
 import { Badge } from "@mms/ui";
 import { cn } from "@mms/ui";
 import { CARD_STRIPE_BASE, CARD_STRIPE_INSET } from "@mms/fe-core/ui/semanticTone";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { LlmConfig } from "@mms/contracts";
 
 type LlmHealthStatus = "verified" | "failed" | "testing" | "untested";

@@ -10,8 +10,10 @@ vi.mock("./contactTablePrimaryCells.js", () => ({
 }));
 
 vi.mock("./ContactMetadataCell.js", () => ({
-  ContactMetadataCell: ({ colId }: { colId: string }) => (
-    <div data-testid="meta-cell">Meta: {colId}</div>
+  ContactMetadataCell: ({ colId, variant }: { colId: string; variant?: string }) => (
+    <div data-testid="meta-cell" data-variant={variant ?? "table"}>
+      Meta: {colId}
+    </div>
   ),
 }));
 
@@ -73,5 +75,17 @@ describe("renderContactTableCell", () => {
       }),
     );
     expect(cnicHtml).toContain("Meta: cnic");
+  });
+
+  it("renders metadata cell content only — the WorkBatchTable already owns the <td>", () => {
+    // A "table" variant emits its own <TableCell>, nesting <td> inside <td>
+    // (axe `aria-required-parent`, critical) in the contacts directory.
+    const cnicHtml = renderToStaticMarkup(
+      renderContactTableCell({
+        ...baseProps,
+        col: { id: "cnic", label: "CNIC" },
+      }),
+    );
+    expect(cnicHtml).toContain('data-variant="card"');
   });
 });

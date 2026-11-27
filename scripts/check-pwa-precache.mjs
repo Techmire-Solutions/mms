@@ -50,13 +50,31 @@ import { fileURLToPath } from "node:url";
 
 const MB = 1024 * 1024;
 
-/** Default ceilings; every one is env-overridable for a deliberate audit. */
+/**
+ * Default ceilings; every one is env-overridable for a deliberate audit.
+ *
+ * The closure ceiling is a backstop, not the invariant. Every extracted `@mms/mod-*` contributes a
+ * `*ModuleManifest` chunk to the entry closure because routing/module-access needs the manifest at
+ * boot, so the raw count tracks module count (21 modules and counting) rather than a regression. The
+ * real invariant is `FORBIDDEN_CLOSURE` below: provider/bridge graphs must never be precached eagerly
+ * (P8b). Raise this ceiling only alongside a module extraction; the forbidden-pattern check is what
+ * catches the accidental re-inversion.
+ */
 export const DEFAULT_BUDGETS = Object.freeze({
   maxGlobEntries: 10,
-  maxClosureEntries: 80,
+  maxClosureEntries: 100,
   maxMb: 2.5,
   minLazyChunks: 450,
 });
+
+/** Chunks that must never appear in the entry closure (host bridges / provider graphs = P8b). */
+export const FORBIDDEN_CLOSURE = Object.freeze([
+  {
+    pattern: /HostProvider|HostBridge|moduleHostBridges|ModuleHostBridges/i,
+    label: "module host bridge/provider graph",
+  },
+  { pattern: /Bridges-[\w-]+\.js$/, label: "bridge composition chunk" },
+]);
 
 /** Optional/large chunks that must stay lazy (runtime-cached on first use). */
 const FORBIDDEN = [
@@ -151,6 +169,10 @@ export function countLazyChunks(manifest) {
 }
 
 /** Budget violations for a measured precache; an empty array is a pass. */
+export function findForbiddenClosureEntries(closureEntries, patterns = FORBIDDEN_CLOSURE) {
+  return closureEntries.filter((entry) => patterns.some(({ pattern }) => pattern.test(entry)));
+}
+
 export function evaluateBudgets(measured, budgets) {
   const violations = [];
   if (measured.globEntries > budgets.maxGlobEntries) {
@@ -165,6 +187,12 @@ export function evaluateBudgets(measured, budgets) {
   }
   if (measured.totalMb > budgets.maxMb) {
     violations.push(`precache payload ${measured.totalMb} MB exceeds ${budgets.maxMb} MB`);
+  }
+  for (const entry of measured.forbiddenInClosure ?? []) {
+    violations.push(
+      `entry closure precaches ${entry} — host bridges/provider graphs must stay behind the ` +
+        "authenticated shell (P8b), not in the entry closure",
+    );
   }
   if (!measured.lazy) {
     violations.push(
@@ -239,6 +267,7 @@ export function main({ argv = process.argv, rootDir = ROOT_DIR } = {}) {
   const forbidden = measuredEntries.filter((entry) =>
     FORBIDDEN.some((rule) => rule.pattern.test(entry.url)),
   );
+  const forbiddenInClosure = findForbiddenClosureEntries(closureEntries);
   const missingRequired = REQUIRED.filter(
     (rule) => !measuredEntries.some((entry) => rule.pattern.test(entry.url)),
   );
@@ -251,6 +280,7 @@ export function main({ argv = process.argv, rootDir = ROOT_DIR } = {}) {
     lazyChunks: lazy,
     swMb: Number((fs.statSync(swPath).size / MB).toFixed(2)),
     forbidden: forbidden.map((entry) => entry.url),
+    forbiddenInClosure,
     missingRequired: missingRequired.map((rule) => rule.label),
     largest: measuredEntries
       .slice()

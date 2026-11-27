@@ -1,6 +1,6 @@
 import { moneyToCents } from "@mms/contracts";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
-import { resolveEntryDirection } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "../index";
+import { resolveEntryDirection } from "../index";
 import type { EntryType } from "./cashbookViewShared";
 
 export interface CashMovementCents {

@@ -1,17 +1,17 @@
-import { quickActionLabel } from "@mms/mod-accounting/frontend/tenant";
+import { quickActionLabel } from "./index";
 import { useMemo, type Dispatch, type ReactNode, type SetStateAction } from "react";
 import { CheckCircle2, ChevronDown, ChevronUp, Pencil } from "lucide-react";
 import { Alert } from "@mms/ui";
 import { Badge } from "@mms/ui";
 import { Button } from "@mms/ui";
-import { SimpleTransactionPostingCards } from "@mms/mod-accounting/frontend/tenant";
-import { SimpleTransactionPostingTable } from "@mms/mod-accounting/frontend/tenant";
+import { SimpleTransactionPostingCards } from "./index";
+import { SimpleTransactionPostingTable } from "./index";
 import { ReviewList } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import type { Account } from "@mms/mod-accounting/frontend/tenant";
-import type { QuickActionType, WizardFormState } from "@mms/mod-accounting/frontend/tenant";
+import type { Account } from "./index";
+import type { QuickActionType, WizardFormState } from "./index";
 import { formatDate } from "@mms/contracts";
-import { parseMoneyInput } from "@mms/mod-accounting/frontend/tenant";
+import { parseMoneyInput } from "./index";
 import { useWorkDirectoryViewMode, type WorkDirectoryViewMode } from "@mms/fe-core/tenant";
 
 interface StepReviewProps {

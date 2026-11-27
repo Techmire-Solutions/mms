@@ -1,6 +1,6 @@
 import type { PlatformWorkspaceRow } from "@mms/contracts";
 import type { NotificationItem } from "@mms/ui";
-import type { TranslationFunction } from "@/lib/contexts/TranslationContext";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import { ROUTES } from "@/lib/config/routes";
 
 export interface PlatformNotificationItem extends NotificationItem {

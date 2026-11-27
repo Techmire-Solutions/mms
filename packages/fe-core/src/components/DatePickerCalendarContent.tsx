@@ -59,7 +59,7 @@ export function DatePickerCalendarContent({
 
   const jumpYears = (offset: number) => {
     const targetYear = Math.max(minAllowedYear, Math.min(maxAllowedYear, currentYear + offset));
-    const next = new Date(displayMonth);
+    const next = new Date(displayMonth.getFullYear(), displayMonth.getMonth(), 1);
     next.setFullYear(targetYear);
     setDisplayMonth(next);
   };

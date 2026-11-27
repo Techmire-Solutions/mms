@@ -77,6 +77,7 @@ export interface RenderContactPhoneCellParams {
   countryCodesMap: Record<string, string>;
   countryCodes: Array<{ country: string; code: string }>;
   widthStyle: CSSProperties | undefined;
+  showArchived?: boolean;
   t: ContactCellTranslate;
   onWhatsApp?: (contacts: Contact[]) => void;
 }
@@ -87,6 +88,7 @@ export function renderContactPhoneCell({
   countryCodesMap,
   countryCodes,
   widthStyle: _widthStyle,
+  showArchived = false,
   t,
   onWhatsApp,
 }: RenderContactPhoneCellParams): React.JSX.Element {
@@ -110,6 +112,7 @@ export function renderContactPhoneCell({
           phoneDisplay={p.phoneDisplay}
           name={displayName}
           emptyFallback={emptyDash}
+          disabled={showArchived}
           copyToast={t("contacts.table.copied")}
           labels={{
             call: t("contacts.detail.call"),
@@ -128,12 +131,14 @@ export function renderContactPhoneCell({
 export interface RenderContactEmailCellParams {
   contact: Contact;
   widthStyle: CSSProperties | undefined;
+  showArchived?: boolean;
   t: ContactCellTranslate;
 }
 
 export function renderContactEmailCell({
   contact,
   widthStyle: _widthStyle,
+  showArchived = false,
   t,
 }: RenderContactEmailCellParams): React.JSX.Element {
   const allEmails = resolveAllContactEmails(contact);
@@ -154,6 +159,7 @@ export function renderContactEmailCell({
           email={e.email}
           name={displayName}
           emptyFallback={emptyDash}
+          disabled={showArchived}
           copyToast={t("contacts.table.copied")}
           labels={{
             mail: t("contacts.detail.emailAction"),

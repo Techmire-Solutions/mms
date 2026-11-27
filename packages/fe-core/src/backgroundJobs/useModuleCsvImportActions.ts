@@ -112,11 +112,31 @@ export function useModuleCsvImportActions<TRow = Record<string, unknown>>(
       }
       const isCurrentSelection = (): boolean => selectionTokenRef.current === token;
       try {
-        const text = await file.text();
-        if (!isCurrentSelection()) return;
-        const result = schema
-          ? schema.fromImportCsv(text)
-          : mapCsvGridToObjects<TRow>(parseCsvRows(text), effectiveMappings);
+        const isExcel = /\.(xlsx|xls)$/i.test(file.name);
+        let result;
+        if (isExcel) {
+          const buffer = await file.arrayBuffer();
+          if (!isCurrentSelection()) return;
+          const XLSX = await import("xlsx");
+          const workbook = XLSX.read(buffer, { type: "array" });
+          const firstSheetName = workbook.SheetNames[0];
+          const sheet = firstSheetName ? workbook.Sheets[firstSheetName] : undefined;
+          const rawGrid = sheet
+            ? (XLSX.utils.sheet_to_json<unknown[]>(sheet, { header: 1, defval: "" }) as unknown[][])
+            : [];
+          const grid: string[][] = rawGrid.map((row) =>
+            Array.isArray(row) ? row.map((cell) => (cell == null ? "" : String(cell))) : [],
+          );
+          result = schema
+            ? schema.mapGrid(grid)
+            : mapCsvGridToObjects<TRow>(grid, effectiveMappings);
+        } else {
+          const text = await file.text();
+          if (!isCurrentSelection()) return;
+          result = schema
+            ? schema.fromImportCsv(text)
+            : mapCsvGridToObjects<TRow>(parseCsvRows(text), effectiveMappings);
+        }
 
         setMissingHeaders(result.missingHeaders);
         if (result.rows.length > effectiveMaxRows) {

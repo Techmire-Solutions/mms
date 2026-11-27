@@ -2,11 +2,16 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 import { ApiError } from "../api/client";
 import { fetchWorkspaceBySubdomain, isWorkspaceNotFoundError } from "./useWorkspaceBySubdomain";
 
-const apiContractMock = vi.hoisted(() => ({
-  workspace: { bySubdomain: vi.fn() },
-}));
+const apiFetchMock = vi.hoisted(() => vi.fn());
 
-vi.mock("../api/tsRest", () => ({ apiContract: apiContractMock }));
+vi.mock("../api/client", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../api/client")>();
+  return {
+    ...actual,
+    apiFetch: apiFetchMock,
+    resolveApiUrl: (path: string) => path,
+  };
+});
 
 describe("isWorkspaceNotFoundError", () => {
   it("treats 404 / not_found as missing tenant", () => {
@@ -28,27 +33,30 @@ describe("isWorkspaceNotFoundError", () => {
 
 describe("fetchWorkspaceBySubdomain", () => {
   beforeEach(() => {
-    apiContractMock.workspace.bySubdomain.mockReset();
+    apiFetchMock.mockReset();
   });
 
-  it("forwards the abort signal to the workspace contract", async () => {
-    apiContractMock.workspace.bySubdomain.mockResolvedValue({
+  it("forwards the abort signal to the workspace endpoint", async () => {
+    apiFetchMock.mockResolvedValue({
       status: 200,
-      body: { workspace: { subdomain: "demo", madrasaName: "Demo" }, branding: null },
+      json: async () => ({ workspace: { subdomain: "demo", madrasaName: "Demo" }, branding: null }),
     });
     const controller = new AbortController();
 
-    await fetchWorkspaceBySubdomain("demo", controller.signal);
+    const res = await fetchWorkspaceBySubdomain("demo", controller.signal);
 
-    expect(apiContractMock.workspace.bySubdomain).toHaveBeenCalledWith({
-      params: { subdomain: "demo" },
+    expect(apiFetchMock).toHaveBeenCalledWith("/api/workspace/by-subdomain/demo", {
+      method: "GET",
       signal: controller.signal,
-      fetchOptions: { signal: controller.signal },
+    });
+    expect(res).toEqual({
+      status: 200,
+      body: { workspace: { subdomain: "demo", madrasaName: "Demo" }, branding: null },
     });
   });
 
   it("maps a 404 into a body-null result instead of throwing", async () => {
-    apiContractMock.workspace.bySubdomain.mockResolvedValue({ status: 404, body: null });
+    apiFetchMock.mockResolvedValue({ status: 404, json: async () => null });
 
     await expect(fetchWorkspaceBySubdomain("missing")).resolves.toEqual({
       status: 404,
@@ -57,7 +65,7 @@ describe("fetchWorkspaceBySubdomain", () => {
   });
 
   it("rejects unexpected statuses with a status-carrying error", async () => {
-    apiContractMock.workspace.bySubdomain.mockResolvedValue({ status: 500, body: null });
+    apiFetchMock.mockResolvedValue({ status: 500, json: async () => null });
 
     await expect(fetchWorkspaceBySubdomain("demo")).rejects.toMatchObject({ status: 500 });
   });

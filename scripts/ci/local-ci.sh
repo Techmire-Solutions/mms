@@ -71,14 +71,13 @@ bucket() {
     # Target app roots (migration plan P0/P7/P8): harmless no-ops today, but a PR
     # touching only a future app root must not skip its bucket silently.
     frontend)
-      printf '%s\n' "$CHANGED_TEXT" | paths_match \
-        'apps/tenant-web/*' 'apps/platform-web/*' "${COMMON_ROOT[@]}"
+      paths_match 'apps/tenant-web/*' 'apps/platform-web/*' "${COMMON_ROOT[@]}" <<< "$CHANGED_TEXT"
       ;;
     backend_unit)
-      printf '%s\n' "$CHANGED_TEXT" | paths_match 'apps/api/*' "${COMMON_ROOT[@]}"
+      paths_match 'apps/api/*' "${COMMON_ROOT[@]}" <<< "$CHANGED_TEXT"
       ;;
     backend_db)
-      printf '%s\n' "$CHANGED_TEXT" | paths_match \
+      paths_match \
         'apps/api/src/db/*' 'packages/db/*' 'packages/be-core/*' \
         'packages/db/drizzle.config.ts' \
         'apps/api/src/*/repository/*' \
@@ -87,9 +86,9 @@ bucket() {
         'apps/api/src/__tests__/rls/*' \
         'apps/api/vitest.db.config.ts' \
         'apps/api/vitest.rls.config.ts' \
-        "${COMMON_ROOT[@]}"
+        "${COMMON_ROOT[@]}" <<< "$CHANGED_TEXT"
       ;;
-    e2e) printf '%s\n' "$CHANGED_TEXT" | paths_match 'e2e/*' 'apps/*' "${COMMON_ROOT[@]}" ;;
+    e2e) paths_match 'e2e/*' 'apps/*' "${COMMON_ROOT[@]}" <<< "$CHANGED_TEXT" ;;
   esac
 }
 
@@ -108,8 +107,7 @@ TOOLING=('package.json' '*/package.json' 'pnpm-lock.yaml' 'pnpm-workspace.yaml' 
   'tsconfig*.json' '*/tsconfig*.json' '*eslint.config.*' 'scripts/eslint-ts-compat.cjs'
   'tooling/*')
 SCOPE=affected
-if [[ "$FULL" -eq 1 ]] || printf '%s
-' "$CHANGED_TEXT" | paths_match "${TOOLING[@]}"; then
+if [[ "$FULL" -eq 1 ]] || paths_match "${TOOLING[@]}" <<< "$CHANGED_TEXT"; then
   SCOPE=full
 fi
 echo "Scope: $SCOPE"
@@ -118,8 +116,7 @@ export MMS_CI_SCOPE="$SCOPE" MMS_CI_BASE="$BASE" MMS_CI_CHANGED="$CHANGED_TEXT"
 # Usage: run_vitest <pnpm filter> <full-run trigger globs...>
 run_vitest() {
   local filter="$1"; shift
-  if [[ "$SCOPE" == "full" ]] || printf '%s
-' "$CHANGED_TEXT" | paths_match "$@"; then
+  if [[ "$SCOPE" == "full" ]] || paths_match "$@" <<< "$CHANGED_TEXT"; then
     pnpm --filter "$filter" exec vitest run
   else
     pnpm --filter "$filter" exec vitest run --changed "$BASE" --passWithNoTests
@@ -137,8 +134,9 @@ unset MMS_CI_CHANGED
 # CRLF on disk but committed as LF, so the configured "lf" would flag every file.
 echo ""
 echo "Phase A2: formatting (Prettier)"
+PRETTIER_BIN="$ROOT/node_modules/.bin/prettier"
 if [[ "$SCOPE" == "full" ]]; then
-  pnpm exec prettier --check --end-of-line auto .
+  "$PRETTIER_BIN" --check --end-of-line auto .
   note_ran "prettier"
 else
   FORMAT_FILES=()
@@ -149,7 +147,7 @@ else
     # Chunk args to avoid Windows command line length limits (8191 chars)
     CHUNK_SIZE=40
     for ((i=0; i<${#FORMAT_FILES[@]}; i+=CHUNK_SIZE)); do
-      pnpm exec prettier --check --end-of-line auto --ignore-unknown "${FORMAT_FILES[@]:i:CHUNK_SIZE}"
+      "$PRETTIER_BIN" --check --end-of-line auto --ignore-unknown "${FORMAT_FILES[@]:i:CHUNK_SIZE}"
     done
     note_ran "prettier"
   else
@@ -170,8 +168,11 @@ echo ""
 echo "Phase B: buckets frontend=$NEED_FE backend_unit=$NEED_BE_UNIT backend_db=$NEED_BE_DB e2e=$NEED_E2E"
 
 pnpm run check:module-boundaries && note_ran "module-boundaries"
-pnpm run check:move-manifest && note_ran "move-manifest"
 pnpm run check:topology && note_ran "topology"
+pnpm run check:web-app-isolation && note_ran "web-app-isolation"
+pnpm run check:package-boundaries && note_ran "package-boundaries"
+pnpm run check:routes-inventory && note_ran "routes-inventory"
+pnpm run check:module-exports && note_ran "module-exports"
 if [[ "$NEED_FE" -eq 1 || "$NEED_BE_UNIT" -eq 1 ]]; then
   for mod_dir in packages/modules/*/; do
     [[ -f "${mod_dir}package.json" ]] || continue

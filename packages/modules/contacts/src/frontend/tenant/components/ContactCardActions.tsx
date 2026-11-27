@@ -14,6 +14,7 @@ export interface ContactCardActionsProps {
   onEdit: (contact: Contact) => void;
   onDelete: (id: string | number) => void;
   onRestore?: (id: string | number) => void;
+  onPermanentDelete?: (id: string | number) => void;
   onWhatsApp?: (contacts: Contact[]) => void;
   onSms?: (contacts: Contact[]) => void;
   onEmail?: (contacts: Contact[]) => void;
@@ -30,6 +31,7 @@ export function ContactCardActions({
   onEdit,
   onDelete,
   onRestore,
+  onPermanentDelete,
   onWhatsApp,
   onSms,
   onEmail,
@@ -48,6 +50,7 @@ export function ContactCardActions({
           onEdit={onEdit}
           onDelete={onDelete}
           onRestore={onRestore}
+          onPermanentDelete={onPermanentDelete}
           onWhatsApp={onWhatsApp}
           onSms={onSms}
           onEmail={onEmail}

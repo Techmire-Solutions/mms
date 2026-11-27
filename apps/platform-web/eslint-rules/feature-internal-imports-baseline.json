@@ -1,0 +1,7 @@
+{
+  "src/tenant/components/reports/moduleReportAdapters.ts": [
+    "question-bank",
+    "accounting",
+    "obligations"
+  ]
+}

@@ -2,7 +2,7 @@ import React from "react";
 import { describe, it, expect } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AppShell, type NavigationAdapter } from "@mms/fe-core/components/AppShell";
-import { TranslationContext, type TranslationFunction } from "@/lib/contexts/TranslationContext";
+import { TranslationContext, type TranslationFunction } from "@mms/fe-core/i18n";
 
 function renderWithContext(ui: React.ReactElement, contextOverrides = {}) {
   const context = {

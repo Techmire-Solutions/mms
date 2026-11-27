@@ -40,6 +40,7 @@ export const DEFAULT_CONTACT_PREFERENCES: ContactPreferences = {
   namePrefixesToIgnore: ["syed", "syeda"],
   relationshipPairs: DEFAULT_RELATIONSHIP_PAIRS,
   relationshipOptionOrder: [],
+  dismissedDuplicatePairs: [],
 };
 
 /**

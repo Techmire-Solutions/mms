@@ -131,7 +131,7 @@ describe("SSOT Entity UI Registry Architecture", () => {
 
       expect(descriptor.formatFieldValue("name", entity)).toBe("Test item");
       expect(descriptor.formatFieldValue("amount", entity)).toContain("1,500");
-      expect(descriptor.formatFieldValue("created", entity)).toBe("2026-09-20");
+      expect(descriptor.formatFieldValue("created", entity)).toBe("20/09/2026");
     });
 
     it("renders phone and email fields as accessible interactive links", () => {

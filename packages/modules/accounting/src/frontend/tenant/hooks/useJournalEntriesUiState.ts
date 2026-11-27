@@ -1,6 +1,6 @@
 import { useState } from "react";
-import type { JournalEntry } from "@mms/mod-accounting/frontend/tenant";
-import type { QuickActionType } from "@mms/mod-accounting/frontend/tenant";
+import type { JournalEntry } from "../index";
+import type { QuickActionType } from "../index";
 
 export interface UseJournalEntriesUiStateOptions {
   showDeleted?: boolean;

@@ -22,6 +22,8 @@ export const whatsappStatusOptionalSchema = z
 
 export const phoneNumberSchema = z
   .object({
+    id: z.string().optional(),
+    _localId: z.string().optional(),
     label: z.string().optional(),
     number: z.string(),
     countryCode: z.string().optional(),
@@ -43,6 +45,8 @@ export const phoneNumberSchema = z
 
 export const emailAddressSchema = z
   .object({
+    id: z.string().optional(),
+    _localId: z.string().optional(),
     label: z.string().optional(),
     address: z.string(),
     isPrimary: z.boolean().optional(),
@@ -52,6 +56,8 @@ export const emailAddressSchema = z
 
 export const addressSchema = z
   .object({
+    id: z.string().optional(),
+    _localId: z.string().optional(),
     label: z.string().optional(),
     line1: z.string().optional(),
     city: z.string().optional(),
@@ -63,6 +69,8 @@ export const addressSchema = z
 
 export const socialLinkSchema = z
   .object({
+    id: z.string().optional(),
+    _localId: z.string().optional(),
     platform: z.string(),
     url: z.string(),
   })
@@ -71,6 +79,7 @@ export const socialLinkSchema = z
 export const contactEducationSchema = z
   .object({
     id: z.string().optional(),
+    _localId: z.string().optional(),
     degree: z.string().optional(),
     institution: z.string(),
     fieldOfStudy: z.string().optional(),
@@ -85,6 +94,7 @@ export const contactEducationSchema = z
 export const contactExperienceSchema = z
   .object({
     id: z.string().optional(),
+    _localId: z.string().optional(),
     title: z.string(),
     organization: z.string(),
     employmentType: z.string().optional(),
@@ -101,6 +111,7 @@ export const contactExperienceSchema = z
 export const contactSkillSchema = z
   .object({
     id: z.string().optional(),
+    _localId: z.string().optional(),
     name: z.string(),
     category: z.string().optional(),
     proficiency: z.string().optional(),
@@ -116,6 +127,7 @@ export const contactSkillSchema = z
 export const contactBankDetailSchema = z
   .object({
     id: z.string().optional(),
+    _localId: z.string().optional(),
     bankName: z.string().trim().optional().nullable().or(z.literal("")),
     accountTitle: z.string().trim().optional().nullable().or(z.literal("")),
     accountNumber: z.string().trim().optional().nullable().or(z.literal("")),
@@ -125,6 +137,8 @@ export const contactBankDetailSchema = z
 
 export const relationshipContactSchema = z
   .object({
+    id: z.string().optional(),
+    _localId: z.string().optional(),
     name: z.string().optional(),
     relationship: z.string().optional(),
     phone: z.string().optional(),
