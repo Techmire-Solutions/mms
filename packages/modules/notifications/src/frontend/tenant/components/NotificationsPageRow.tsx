@@ -4,8 +4,8 @@ import { Button } from "@mms/ui";
 import { Badge } from "@mms/ui";
 import { cn } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { DASHBOARD_NOTIFICATION_ICONS } from "@/lib/ui/dashboardNotificationIcons";
-import type { TenantNotification } from "@/tenant/hooks/notifications/useTenantNotifications";
+import { DASHBOARD_NOTIFICATION_ICONS } from "../host/dashboardNotificationIcons";
+import type { TenantNotification } from "../lib/notificationsTypes";
 
 interface NotificationsPageRowProps {
   notification: TenantNotification;

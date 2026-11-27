@@ -1,7 +1,7 @@
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import type { TenantNotification } from "@/tenant/hooks/notifications/useTenantNotifications";
+import type { TenantNotification } from "../lib/notificationsTypes";
 import { NotificationsPageRow } from "./NotificationsPageRow";
 
 vi.mock("@mms/fe-core/i18n", () => ({

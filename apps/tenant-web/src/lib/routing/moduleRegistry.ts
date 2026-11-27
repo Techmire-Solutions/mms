@@ -254,7 +254,10 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
       kind: "open",
       reason: "the signed-in user's own alerts; each alert gates its module permission",
     },
-    loader: () => import("@/tenant/features/notifications/NotificationsPage"),
+    loader: () =>
+      import("@mms/mod-notifications/frontend/tenant").then((m) => ({
+        default: m.NotificationsPage,
+      })),
     apexRedirectable: true,
   },
   {

@@ -6,9 +6,9 @@ import { EmptyState } from "@mms/ui";
 import { Badge } from "@mms/ui";
 import { WORK_SURFACE } from "@mms/ui";
 import { useTranslation } from "@mms/fe-core/i18n";
-import { useTenantNotifications } from "@/tenant/hooks/notifications/useTenantNotifications";
-import { useOpenTenantNotification } from "@/tenant/hooks/notifications/useOpenTenantNotification";
-import { NotificationsPageRow } from "@/tenant/features/notifications/components/NotificationsPageRow";
+import { useTenantNotifications } from "./host/useTenantNotifications";
+import { useOpenTenantNotification } from "./host/useOpenTenantNotification";
+import { NotificationsPageRow } from "./components/NotificationsPageRow";
 
 /** All tenant notifications with click-through to the source record and a mark-all-read action. */
 export default function NotificationsPage(): React.JSX.Element {

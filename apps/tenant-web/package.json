@@ -31,6 +31,7 @@
     "@mms/mod-hasanat": "workspace:*",
     "@mms/mod-iam": "workspace:*",
     "@mms/mod-messaging": "workspace:*",
+    "@mms/mod-notifications": "workspace:*",
     "@mms/mod-sessions": "workspace:*",
     "@mms/mod-students": "workspace:*",
     "@mms/mod-tasks": "workspace:*",

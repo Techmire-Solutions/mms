@@ -284,6 +284,9 @@ importers:
       '@mms/mod-accounting':
         specifier: workspace:*
         version: link:../../packages/modules/accounting
+      '@mms/mod-attendance':
+        specifier: workspace:*
+        version: link:../../packages/modules/attendance
       '@mms/mod-billing':
         specifier: workspace:*
         version: link:../../packages/modules/billing
@@ -311,6 +314,9 @@ importers:
       '@mms/mod-students':
         specifier: workspace:*
         version: link:../../packages/modules/students
+      '@mms/mod-tasks':
+        specifier: workspace:*
+        version: link:../../packages/modules/tasks
       '@mms/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -552,6 +558,9 @@ importers:
       '@mms/mod-messaging':
         specifier: workspace:*
         version: link:../../packages/modules/messaging
+      '@mms/mod-notifications':
+        specifier: workspace:*
+        version: link:../../packages/modules/notifications
       '@mms/mod-sessions':
         specifier: workspace:*
         version: link:../../packages/modules/sessions
@@ -2106,6 +2115,9 @@ importers:
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.4(@types/better-sqlite3@7.6.13)(@types/pg@8.23.1)(better-sqlite3@12.11.1)(mysql2@3.24.2(@types/node@26.6.6))(pg@8.23.1)
+      lucide-react:
+        specifier: ^1.78.0
+        version: 1.78.0(@types/react@19.3.0)(react@19.3.1)
       zod:
         specifier: 'catalog:'
         version: 4.6.7
