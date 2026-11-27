@@ -28,3 +28,7 @@ Enforced unless noted. Open follow-ups live in [`../open-items.md`](../open-item
 
 Create `docs/adr/NNN-slug.md` using the newest number + 1, copy the
 `Status / Date / Context / Decision / Consequences` shape, and add a row above.
+| 019 | [Vertical modules own their domain; cross-domain calls go through ports](./019-module-descriptors-and-ports.md) | Accepted |
+| 020 | [Tenant console API under an additive `/api/tenant/*` namespace](./020-additive-tenant-api-namespace.md) | Accepted — implementation pending |
+| 021 | [Two web apps, one Fastify API host](./021-two-web-apps-one-api-host.md) | Accepted |
+| 022 | [Module package contents and audience-separated exports](./022-module-package-contents-and-exports.md) | Accepted |
