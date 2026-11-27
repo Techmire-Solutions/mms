@@ -56,7 +56,10 @@ describe("no-cross-feature-imports", () => {
 
     it("allows the sanctioned reports/settings targets", () => {
       expect(
-        lint(`import { K } from "@/tenant/features/reports/components/KPISummary";`, STUDENT_HOOK),
+        lint(
+          `import { K } from "@mms/mod-analytics/frontend/tenant/features/components/KPISummary";`,
+          STUDENT_HOOK,
+        ),
       ).toEqual([]);
     });
 

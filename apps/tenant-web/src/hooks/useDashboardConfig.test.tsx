@@ -49,7 +49,7 @@ const SEED_WIDGET = {
   isPinnedToDashboard: true,
 };
 
-vi.mock("@/lib/reports/widgetDefaults", () => ({
+vi.mock("@mms/mod-analytics/frontend/tenant/lib/widgetDefaults", () => ({
   buildDefaultCustomWidgets: () => [],
   getOrInitializeCustomWidgets: () => [],
   peekSeedWidgets: () => [SEED_WIDGET],
