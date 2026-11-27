@@ -1,4 +1,5 @@
 import React from "react";
+import "@/lib/print/registerPrintBranding";
 import { ContactsHostBridge } from "@/providers/ContactsHostProvider";
 import { HasanatHostBridge } from "@/providers/HasanatHostProvider";
 import { FacultyHostBridge } from "@/providers/FacultyHostProvider";
@@ -16,9 +17,10 @@ import { QuestionBankHostBridge } from "@/providers/QuestionBankHostProvider";
 import { ObligationsHostBridge } from "@/providers/ObligationsHostProvider";
 import { ExaminationsHostBridge } from "@/providers/ExaminationsHostProvider";
 import { AnalyticsHostBridge } from "@/providers/AnalyticsHostProvider";
+import { AccountingHostBridge } from "@/providers/AccountingHostProvider";
 
 /**
- * Composes all 10 vertical-module host bridges inside the lazy authenticated shell (`AppLayout`)
+ * Composes all 18 vertical-module host bridges inside the lazy authenticated shell (`AppLayout`)
  * so every module route has its host configured without bloating the public entry bundle.
  */
 export function TenantModuleHostBridges({
@@ -43,7 +45,9 @@ export function TenantModuleHostBridges({
                               <QuestionBankHostBridge>
                                 <ObligationsHostBridge>
                                   <ExaminationsHostBridge>
-                                    <AnalyticsHostBridge>{children}</AnalyticsHostBridge>
+                                    <AnalyticsHostBridge>
+                                      <AccountingHostBridge>{children}</AccountingHostBridge>
+                                    </AnalyticsHostBridge>
                                   </ExaminationsHostBridge>
                                 </ObligationsHostBridge>
                               </QuestionBankHostBridge>

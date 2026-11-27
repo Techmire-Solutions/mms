@@ -3,6 +3,7 @@ import type { ComponentType } from "react";
 export type AnalyticsHostHook = (...args: any[]) => any;
 
 export interface AnalyticsHostValue {
+  useCurrency: AnalyticsHostHook;
   useFinanceCurrency: AnalyticsHostHook;
   useDashboardConfig: AnalyticsHostHook;
   useSavedReportsSource: AnalyticsHostHook;
@@ -37,6 +38,7 @@ export function getAnalyticsHost(): AnalyticsHostValue {
 const T = () => null;
 const allow = () => true;
 const TEST_HOST: AnalyticsHostValue = {
+  useCurrency: () => ({ format: (v: unknown) => String(v), currency: "PKR" }),
   useFinanceCurrency: () => ({ format: (v: unknown) => String(v), currency: "PKR" }),
   useDashboardConfig: () => ({ config: {} }),
   useSavedReportsSource: () => ({ savedReports: [] }),

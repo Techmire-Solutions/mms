@@ -1,5 +1,4 @@
 import "./bootstrapZodCsp";
-import "@/lib/print/registerPrintBranding";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "@/App";
@@ -69,8 +68,8 @@ const app = (
 );
 
 async function bootstrap(): Promise<void> {
-  await applyBootChrome();
-  // Yield a macrotask boundary before React hydration so boot-chrome evaluation and
+  void applyBootChrome();
+  // Yield a macrotask boundary before React hydration so initial script evaluation and
   // root render never fuse into a single >50ms Long Task on throttled mobile CPUs.
   await new Promise<void>((resolve) => setTimeout(resolve, 0));
   ReactDOM.createRoot(rootElement as HTMLElement).render(

@@ -6,8 +6,11 @@ import { shouldShowUserNotRegisteredOverlay } from "@/lib/contexts/authErrorOver
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import { AppProviders } from "@/providers/AppProviders";
 import RouterBridge from "@/components/routing/RouterBridge";
+import { preloadLoginOnEntryBoot } from "@/tenant/routes/preloadLogin";
 
-const TenantRoutes = React.lazy(() => import("@/tenant/routes/TenantRoutes"));
+const tenantRoutesPromise = import("@/tenant/routes/TenantRoutes");
+preloadLoginOnEntryBoot();
+const TenantRoutes = React.lazy(() => tenantRoutesPromise);
 const UserNotRegisteredError = React.lazy(
   () => import("@/components/routing/UserNotRegisteredError"),
 );

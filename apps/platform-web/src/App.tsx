@@ -4,6 +4,7 @@ import { subscribePlatformBranding } from "@mms/fe-core/lib/platformBrandingStor
 import RouteStatusFallback from "@/components/routing/RouteStatusFallback";
 import RouterBridge from "@/components/routing/RouterBridge";
 import { MotionPreferences } from "@/providers/MotionPreferences";
+import { PlatformProviders } from "@/providers/PlatformProviders";
 import { PlatformAuthProvider } from "@/platform/features/auth/lib/PlatformAuthContext";
 
 const ApexRoutesWithSuspense = React.lazy(() =>
@@ -37,14 +38,16 @@ function App(): React.JSX.Element {
   }, []);
 
   return (
-    <MotionPreferences>
-      <PlatformAuthProvider>
-        <RouterBridge />
-        <Suspense fallback={<RouteStatusFallback fullScreen />}>
-          <ApexRoutesWithSuspense />
-        </Suspense>
-      </PlatformAuthProvider>
-    </MotionPreferences>
+    <PlatformProviders>
+      <MotionPreferences>
+        <PlatformAuthProvider>
+          <RouterBridge />
+          <Suspense fallback={<RouteStatusFallback fullScreen />}>
+            <ApexRoutesWithSuspense />
+          </Suspense>
+        </PlatformAuthProvider>
+      </MotionPreferences>
+    </PlatformProviders>
   );
 }
 

@@ -4,7 +4,11 @@ import os from "node:os";
 import path from "node:path";
 import { after, describe, it } from "node:test";
 
-import { findUnresolved, resolveSpecifier } from "../check-module-exports.mjs";
+import {
+  collectModuleSpecifiers,
+  findUnresolved,
+  resolveSpecifier,
+} from "../check-module-exports.mjs";
 
 /** Build a throwaway module package: <tmp>/packages/modules/<slice>/… */
 function makeModule(slice, files, exportsMap) {
@@ -122,5 +126,38 @@ describe("module exports gate", () => {
     assert.equal(failures.length, 1);
     assert.match(failures[0].specifier, /UsersPage/);
     assert.match(failures[0].file, /routing\.ts$/);
+  });
+
+  it("ignores @mms/mod-* prose inside JSX/strings while capturing static and dynamic imports", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "mms-mod-exports-scan-"));
+    tempDirs.push(root);
+    const page = path.join(root, "Page.tsx");
+    fs.writeFileSync(
+      page,
+      [
+        'import { UsersPage } from "@mms/mod-iam/frontend/tenant/UsersPage";',
+        'const lazyMod = () => import("@mms/mod-analytics/frontend/tenant/ReportsPage");',
+        "export function Banner() { return <code>@mms/mod-accounting/backend/platform</code>; }",
+      ].join("\n"),
+    );
+
+    const relRoot = path.relative(process.cwd(), root);
+    const scanned = collectModuleSpecifiers([relRoot]);
+    assert.deepEqual([...(scanned.get(page) ?? [])].sort(), [
+      "@mms/mod-analytics/frontend/tenant/ReportsPage",
+      "@mms/mod-iam/frontend/tenant/UsersPage",
+    ]);
+  });
+
+  it("resolves pre-build ./dist/ targets when their ./src/ TypeScript counterpart exists", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "mms-mod-exports-dist-"));
+    tempDirs.push(root);
+    makeModule(
+      "accounting",
+      { "src/shared/index.ts": "export const x = 1;" },
+      { "./shared": { import: "./dist/shared/index.js", types: "./dist/shared/index.d.ts" } },
+    );
+
+    assert.equal(resolveSpecifier("@mms/mod-accounting/shared", readModule("accounting")).ok, true);
   });
 });

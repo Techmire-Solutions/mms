@@ -22,7 +22,8 @@ import path from "node:path";
 import { ROOT, EmptyScanError, IGNORED_DIRS, SOURCE_EXTENSIONS, toRel } from "./lib/repo-paths.mjs";
 
 const SCAN_DIRS = ["apps/tenant-web/src", "apps/platform-web/src", "packages/modules"];
-const SPECIFIER = /@mms\/mod-[a-z0-9-]+(?:\/[A-Za-z0-9._-]+)*/g;
+const IMPORT_SPECIFIER =
+  /(?:\bfrom\s+|\bimport\s*\(\s*|\bimport\s+)["'](@mms\/mod-[a-z0-9-]+(?:\/[A-Za-z0-9._-]+)*)["']/g;
 
 function walk(dir, out) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -57,10 +58,10 @@ export function collectModuleSpecifiers(roots = SCAN_DIRS) {
     if (rel.includes("/backend/")) continue;
     const content = fs.readFileSync(file, "utf8");
     const found = new Set();
-    for (const match of content.matchAll(SPECIFIER)) {
+    for (const match of content.matchAll(IMPORT_SPECIFIER)) {
       const lineStart = content.lastIndexOf("\n", match.index) + 1;
       if (/^\s*(\*|\/\/)/.test(content.slice(lineStart, match.index))) continue;
-      found.add(match[0]);
+      found.add(match[1]);
     }
     if (found.size > 0) byFile.set(file, found);
   }
@@ -111,12 +112,20 @@ function firstTarget(value) {
   return null;
 }
 
+function distTargetHasSource(dir, candidate) {
+  if (!candidate.startsWith("./dist/")) return false;
+  const stem = candidate.replace(/^\.\/dist\//, "./src/").replace(/\.(?:d\.ts|js)$/, "");
+  return (
+    fs.existsSync(path.join(dir, `${stem}.ts`)) || fs.existsSync(path.join(dir, `${stem}.tsx`))
+  );
+}
+
 function targetMatches(dir, value, captured) {
   const target = firstTarget(value);
   if (!target) return { ok: true }; // nothing file-shaped to check
   const candidate = captured === null ? target : target.replace(/\*/g, captured);
   if (!candidate.startsWith(".")) return { ok: true };
-  return fs.existsSync(path.join(dir, candidate))
+  return fs.existsSync(path.join(dir, candidate)) || distTargetHasSource(dir, candidate)
     ? { ok: true }
     : {
         ok: false,

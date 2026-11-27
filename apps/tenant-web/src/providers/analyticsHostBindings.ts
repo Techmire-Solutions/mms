@@ -3,7 +3,7 @@ import {
   type AnalyticsHostValue,
 } from "@mms/mod-analytics/frontend/tenant/host";
 import { usePermissions, useModulePermissions } from "@/tenant/hooks/usePermissions";
-import { useFinanceCurrency } from "@/hooks/useCurrency";
+import { useCurrency, useFinanceCurrency } from "@/hooks/useCurrency";
 import { useDashboardConfig } from "@/hooks/useDashboardConfig";
 import * as savedReportsSource from "@/hooks/useSavedReportsSource";
 import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
@@ -35,6 +35,7 @@ import * as buildDashboardNotifications from "@/lib/buildDashboardNotifications"
 import * as settingsDeepLink from "@/lib/config/settingsDeepLink";
 import { useBranding } from "@/tenant/hooks/useBranding";
 import { useModuleAccess } from "@/tenant/hooks/useModuleAccess";
+import { useContactConfig } from "@mms/mod-contacts/frontend/tenant/components/ContactConfigContext";
 import * as pinnedWidgetsFacade from "@/tenant/components/reports/pinnedWidgetsFacade";
 import { useNotificationReadState } from "@/tenant/hooks/notifications/useNotificationReadState";
 import { useOpenTenantNotification } from "@/tenant/hooks/notifications/useOpenTenantNotification";
@@ -46,6 +47,7 @@ import { MessagingReportsVolumeChart } from "@/tenant/components/reports/Messagi
 /** Binds the app's report collections, widget registry and report libs into the analytics host. */
 export function bindAnalyticsHost(): void {
   configureAnalyticsHost({
+    useCurrency,
     useFinanceCurrency,
     useDashboardConfig,
     useSavedReportsSource: savedReportsSource.useGenericSavedReportsSource,
@@ -68,6 +70,12 @@ export function bindAnalyticsHost(): void {
       sessions: sessions as unknown as Record<string, unknown>,
       students: students as unknown as Record<string, unknown>,
       users: users as unknown as Record<string, unknown>,
+      hostHooks: {
+        useBranding,
+        useOpenTenantNotification,
+        useNotificationReadState,
+        useModuleAccess,
+      },
     } as unknown as AnalyticsHostValue["collections"],
     ChartTooltip: ChartTooltip as unknown as React.ComponentType<Record<string, unknown>>,
     ChartTooltipRow: ChartTooltipRow as unknown as React.ComponentType<Record<string, unknown>>,
@@ -95,6 +103,7 @@ export function bindAnalyticsHost(): void {
       ...settingsDeepLink,
       ...(pinnedWidgetsFacade as unknown as Record<string, unknown>),
       useBranding,
+      useContactConfig,
       useOpenTenantNotification,
       useNotificationReadState,
       useModuleAccess,

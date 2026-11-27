@@ -217,7 +217,9 @@ export const STUDENTS_WIDGET_AGGREGATES_QUERY_KEY: readonly unknown[] = new Prox
     typeof k === "symbol" || k in Array.prototype ? Reflect.get(t, k) : undefined,
 }) as unknown as readonly unknown[];
 export function useHasanatDenomsCollection(...a: any[]): any {
-  return (getAnalyticsHost() as any).collections?.useHasanatDenomsCollection?.(...a);
+  return (
+    collection("hasanat").useHasanatDenomsCollection ?? hostHook("useHasanatDenomsCollection")
+  )?.(...a);
 }
 export function useBranding(...a: any[]): any {
   return hostHook("useBranding")?.(...a);

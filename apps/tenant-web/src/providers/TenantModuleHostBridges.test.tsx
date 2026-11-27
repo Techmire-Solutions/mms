@@ -14,6 +14,9 @@ import { getSessionsHost } from "@mms/mod-sessions/frontend/tenant/host";
 import { getEnrollmentsHost } from "@mms/mod-enrollments/frontend/tenant/host";
 import { getAttendanceHost } from "@mms/mod-attendance/frontend/tenant/host";
 import { getTasksHost } from "@mms/mod-tasks/frontend/tenant/host";
+import { getAccountingHost } from "@mms/mod-accounting/frontend/tenant/host";
+import { getAnalyticsHost } from "@mms/mod-analytics/frontend/tenant/host";
+import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
 import { useEnrollmentsCollection as useSessionsEnrollmentsCollection } from "@mms/mod-sessions/frontend/tenant/host/enrollmentsCollection";
 import { useEnrollmentsCollection as useAttendanceEnrollmentsCollection } from "@mms/mod-attendance/frontend/tenant/host/enrollmentsCollection";
 import { useSessionsCollection as useAttendanceSessionsCollection } from "@mms/mod-attendance/frontend/tenant/host/sessionsCollection";
@@ -218,5 +221,64 @@ describe("TenantModuleHostBridges", () => {
     expect(container.textContent).not.toContain("Something went wrong");
     expect(container.textContent).not.toContain("Application error");
     expect(container.querySelectorAll("h1").length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("wires all newly extracted module hosts under production mode without hitting ErrorBoundary", async () => {
+    vi.stubEnv("MODE", "production");
+    try {
+      const [
+        { TenantModuleHostBridges: FreshBridges },
+        { DashboardPage },
+        { default: AccountingPage },
+        { ExaminationsPage },
+        { ObligationsPage },
+        { QuestionBankPage },
+        { WorkshopsPage },
+        { UsersPage },
+        { NotificationsPage },
+      ] = await Promise.all([
+        import("./TenantModuleHostBridges"),
+        import("@mms/mod-analytics/frontend/tenant"),
+        import("@mms/mod-accounting/frontend/tenant/AccountingPage"),
+        import("@mms/mod-examinations/frontend/tenant"),
+        import("@mms/mod-obligations/frontend/tenant"),
+        import("@mms/mod-question-bank/frontend/tenant"),
+        import("@mms/mod-workshops/frontend/tenant"),
+        import("@mms/mod-iam/frontend/tenant"),
+        import("@mms/mod-notifications/frontend/tenant"),
+      ]);
+      const qc = new QueryClient({ defaultOptions: { queries: { retry: false, gcTime: 0 } } });
+      container = document.createElement("div");
+      document.body.appendChild(container);
+      root = createRoot(container);
+
+      await act(async () => {
+        root!.render(
+          <ErrorBoundary fallback={<div>PROD_HOST_ERROR_BOUNDARY</div>}>
+            <QueryClientProvider client={qc}>
+              <MemoryRouter>
+                <FreshBridges>
+                  <DashboardPage />
+                  <AccountingPage />
+                  <ExaminationsPage />
+                  <ObligationsPage />
+                  <QuestionBankPage />
+                  <WorkshopsPage />
+                  <UsersPage />
+                  <NotificationsPage />
+                </FreshBridges>
+              </MemoryRouter>
+            </QueryClientProvider>
+          </ErrorBoundary>,
+        );
+      });
+
+      expect(getAccountingHost().usePermissions).toBe(usePermissions);
+      expect(getAnalyticsHost().useCurrency).toBeTypeOf("function");
+      expect(container.textContent).not.toContain("PROD_HOST_ERROR_BOUNDARY");
+      expect(container.querySelectorAll("h1").length).toBeGreaterThanOrEqual(6);
+    } finally {
+      vi.unstubAllEnvs();
+    }
   });
 });
