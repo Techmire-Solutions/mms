@@ -9,6 +9,9 @@ import { EnrollmentsHostBridge } from "@/providers/EnrollmentsHostProvider";
 import { MessagingHostBridge } from "@/providers/MessagingHostProvider";
 import { AttendanceHostBridge } from "@/providers/AttendanceHostProvider";
 import { TasksHostBridge } from "@/providers/TasksHostProvider";
+import { IamHostBridge } from "@/providers/IamHostProvider";
+import { NotificationsHostBridge } from "@/providers/NotificationsHostProvider";
+import { WorkshopsHostBridge } from "@/providers/WorkshopsHostProvider";
 
 /**
  * Composes all 10 vertical-module host bridges inside the lazy authenticated shell (`AppLayout`)
@@ -29,7 +32,13 @@ export function TenantModuleHostBridges({
                 <EnrollmentsHostBridge>
                   <MessagingHostBridge>
                     <AttendanceHostBridge>
-                      <TasksHostBridge>{children}</TasksHostBridge>
+                      <TasksHostBridge>
+                        <IamHostBridge>
+                          <NotificationsHostBridge>
+                            <WorkshopsHostBridge>{children}</WorkshopsHostBridge>
+                          </NotificationsHostBridge>
+                        </IamHostBridge>
+                      </TasksHostBridge>
                     </AttendanceHostBridge>
                   </MessagingHostBridge>
                 </EnrollmentsHostBridge>
