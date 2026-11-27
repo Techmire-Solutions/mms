@@ -34,6 +34,23 @@ let activityQueryData: { status: number; body: { logs: ActivityLog[] } } = {
   body: { logs: mockLogs },
 };
 
+// The report renders through the real English pack; without this mock the component receives raw
+// keys (no TranslationProvider in a unit test). The factory resolves the pack inside the async mock
+// so nothing is used before the hoisted factory runs.
+vi.mock("@mms/fe-core/i18n", async () => {
+  const { translateAppParams } = await import("@mms/contracts");
+  return {
+    useTranslation: () => ({
+      t: (key: string, params?: Record<string, string | number>) =>
+        translateAppParams(key as Parameters<typeof translateAppParams>[0], "en", params),
+      language: "en",
+      dir: "ltr" as const,
+      isRtl: false,
+      isLoading: false,
+    }),
+  };
+});
+
 vi.mock("@/tenant/hooks/collections/users", async (importOriginal) => {
   const actual = await importOriginal<Record<string, unknown>>();
   return {

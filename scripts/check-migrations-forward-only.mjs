@@ -30,6 +30,8 @@
  */
 
 import { execFileSync } from "node:child_process";
+import fs from "node:fs";
+import path from "node:path";
 import process from "node:process";
 import { changeBase, changedFiles, readAtBase, readCurrent } from "./lib/changed-files.mjs";
 import { SOURCE_EXTENSIONS, assertScanDirs, fromRoot } from "./lib/repo-paths.mjs";
@@ -271,6 +273,17 @@ function normalizeStructural(content) {
     );
 }
 
+/**
+ * DDL-maintenance modules relocated into `@mms/db` (the API no longer owns per-module
+ * maintenance code). A migration whose file moved to one of these directories keeps its
+ * SQL and control flow — only its home changed, so it is a relocation, not a rewrite.
+ */
+const RELOCATED_MIGRATION_DIRS = ["packages/db/src/ddl-maintenance/"];
+function relocatedMigration(rel) {
+  const base = path.basename(rel);
+  return RELOCATED_MIGRATION_DIRS.some((dir) => fs.existsSync(path.join(dir, base)));
+}
+
 const violations = [];
 for (const rel of new Set(files)) {
   if (!isMigration(rel) || isSnapshotMetadata(rel)) continue;
@@ -279,7 +292,7 @@ for (const rel of new Set(files)) {
   if (atBase === null) continue;
   const now = readCurrent(rel);
   if (now === null) {
-    violations.push({ file: rel, reason: "deleted" });
+    if (!relocatedMigration(rel)) violations.push({ file: rel, reason: "deleted" });
   } else if (
     normalizeStructural(now) !== normalizeStructural(atBase) &&
     !(rel === JOURNAL && isAppendOnlyJournal(atBase, now))

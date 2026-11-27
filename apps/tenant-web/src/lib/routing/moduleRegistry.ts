@@ -236,7 +236,7 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "users",
     path: TENANT_PATHS.users,
     access: moduleAccess("users"),
-    loader: () => import("@/tenant/features/users/UsersPage"),
+    loader: () => import("@mms/mod-iam/frontend/tenant").then((m) => ({ default: m.UsersPage })),
     nav: { labelKey: "nav.users", icon: UserCog, order: 9 },
     apexRedirectable: true,
   },

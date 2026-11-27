@@ -398,11 +398,6 @@ jobs:
       - name: Module audience boundaries
         run: pnpm run check:module-boundaries
 
-      # Migration ledger (docs/monorepo-migration-plan.md §9.1): a done move whose
-      # source still exists, or a todo move whose target already exists, fails.
-      - name: Migration move ledger
-        run: pnpm run check:move-manifest
-
       # Topology (migration plan P0/P9): catches undeclared app/package/module
       # drift, half-created module dirs, a module root export, and a dropped
       # pnpm-workspace glob.

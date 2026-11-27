@@ -140,7 +140,7 @@ async function hasDuplicateRows(client: pg.Client, spec: ConcurrentIndexSpec): P
   logger.error(
     { index: spec.name, duplicates: duplicates.rows },
     `Skipping unique enrollment index ${spec.name}: existing rows violate it. ` +
-      "Repair the duplicate rows (see packages/db/scripts/sql/enrollment_integrity_concurrent_indexes.sql) " +
+      "Repair the duplicate enrollment rows " +
       "and restart — the index is created on the next boot.",
   );
   return true;

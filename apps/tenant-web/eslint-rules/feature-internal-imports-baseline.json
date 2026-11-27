@@ -1,7 +1,6 @@
 {
   "src/tenant/components/reports/moduleReportAdapters.ts": [
     "question-bank",
-    "users",
     "accounting",
     "obligations"
   ]

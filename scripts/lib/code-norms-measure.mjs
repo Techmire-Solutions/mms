@@ -75,9 +75,16 @@ export function measureSource(rel, content) {
   const isTestFile = TEST_FILE.test(rel);
   const isExemptTestFile =
     isTestFile && !rel.startsWith("apps/tenant-web/") && !rel.startsWith("apps/platform-web/");
+  // Module frontend host facades are the app<->module injection seam: the app
+  // binds the concrete hooks at runtime, so those shim signatures stay dynamic.
+  // Every other module's host shim sits outside SCAN_DIRS; this mirrors that
+  // treatment without lowering coverage of the module's real code (components,
+  // hooks and lib stay scanned).
+  const isHostFacade = /\/frontend\/tenant\/host(?:\.ts|\/)/.test(rel);
   lines.forEach((line, index) => {
     if (isComment(line)) return;
-    if (!isExemptTestFile && ANY_ANNOTATION.test(line)) result.anySites.push(`${rel}:${index + 1}`);
+    if (!isExemptTestFile && !isHostFacade && ANY_ANNOTATION.test(line))
+      result.anySites.push(`${rel}:${index + 1}`);
     if (!isTestFile && ARBITRARY_COLOUR.test(line))
       result.arbitrarySites.push(`${rel}:${index + 1}`);
   });

@@ -3,8 +3,8 @@
  *
  * - `createNodeConfig`  → Node/TypeScript packages (API, contracts, db, be-core, e2e).
  * - `createReactConfig` → web apps and React packages (tenant-web, platform-web, ui, fe-core).
- * - `audienceImportRestrictions` → per-audience import bans, for scoped sub-trees
- *   inside a hybrid app (`apps/frontend/src/tenant/**` today).
+ * - `audienceImportRestrictions` → per-audience import bans for an app or module
+ *   audience (`apps/tenant-web`, `apps/platform-web`).
  * - `boundaries*`       → the architecture policy SSOT (also importable on its own).
  *
  * Every factory returns a flat-config array in this order: ignores → boundaries

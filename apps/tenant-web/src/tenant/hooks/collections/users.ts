@@ -12,26 +12,26 @@ export {
   usersCommandMetricsQueryOptions,
   useActivityLogs,
   useUsersMutations,
-} from "@/tenant/features/users/hooks/useUsersApi";
+} from "@mms/mod-iam/frontend/tenant/hooks/useUsersApi";
 export {
   type UsersListPageResult,
   type UsersPaginatedParams,
-} from "@/tenant/features/users/hooks/usersQueryKeys";
+} from "@mms/mod-iam/frontend/tenant/hooks/usersQueryKeys";
 export {
   useUsersPaginated,
   fetchAllUsersForQuery,
-} from "@/tenant/features/users/hooks/useUsersListQueries";
+} from "@mms/mod-iam/frontend/tenant/hooks/useUsersListQueries";
 export {
   setUserFieldConfigMemory,
   setUserPreferencesMemory,
-} from "@/tenant/features/users/hooks/userSetupConfigApi";
+} from "@mms/mod-iam/frontend/tenant/hooks/userSetupConfigApi";
 export {
   useComposedUsersSettings,
   useUserPreferencesMutation,
   useUserPreferencesQuery,
   USERS_PREFERENCES_QUERY_KEY,
-} from "@/tenant/features/users/hooks/useUserSetupConfig";
-export { invalidateUsersQueries } from "@/tenant/features/users/hooks/invalidateUsersQueries";
+} from "@mms/mod-iam/frontend/tenant/hooks/useUserSetupConfig";
+export { invalidateUsersQueries } from "@mms/mod-iam/frontend/tenant/hooks/invalidateUsersQueries";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   usersListQueryOptions,
@@ -45,11 +45,11 @@ export {
   useUsersContractDelete,
   useUsersContractRestore,
   useUsersContractVerifyEmail,
-} from "@/tenant/features/users/hooks/useUsersQueries";
+} from "@mms/mod-iam/frontend/tenant/hooks/useUsersQueries";
 
 /** Role catalog create — Faculty and other modules must import from this facade. */
-export { RoleFormModal } from "@/tenant/features/users/components/RoleFormModal";
+export { RoleFormModal } from "@mms/mod-iam/frontend/tenant/components/RoleFormModal";
 export {
   useCreateWorkspaceRole,
   type UseCreateWorkspaceRoleResult,
-} from "@/tenant/features/users/hooks/useCreateWorkspaceRole";
+} from "@mms/mod-iam/frontend/tenant/hooks/useCreateWorkspaceRole";

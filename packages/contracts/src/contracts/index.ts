@@ -156,7 +156,7 @@ export type RootContract = typeof rootContract;
  * Per-domain contracts, re-exported so consumers can type a single domain
  * at a time. The full `rootContract` (22 domains × ~350 endpoints) exceeds
  * TS's union-instantiation depth limit — domain-scoped resolution keeps
- * compile-time types intact (see apps/frontend/src/lib/api.ts `tsr` accessor).
+ * compile-time types intact (see `@mms/fe-core/api/tsRest` `tsrClient` accessor).
  */
 export {
   studentContract,

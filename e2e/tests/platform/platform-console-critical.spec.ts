@@ -439,7 +439,7 @@ test.describe("Platform Console Critical Workspace Lifecycle", () => {
  * Opens the apex Madrasas directory in cards view and narrows it to the
  * e2e workspace row. Returns the enable/disable switch for that workspace.
  *
- * Selectors (stabilized against `apps/frontend/src/platform/**`):
+ * Selectors (stabilized against `apps/platform-web/src/platform/**`):
  * - Cards view toggle: role=group "View Mode" > button "Cards view"
  *   (`WorkViewModeToggle`).
  * - Enable/disable switch: `[id="toggle-${subdomain}"]` — the id is derived

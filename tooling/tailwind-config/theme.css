@@ -12,9 +12,9 @@
  * resolved relative to the stylesheet that declares them — a shared package
  * cannot know where the consuming app's source and its sibling packages live.
  *
- * Moved verbatim from `apps/frontend/src/index.css` (2026-11-24) so the cascade
+ * Moved verbatim from the pre-split `apps/frontend/src/index.css` (2026-11-24) so the cascade
  * position and token values are unchanged. Do not edit token values here without
- * re-running `apps/frontend/src/__tests__/designTokens.contrast.test.ts`.
+ * re-running `apps/tenant-web/src/__tests__/designTokens.contrast.test.ts`.
  */
 
 @custom-variant dark (&:is(.dark *));
@@ -401,7 +401,7 @@
    * `amber-600` (3.19:1), `emerald-600` (3.77:1) and `orange-600` (3.56:1) all
    * fail AA with white text, and all fail as text on their own tints.
    *
-   * Enforced by `apps/frontend/src/__tests__/designTokens.contrast.test.ts`.
+   * Enforced by `apps/tenant-web/src/__tests__/designTokens.contrast.test.ts`.
    * Tints stronger than `/15` (e.g. a resting `bg-primary/20`) must use
    * `-foreground` or a lighter tint, because no single hue satisfies every step.
    *

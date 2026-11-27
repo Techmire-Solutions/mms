@@ -1,0 +1,287 @@
+import { describe, expect, it, vi, beforeEach } from "vitest";
+import React, { act } from "react";
+import { createRoot } from "react-dom/client";
+import { EditUserModal } from "./EditUserModal";
+import { normalizeWorkspaceUser } from "@mms/contracts";
+import { ApiError } from "@mms/fe-core/api/client";
+
+(globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+let mockActorRole = "super_admin";
+let mockContact: {
+  id: string;
+  name: string;
+  emails: { address: string; isPrimary: boolean }[];
+  phones: { number: string; isPrimary: boolean }[];
+} = {
+  id: "c1",
+  name: "Updated Contact Name",
+  emails: [{ address: "contact@example.com", isPrimary: true }],
+  phones: [{ number: "+1234567890", isPrimary: true }],
+};
+
+vi.mock("@mms/fe-core/auth/AuthContext", () => ({
+  useAuth: () => ({
+    user: { id: "actor-1", role: mockActorRole },
+  }),
+}));
+
+vi.mock("../host/useWorkspaceRoles", () => ({
+  useWorkspaceRoles: () => [
+    { id: "admin", name: "Admin", labelKey: "roles.admin" },
+    { id: "teacher", name: "Teacher", labelKey: "roles.teacher" },
+    { id: "super_admin", name: "Super Admin", labelKey: "roles.super_admin" },
+  ],
+}));
+
+const mockCustomFields = [{ id: "department", label: "Department", defaultValue: "General" }];
+
+vi.mock("../host/useUsersConfig", () => ({
+  useUsersConfig: () => ({
+    customFields: mockCustomFields,
+  }),
+}));
+
+vi.mock("../host/useContactById", () => ({
+  useContactById: (_id?: string, enabled?: boolean) => ({
+    data: enabled ? mockContact : undefined,
+  }),
+}));
+
+vi.mock("@mms/fe-core/components/FormModal", () => ({
+  FormModal: ({
+    title,
+    subtitle,
+    children,
+    onSave,
+    saveDisabled,
+    error,
+  }: {
+    title?: React.ReactNode;
+    subtitle?: React.ReactNode;
+    children?: React.ReactNode;
+    onSave?: () => void;
+    saveDisabled?: boolean;
+    error?: string | readonly string[];
+  }) => (
+    <div data-testid="form-modal">
+      <h2>{title}</h2>
+      <h3>{subtitle}</h3>
+      {error ? <div role="alert">{Array.isArray(error) ? error.join(" ") : error}</div> : null}
+      <button data-testid="modal-save-btn" disabled={saveDisabled} onClick={onSave}>
+        Save
+      </button>
+      {children}
+    </div>
+  ),
+}));
+
+vi.mock("../host/ContactPicker", () => ({
+  default: ({ value, onChange }: { value?: string; onChange: (value: string) => void }) => (
+    <div data-testid="contact-picker">
+      <span data-testid="contact-val">{value}</span>
+      <button data-testid="change-contact-btn" onClick={() => onChange("c1")}>
+        Change Contact
+      </button>
+    </div>
+  ),
+}));
+
+vi.mock("@mms/fe-core/notify", () => ({
+  notify: {
+    success: vi.fn(),
+    error: vi.fn(),
+  },
+}));
+
+describe("EditUserModal", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockActorRole = "super_admin";
+    mockContact = {
+      id: "c1",
+      name: "Updated Contact Name",
+      emails: [{ address: "contact@example.com", isPrimary: true }],
+      phones: [{ number: "+1234567890", isPrimary: true }],
+    };
+  });
+
+  it("surfaces a rejected save in the modal banner instead of only toasting", async () => {
+    const onSave = vi
+      .fn()
+      .mockRejectedValue(
+        new ApiError(409, "Someone else changed this user", "stale_write", undefined, undefined),
+      );
+    const container = document.createElement("div");
+    document.body.appendChild(container);
+    const root = createRoot(container);
+
+    await act(async () => {
+      root.render(
+        <EditUserModal
+          user={normalizeWorkspaceUser({
+            id: "u1",
+            name: "Existing User",
+            email: "existing@test.com",
+            role: "admin",
+            status: "active",
+            contactId: "c1",
+            twoFactorEnabled: false,
+          })}
+          onClose={vi.fn()}
+          onSave={onSave}
+        />,
+      );
+    });
+
+    const form = container.querySelector("form");
+    await act(async () => {
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+
+    expect(onSave).toHaveBeenCalledTimes(1);
+    expect(container.querySelector('[role="alert"]')?.textContent).toContain(
+      "Someone else changed this user",
+    );
+
+    await act(async () => root.unmount());
+    container.remove();
+  });
+
+  it("renders edit form with user details and custom fields", () => {
+    const user = normalizeWorkspaceUser({
+      id: "u1",
+      name: "Existing User",
+      email: "existing@test.com",
+      role: "admin",
+      status: "active",
+      contactId: "c1",
+    });
+    const onClose = vi.fn();
+    const onSave = vi.fn();
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    act(() => {
+      root.render(<EditUserModal user={user} onClose={onClose} onSave={onSave} />);
+    });
+
+    expect(container.textContent).toContain("Updated Contact Name");
+    expect(container.querySelector('[data-testid="contact-picker"]')).not.toBeNull();
+    expect(container.querySelector('input[id="custom-field-department"]')).not.toBeNull();
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("shows warning when standard admin tries to edit super admin", () => {
+    mockActorRole = "admin";
+    const user = normalizeWorkspaceUser({
+      id: "u-super",
+      name: "Super User",
+      email: "super@test.com",
+      role: "super_admin",
+      status: "active",
+    });
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    act(() => {
+      root.render(<EditUserModal user={user} onClose={vi.fn()} onSave={vi.fn()} />);
+    });
+
+    expect(container.textContent).toContain("users.errors.cannotModifySuperAdmin");
+    const saveBtn = container.querySelector('[data-testid="modal-save-btn"]');
+    expect(saveBtn?.hasAttribute("disabled")).toBe(true);
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("submits updated user data on save", async () => {
+    const user = normalizeWorkspaceUser({
+      id: "u1",
+      name: "Existing User",
+      email: "existing@test.com",
+      role: "admin",
+      status: "active",
+      contactId: "c1",
+    });
+    const onSave = vi.fn();
+    const onClose = vi.fn();
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    act(() => {
+      root.render(<EditUserModal user={user} onClose={onClose} onSave={onSave} />);
+    });
+
+    const roleBtn = container.querySelectorAll('button[type="button"]')[1];
+    act(() => {
+      roleBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const form = container.querySelector("form");
+    await act(async () => {
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "u1",
+        name: "Updated Contact Name",
+        email: "contact@example.com",
+        contactId: "c1",
+      }),
+    );
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
+  it("blocks a self user from changing their own role", async () => {
+    mockActorRole = "admin";
+    const user = normalizeWorkspaceUser({
+      id: "actor-1",
+      name: "Self User",
+      email: "self@test.com",
+      role: "admin",
+      status: "active",
+      contactId: "c1",
+    });
+    const onSave = vi.fn();
+
+    const container = document.createElement("div");
+    const root = createRoot(container);
+    act(() => {
+      root.render(<EditUserModal user={user} onClose={vi.fn()} onSave={onSave} />);
+    });
+
+    const roleGroup = container.querySelector('[role="group"][aria-label="users.fieldRole"]');
+    const teacherBtn = roleGroup
+      ? Array.from(roleGroup.querySelectorAll("button")).find(
+          (b) => b.textContent === "roles.teacher",
+        )
+      : undefined;
+    expect(teacherBtn).toBeInstanceOf(HTMLButtonElement);
+    act(() => {
+      teacherBtn?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+
+    const form = container.querySelector("form");
+    await act(async () => {
+      form?.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+    });
+
+    expect(onSave).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("users.errors.cannotEditSelfRole");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+});

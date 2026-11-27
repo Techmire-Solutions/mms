@@ -12,3 +12,5 @@ export { useInviteMember, useTeamMembers, useWorkspaceRoles } from "./hooks/useT
 export { iamTenantKeys } from "./queryKeys";
 export * from "../components/index";
 export { RoleBadge } from "../components/RoleBadge.js";
+export { default as UsersPage } from "./UsersPage.js";
+export * from "./lib/index.js";

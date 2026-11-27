@@ -58,7 +58,7 @@ const BLOCKING_IMPACTS: readonly Impact[] = ["serious", "critical"];
  * white) and the token was unusable as text, on surfaces and on its own chip tint.
  * Fills are now fitted to all three roles; see
  * `packages/contracts/src/brandingCssContrast.ts` and the three-role assertions in
- * `brandingTheme.test.ts` / `apps/frontend/src/__tests__/designTokens.contrast.test.ts`.
+ * `brandingTheme.test.ts` / `apps/tenant-web/src/__tests__/designTokens.contrast.test.ts`.
  *
  * `aria-hidden-focus` — removed. This one described itself as "intermittent,
  * ~1 in 6 runs, not attributable to a component". The `ProgressBar` ARIA conflict

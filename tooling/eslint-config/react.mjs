@@ -110,11 +110,11 @@ const MODULE_AUDIENCE_MESSAGES = {
 /**
  * `no-restricted-imports` rules for an app audience.
  *
- * Exported because a hybrid app needs more than one audience: `apps/frontend`
- * hosts both consoles until the split, so it keeps `appKind: "app"` for the
- * bundle and applies `audienceImportRestrictions("tenant")` to its
- * `src/tenant/**` subtree. `apps/tenant-web` / `apps/platform-web` will pass the
- * matching `appKind` to `createReactConfig` once they exist.
+ * Exported because an app may need more than one audience: the pre-split hybrid
+ * `apps/frontend` kept `appKind: "app"` and applied
+ * `audienceImportRestrictions("tenant")` to its `src/tenant/**` subtree.
+ * `apps/tenant-web` and `apps/platform-web` now pass their own `appKind`
+ * (`"tenant"` / `"platform"`) directly to `createReactConfig`.
  *
  * @param {"app"|"tenant"|"platform"} appKind
  * @returns {{ "no-restricted-imports": ["error", { patterns: Array<{ group: readonly string[], message: string }> }] }}
@@ -159,9 +159,8 @@ export function audienceImportRestrictions(appKind = "app") {
  * @param {string} [options.reactVersion]       `settings.react.version` (default "19.2").
  * @param {"app"|"tenant"|"platform"} [options.appKind]
  *   `"tenant"` additionally bans imports whose specifier contains a `platform`
- *   segment (see TENANT_PLATFORM_IMPORT_PATTERNS). `apps/frontend` currently
- *   hosts both consoles, so it keeps `"app"` here and applies
- *   `audienceImportRestrictions("tenant")` to its `src/tenant/**` subtree.
+ *   segment (see TENANT_PLATFORM_IMPORT_PATTERNS). `apps/tenant-web` passes
+ *   `"tenant"`; `apps/platform-web` passes `"platform"`.
  * @param {object} [options.rules]              Per-package rule overrides.
  * @param {string[]} [options.ignores]          Package-relative ignore globs.
  * @param {unknown[]} [options.extensions]      Extra flat-config objects appended before prettier.

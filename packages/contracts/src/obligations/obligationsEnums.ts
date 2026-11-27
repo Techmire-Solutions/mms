@@ -3,7 +3,7 @@
  * @description Canonical runtime tuples for every closed vocabulary in the module.
  *
  * The values used to exist twice: as zod literals in the schemas below, and as hand-written `as
- * const` tuples in `apps/frontend/src/lib/data/obligationsData.ts`. Nothing tied the two, so adding
+ * const` tuples in `apps/tenant-web/src/lib/data/obligationsData.ts`. Nothing tied the two, so adding
  * a payment mode or a designation to the DTO left the UI's dropdown and validation stale (audit S2).
  * The tuples are now the single source, and the zod schemas are derived from them.
  *
