@@ -14,7 +14,8 @@
  *
  * Inputs (env): EVENT_NAME, IS_DRAFT, TEST_SCOPE, CHANGES_RESULT,
  * DB_MATCHED, DB_RESULT, E2E_MATCHED, E2E_RESULT, RLS_MATCHED, RLS_RESULT,
- * FRONTEND_MATCHED, FRONTEND_RESULT, BACKEND_MATCHED, BACKEND_RESULT.
+ * FRONTEND_MATCHED, FRONTEND_RESULT, BACKEND_MATCHED, BACKEND_RESULT,
+ * MODULES_MATCHED, MODULES_RESULT.
  */
 import process from "node:process";
 
@@ -34,6 +35,8 @@ import process from "node:process";
  * @property {string} frontendResult
  * @property {boolean} backendMatched
  * @property {string} backendResult
+ * @property {boolean} modulesMatched
+ * @property {string} modulesResult
  */
 
 /**
@@ -70,6 +73,9 @@ export function evaluateCiGatePolicy(input) {
       if (input.backendMatched && input.backendResult === "skipped") {
         failures.push("backend unit tests were skipped on a ready PR whose paths matched");
       }
+      if (input.modulesMatched && input.modulesResult === "skipped") {
+        failures.push("module package tests were skipped on a ready PR whose paths matched");
+      }
     }
   }
 
@@ -93,6 +99,8 @@ function main() {
     frontendResult: env.FRONTEND_RESULT ?? "",
     backendMatched: env.BACKEND_MATCHED === "true",
     backendResult: env.BACKEND_RESULT ?? "",
+    modulesMatched: env.MODULES_MATCHED === "true",
+    modulesResult: env.MODULES_RESULT ?? "",
   });
 
   for (const failure of failures) console.error(`::error::${failure}`);

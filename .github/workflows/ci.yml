@@ -798,6 +798,29 @@ jobs:
           path: apps/api/.vitest-reports/blob-${{ matrix.shardIndex }}.json
           retention-days: 1
 
+  test-modules:
+    name: Module Package Tests
+    needs: [changes]
+    # Module suites (backend + frontend unit, in-memory) are not covered by the
+    # app-level matrices; gate them on the same paths that feed backend_unit so a
+    # module change cannot merge with its own tests skipped.
+    if: ${{ needs.changes.outputs.backend_unit == 'true' || github.event_name != 'pull_request' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Environment
+        uses: ./.github/actions/setup-mms
+        with:
+          build-shared: "true"
+
+      - name: Run Module Unit Tests
+        run: pnpm turbo run test --filter="./packages/modules/*"
+
   test-backend-coverage:
     name: Backend Coverage Gate
     needs: [changes, test-backend-unit]
@@ -1162,6 +1185,7 @@ jobs:
         test-frontend,
         test-frontend-coverage,
         test-backend-unit,
+        test-modules,
         test-backend-coverage,
         test-backend-db,
         test-backend-rls,
@@ -1192,6 +1216,8 @@ jobs:
           FRONTEND_RESULT: ${{ needs.test-frontend.result }}
           BACKEND_MATCHED: ${{ needs.changes.outputs.backend_unit }}
           BACKEND_RESULT: ${{ needs.test-backend-unit.result }}
+          MODULES_MATCHED: ${{ needs.changes.outputs.backend_unit }}
+          MODULES_RESULT: ${{ needs.test-modules.result }}
         run: |
           echo "==================== CI Gate Summary ===================="
           echo "Unit test scope:        ${TEST_SCOPE}"
@@ -1205,6 +1231,7 @@ jobs:
           echo "Frontend Tests:         ${{ needs.test-frontend.result }}"
           echo "Frontend Coverage:      ${{ needs.test-frontend-coverage.result }}"
           echo "Backend Unit Tests:     ${{ needs.test-backend-unit.result }}"
+          echo "Module Package Tests:   ${{ needs.test-modules.result }}"
           echo "Backend Coverage:       ${{ needs.test-backend-coverage.result }}"
           echo "Backend DB Tests:       ${{ needs.test-backend-db.result }}"
           echo "Backend RLS Tests:      ${{ needs.test-backend-rls.result }}"
@@ -1273,6 +1300,11 @@ jobs:
 
           if [ "${{ needs.test-backend-unit.result }}" != "success" ] && [ "${{ needs.test-backend-unit.result }}" != "skipped" ]; then
             echo "::error::test-backend-unit failed or was cancelled (result: ${{ needs.test-backend-unit.result }})"
+            failed=1
+          fi
+
+          if [ "${{ needs.test-modules.result }}" != "success" ] && [ "${{ needs.test-modules.result }}" != "skipped" ]; then
+            echo "::error::test-modules failed or was cancelled (result: ${{ needs.test-modules.result }})"
             failed=1
           fi
 

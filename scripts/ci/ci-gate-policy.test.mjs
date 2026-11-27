@@ -17,6 +17,8 @@ const base = {
   frontendResult: "success",
   backendMatched: true,
   backendResult: "success",
+  modulesMatched: true,
+  modulesResult: "success",
 };
 
 test("passes a normal ready PR", () => {
@@ -53,10 +55,12 @@ test("fails when matched unit matrices are skipped on a ready PR", () => {
     ...base,
     frontendResult: "skipped",
     backendResult: "skipped",
+    modulesResult: "skipped",
   });
-  assert.equal(failures.length, 2);
+  assert.equal(failures.length, 3);
   assert.match(failures.join("\n"), /frontend unit tests were skipped/);
   assert.match(failures.join("\n"), /backend unit tests were skipped/);
+  assert.match(failures.join("\n"), /module package tests were skipped/);
 });
 
 test("allows skipped unit matrices while the PR is a draft", () => {
