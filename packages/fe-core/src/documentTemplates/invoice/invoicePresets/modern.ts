@@ -3,7 +3,7 @@ import {
   type BrandingInfo,
   type InvoiceTemplate,
   type TemplateTranslate,
-} from "@/lib/invoiceTemplateTypes";
+} from "../invoiceTemplateTypes";
 import { presetPalette } from "./palette";
 
 /**

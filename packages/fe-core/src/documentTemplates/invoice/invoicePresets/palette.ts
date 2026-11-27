@@ -1,9 +1,9 @@
-import { PRINT_NEUTRAL } from "@/lib/ui/printBrandingTokens";
+import { PRINT_NEUTRAL } from "../../../print/printBrandingTokens";
 import {
   INVOICE_TEMPLATE_STATIC_KEY_PREFIX,
   type BrandingInfo,
   type TemplateTranslate,
-} from "@/lib/invoiceTemplateTypes";
+} from "../invoiceTemplateTypes";
 
 /** Resolved print colours + namespace-bound translator shared by the preset builders. */
 export interface InvoicePresetPalette {

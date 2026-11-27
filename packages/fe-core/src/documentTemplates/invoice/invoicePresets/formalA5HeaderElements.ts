@@ -1,5 +1,5 @@
 import { formatBrandingAddress } from "@mms/contracts";
-import type { BrandingInfo, TemplateElement } from "@/lib/invoiceTemplateTypes";
+import type { BrandingInfo, TemplateElement } from "../invoiceTemplateTypes";
 import type { InvoicePresetPalette } from "./palette";
 
 /**

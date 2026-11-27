@@ -338,7 +338,15 @@
     },
     "./ui/moduleStatusUi": "./src/ui/moduleStatusUi.ts",
     "./components/sequence-numbering": "./src/components/sequence-numbering/index.ts",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./documentTemplates/invoice/*": [
+      "./src/documentTemplates/invoice/*.ts",
+      "./src/documentTemplates/invoice/*.tsx"
+    ],
+    "./documentTemplates/*": [
+      "./src/documentTemplates/*.ts",
+      "./src/documentTemplates/*.tsx"
+    ]
   },
   "scripts": {
     "build": "tsc --noEmit -p tsconfig.json",

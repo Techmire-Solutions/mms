@@ -1,4 +1,4 @@
-import type { TemplateElement } from "@/lib/invoiceTemplateTypes";
+import type { TemplateElement } from "../invoiceTemplateTypes";
 import type { InvoicePresetPalette } from "./palette";
 
 /**

@@ -3,8 +3,8 @@ import {
   type BrandingInfo,
   type InvoiceTemplate,
   type TemplateTranslate,
-} from "@/lib/invoiceTemplateTypes";
-import { buildDefaultInvoiceTemplateElements } from "@/lib/invoiceTemplateElements";
+} from "../invoiceTemplateTypes";
+import { buildDefaultInvoiceTemplateElements } from "../invoiceTemplateElements";
 
 /**
  * Builds the Classic A6 preset (MMS default).

@@ -3,8 +3,8 @@ import {
   defaultTemplateTranslate,
   type BrandingInfo,
   type TemplateTranslate,
-} from "@/lib/invoiceTemplateTypes";
-import { getInvoiceTemplateBranding } from "@/lib/invoiceTemplateBranding";
+} from "../invoiceTemplateTypes";
+import { getInvoiceTemplateBranding } from "../invoiceTemplateBranding";
 import { buildClassicPreset } from "./classic";
 import { buildFormalA5Preset } from "./formalA5";
 import { buildModernPreset } from "./modern";

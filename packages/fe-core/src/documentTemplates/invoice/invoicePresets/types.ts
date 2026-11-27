@@ -1,4 +1,4 @@
-import type { InvoiceTemplate } from "@/lib/invoiceTemplateTypes";
+import type { InvoiceTemplate } from "../invoiceTemplateTypes";
 
 export interface InvoiceTemplatePreset {
   key: string;
