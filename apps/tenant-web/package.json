@@ -27,6 +27,7 @@
     "@mms/mod-billing": "workspace:*",
     "@mms/mod-contacts": "workspace:*",
     "@mms/mod-enrollments": "workspace:*",
+    "@mms/mod-examinations": "workspace:*",
     "@mms/mod-faculty": "workspace:*",
     "@mms/mod-hasanat": "workspace:*",
     "@mms/mod-iam": "workspace:*",

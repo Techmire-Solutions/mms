@@ -1,0 +1,129 @@
+import { useEffect, useMemo } from "react";
+import { resolveResultScore, rankInExam, type Exam, type ExamResult } from "@mms/contracts";
+import { useStudentsByIds } from "../host/useStudentsByIds";
+import type { Student } from "@mms/contracts";
+import { useSessionsCollection } from "../host/useSessions";
+import { useEnrollmentsCollection } from "../host/useEnrollments";
+import { useTranslation } from "@mms/fe-core/i18n";
+import type { RankedResult, ResultsViewStatsData } from "../lib/resultsViewTypes";
+
+export interface UseResultsViewDataOptions {
+  exams: Exam[];
+  results: ExamResult[];
+  selectedExam: string;
+  onFilteredCountChange?: (count: number) => void;
+}
+
+export type UseResultsViewDataResult = ReturnType<typeof useResultsViewData>;
+
+export function useResultsViewData({
+  exams,
+  results,
+  selectedExam,
+  onFilteredCountChange,
+}: UseResultsViewDataOptions) {
+  const { t } = useTranslation();
+
+  const exam = exams.find((examOption: any) => examOption.id === selectedExam);
+  const examResults = useMemo(
+    () => (exam ? results.filter((examResult: any) => examResult.examId === exam.id) : []),
+    [exam, results],
+  );
+  const studentIdsForExam = examResults.map((examResult: any) => examResult.studentId);
+
+  const { data: students = [] } = useStudentsByIds(studentIdsForExam);
+  const sessions = useSessionsCollection();
+  const enrollments = useEnrollmentsCollection();
+
+  // Derive once per input change: the lookup maps and the scoring/ranking pass are memoized
+  // together so consumer re-renders (search, selection, certificates) do not re-run O(n) work.
+  const rankedResults = useMemo(() => {
+    const studentsMap = new Map<string, Student>();
+    for (const student of students) {
+      studentsMap.set(String(student.id), student);
+    }
+
+    const classNames = new Map<string, string>();
+    for (const session of sessions) {
+      if (session.classes) {
+        for (const sessionClass of session.classes) {
+          classNames.set(sessionClass.id, `${session.name} - ${sessionClass.name}`);
+        }
+      }
+    }
+
+    const classByStudent = new Map<string, string>();
+    if (exam?.classIds && exam.classIds.length > 0) {
+      const examClassIds = new Set(exam.classIds);
+      for (const enrollment of enrollments) {
+        if (examClassIds.has(enrollment.classId)) {
+          classByStudent.set(String(enrollment.studentId), enrollment.classId);
+        }
+      }
+    }
+
+    if (!exam) return [] as RankedResult[];
+
+    /**
+     * One scoring pass for the whole grid: raw-score grading (`resolveResultScore`) and competition
+     * ranking with a deterministic tie-break, overall and per class. Ties share a rank (1, 1, 3) and
+     * "class position" is the position inside the student's own class, not the exam-wide rank.
+     */
+    const scored = examResults.map((examResult: any) => {
+      const student = studentsMap.get(String(examResult.studentId));
+      const classId = classByStudent.get(String(examResult.studentId));
+      const score = resolveResultScore({
+        marksObtained: examResult.marksObtained,
+        totalMarks: exam.totalMarks,
+        passingMarks: exam.passingMarks,
+        graceMarks: examResult.graceMarks,
+      });
+      return {
+        ...examResult,
+        student: student
+          ? {
+              name: student.name || t("common.unnamedStudent"),
+              rollNo: student.grNumber || String(student.id),
+            }
+          : undefined,
+        cls: classId ? { name: classNames.get(classId) || classId } : undefined,
+        classId: classId ?? "",
+        pct: score.displayPercentage,
+        percentage: score.percentage,
+        rawPercentage: score.rawPercentage,
+        effectiveMarks: score.effectiveMarks,
+        grade: score.grade,
+        passed: score.passed,
+      };
+    });
+
+    return rankInExam(scored, {
+      score: (row: any) => row.effectiveMarks,
+      classId: (row: any) => row.classId,
+      tieBreak: (row: any) => `${row.student?.rollNo ?? ""}|${row.studentId}`,
+    });
+  }, [exam, examResults, students, sessions, enrollments, t]);
+
+  useEffect(() => {
+    onFilteredCountChange?.(rankedResults.length);
+  }, [rankedResults.length, onFilteredCountChange]);
+
+  const stats = (() => {
+    if (rankedResults.length === 0) return null;
+    // Average of the raw percentages, rounded once — the previous mean of already-rounded
+    // percentages drifted by up to half a point (the code summed `percentage`, the comment lied).
+    const totalRaw = rankedResults.reduce(
+      (sum: any, rankedResult: any) => sum + rankedResult.rawPercentage,
+      0,
+    );
+    const passed = rankedResults.filter((rankedResult: any) => rankedResult.passed).length;
+    return {
+      average: Math.round(totalRaw / rankedResults.length),
+      passed,
+      failed: rankedResults.length - passed,
+      total: rankedResults.length,
+    };
+  })() as ResultsViewStatsData | null;
+
+  return { exam, rankedResults, stats };
+}

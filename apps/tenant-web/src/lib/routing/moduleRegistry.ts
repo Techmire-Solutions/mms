@@ -187,7 +187,10 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "examinations",
     path: TENANT_PATHS.examinations,
     access: moduleAccess("examination"),
-    loader: () => import("@/tenant/features/examinations/ExaminationsPage"),
+    loader: () =>
+      import("@mms/mod-examinations/frontend/tenant").then((m) => ({
+        default: m.ExaminationsPage,
+      })),
     nav: { labelKey: "nav.examinations", icon: FileText, order: 5, group: ACADEMICS_GROUP },
     apexRedirectable: true,
   },

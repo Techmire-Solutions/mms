@@ -1,0 +1,28 @@
+import { apiContract } from "@mms/fe-core/api/tsRest";
+import { createModuleSetupConfigApi } from "@mms/fe-core/query/createModuleSetupConfigApi";
+import type { ExaminationsModulePreferences } from "@mms/contracts";
+import { normalizeExaminationsModulePreferences } from "@mms/contracts";
+
+const api = createModuleSetupConfigApi<ExaminationsModulePreferences>({
+  fetchPreferencesFn: async (signal: any) => {
+    const res = await apiContract.examinations.getPreferences({
+      query: undefined,
+      extraHeaders: {},
+      signal,
+      fetchOptions: { signal },
+    });
+    return (res.body as { preferences: ExaminationsModulePreferences }).preferences;
+  },
+  savePreferencesFn: async (prefs: any) => {
+    const res = await apiContract.examinations.updatePreferences({ body: prefs });
+    return (res.body as { preferences: ExaminationsModulePreferences }).preferences;
+  },
+  normalizePrefs: normalizeExaminationsModulePreferences as (
+    prefs: unknown,
+  ) => ExaminationsModulePreferences,
+});
+
+export const setExaminationPreferencesMemory = api.setPreferencesMemory;
+export const fetchExaminationPreferences = api.fetchPreferences;
+export const saveExaminationPreferencesAsync = api.savePreferencesAsync;
+export const getExaminationSettingsMemoryFallback = api.getSettingsMemoryFallback;
