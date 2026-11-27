@@ -46,6 +46,7 @@
     "check:topology": "node scripts/check-topology.mjs",
     "check:tdd-pairing": "node scripts/check-tdd-pairing.mjs",
     "check:ratchet-baselines": "node scripts/ci/check-ratchet-baselines.mjs",
+    "check:gate-test-coverage": "node scripts/check-gate-test-coverage.mjs",
     "test:scripts": "node --test scripts/ci/*.test.mjs scripts/lib/db-projections-core.test.mjs scripts/perf/*.test.cjs",
     "sync:skills-index": "node scripts/sync-skill-index.mjs",
     "ci:local": "bash scripts/ci/local-ci.sh",

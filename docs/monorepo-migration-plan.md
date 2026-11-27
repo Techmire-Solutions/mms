@@ -1152,6 +1152,80 @@ unchanged.
 > ledger itself was retired on 2026-11-27, see P16).
 > Future extractions must add their entry in the same change.
 
+### P44 — two tooling fixes, and a **CI blocker** found under frozen-lockfile (landed, one item blocked)
+
+> **Fixed: `verify-all.mjs` ran its whole suite when imported.** The module called `main()` unconditionally, so the test
+> I added for `ciFlagsFrom()` executed all 48 verification steps: `node --test verify-all-flags.test.mjs` took **1 h 47 m**
+> and failed. `main()` is now guarded by `import.meta.url === file://${process.argv[1]}`, like every other script here;
+> the test runs in milliseconds.
+>
+> **New ratchet: `check:gate-test-coverage`** (`scripts/check-gate-test-coverage.mjs`, 6 tests, CI-wired as *Gate test
+> coverage*). 37 of the 46 gates had **no test at all**, so their detection logic could regress silently while still
+> reporting ✓. The ratchet is monotonic: a gate without a matching `scripts/ci/*.test.mjs` must be listed in
+> `BASELINE_UNTESTED` (37 entries, measured today), that list may only shrink, and a gate that gains a test must be
+> removed from it — so **every new gate needs a test**. Current state: 10 tested, 37 baselined.
+>
+> **Blocked: the repository cannot install under CI's frozen lockfile.** `CI=1 pnpm run check:i18n` (and any other
+> command that shells out to `pnpm`) dies with:
+> ```
+> ERR_PNPM_OUTDATED_LOCKFILE: pnpm-lock.yaml is not up to date with packages/modules/analytics/package.json
+>   jspdf (lockfile: ^3.0.4, manifest: ^4.2.1); jspdf-autotable (^5.0.2 vs ^5.0.9)
+> ```
+> and after syncing those two entries by hand the next run named **`packages/modules/obligations/package.json`** — so
+> several module manifests were bumped during the extraction without regenerating the lockfile. Both
+> `packages/modules/analytics/package.json` and `pnpm-lock.yaml` are **uncommitted working-tree changes**, and
+> `pnpm install`, `pnpm install --force` and `pnpm install --lockfile-only` all answer *"Already up to date"* while CI's
+> validation still rejects the file — a pnpm inconsistency I could not safely resolve by hand beyond the first two
+> entries (the original lockfile is backed up at `/tmp/pnpm-lock.bak`).
+> **Its owner needs to regenerate the lockfile from a clean checkout** (`rm pnpm-lock.yaml && pnpm install`) or commit a
+> consistent pair; until then CI's install step fails regardless of any gate.
+>
+> **State:** `verify:all` is red **only** on gates that shell out to pnpm (`check:i18n`, script tests) because of that
+> lockfile state; the new ratchet and every non-pnpm gate pass. Round 43's clean-tree 50/50 stands for the committed tree.
+
+### P43 — the arc's work is committed and the whole surface is green on a clean tree (landed)
+
+> The extraction landed and the console owner **committed the ratchet work of rounds 40–57**, including the gates built
+> here: `check-ci-gate-parity`, `check-docs-paths`, `check-deploy-artifact`, `check-agent-skills-index`, plus the
+> `check-code-norms` baseline comment and the local-CI prettier fix I diagnosed. The working tree is clean apart from
+> these notes.
+>
+> **Full verification on that committed state: 50/50 steps green** —
+> `typecheck tenant-web 4.2 s`, `typecheck platform-web 2.0 s`, `suite tenant-web 40 s`, `suite platform-web 34 s`,
+> `scripts tests 84 s` (188 tests), and all 46 gates.
+>
+> **What my lane now contains, all derived rather than remembered:** gate discovery (`package.json`), CI flags
+> (`ci.yml`), module export maps, matrix spec paths, living-doc paths, the artifact's runtime dist set (from the API's
+> dependency graph), the dead-file set (config-reference aware), and the guides' coverage of skills/rules/workflows.
+> Nothing in it needs a hand-kept constant to stay correct.
+>
+> **What remains, and whose it is:**
+> - criterion 6 — 13 Playwright specs: 11 public-shell responsive checks, the apex sign-in ids, and the examinations
+>   marks flow. The harness runs now (P37); the specs assume a shell that neither the dev API nor bare Vite serves (P39);
+>   its owner decides which side moves.
+> - the extraction's own follow-ups (module internals, `appKind` refinements) — its owner.
+>
+> **State:** 50/50 verification steps green on a clean tree; `mms-tenant-web` and `mms-platform-web` suites green;
+> 188 script tests; all docs/rules gates green.
+
+### P42 — `verify:all` derives its CI flags instead of remembering them (landed)
+
+> P29 added a hand-written `CI_FLAGS` map to `verify:all` so a sweep would run gates the way CI does (`--ratchet`,
+> `--tracked`). Hand-written maps drift. This round audited the whole relationship and removed the map:
+>
+> - **Audit first:** all **5** `node scripts/…` invocations in `ci.yml` already correspond to a package script (so
+>   `verify:all` cannot miss one), and exactly **4** of them pass flags —
+>   `check-code-norms --ratchet`, `check-frontend-structure --ratchet`, `check-form-architecture --ratchet`,
+>   `check-staged-secrets --tracked`. The old map matched, by hand.
+> - **Now derived:** `ciFlagsFrom()` parses `ci.yml` at run time, `scriptPathOf()` maps each package script to its
+>   `scripts/…` path, and the loop appends whatever CI appends. Editing the workflow is enough; the two cannot diverge.
+> - Four tests pin it: flags are read from a workflow, repeated invocations merge, a missing workflow yields an empty
+>   map, and the real `ci.yml` yields exactly those four gates.
+>
+> **State:** `pnpm verify:all` → **48 fast steps green** with the same four flags shown on their labels
+> (`check:code-norms --ratchet`, `check:forms --ratchet`, `check:frontend-structure --ratchet`, `check:secrets --tracked`);
+> `test:scripts` **188/188**.
+
 ### P41 — the guide gate grew to workflows, and the rules verifier caught a moved path (landed)
 
 > Two follow-ups to P40, both small and both about the same principle — the guides are code and must be checked:

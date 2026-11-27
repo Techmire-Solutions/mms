@@ -395,6 +395,10 @@ jobs:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before || 'HEAD^1' }}
         run: node scripts/ci/check-ratchet-baselines.mjs --base "${BASE_SHA}"
 
+      # A gate without a test can regress silently; BASELINE_UNTESTED only shrinks.
+      - name: Gate test coverage
+        run: pnpm run check:gate-test-coverage
+
       # Ratchet: frontend structural norms (primitives vs composites in
       # components/ui, canonical feature shape, logic out of features/*/components,
       # UI helpers out of lib/ root, barrel allowlist). Baselines live in the script.

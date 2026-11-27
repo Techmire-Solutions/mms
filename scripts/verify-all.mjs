@@ -189,4 +189,6 @@ function main() {
   process.exitCode = failed.length === 0 ? 0 : 1;
 }
 
-main();
+// Guarded so the module can be imported by tests: an unguarded `main()` here made importing it run the
+// whole 48-step verification (1 h 47 m inside a unit test — round 59 found it the hard way).
+if (import.meta.url === `file://${process.argv[1]}`) main();
