@@ -2,7 +2,6 @@
 /**
  * Topology ratchet (migration plan P0/P9, acceptance criterion 1).
  *
- * The move ledger (`scripts/check-move-manifest.mjs`) tracks *declared* moves.
  * This gate catches *undeclared* topology drift — the half-created directory that
  * no ledger entry mentions and no import breaks on yet:
  *

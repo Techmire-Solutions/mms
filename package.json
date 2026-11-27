@@ -40,7 +40,6 @@
     "check:migrations-forward-only": "node scripts/check-migrations-forward-only.mjs",
     "check:secrets": "node scripts/check-staged-secrets.mjs",
     "check:docs": "node scripts/check-docs.mjs",
-    "check:move-manifest": "node scripts/check-move-manifest.mjs",
     "check:topology": "node scripts/check-topology.mjs",
     "check:tdd-pairing": "node scripts/check-tdd-pairing.mjs",
     "check:ratchet-baselines": "node scripts/ci/check-ratchet-baselines.mjs",

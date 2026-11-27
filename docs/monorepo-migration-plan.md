@@ -1743,8 +1743,11 @@ rehearsed.
 - [ ] ADRs `019`–`022` (module descriptors/ports, additive tenant prefix, two web apps one API host, module
       package contents) and update `docs/README.md`.
 - [ ] Permanent ratchets: `check:package-boundaries`, extended `check:module-boundaries`,
-      `check:fe-core-boundaries`, `check:web-app-isolation`, `check:routes-inventory`; retire
-      `check-move-manifest`.
+      `check:fe-core-boundaries`, `check:web-app-isolation`, `check:routes-inventory`.
+      **`check-move-manifest` retired 2026-11-27** — the ledger was empty (0 entries), so the script, its
+      test, the JSON manifest/schema, the `check:move-manifest` script and the `local-ci.sh` step were
+      deleted; `check-topology` + `check-module-boundaries` + `scripts/ci/ci-path-filters.test.mjs` are the
+      permanent ratchets that remain.
 - [ ] Close the deprecation window: remove the legacy `/api/<module>` mounts and the `Deprecation`/`Sunset`
       headers; delete `apps/frontend`/`apps/backend` leftovers and obsolete `restart_servers.sh` branches.
 - [ ] Regenerate `docs/forms-inventory.md`; update `CODEOWNERS`; cut the release

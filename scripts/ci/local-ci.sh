@@ -170,7 +170,6 @@ echo ""
 echo "Phase B: buckets frontend=$NEED_FE backend_unit=$NEED_BE_UNIT backend_db=$NEED_BE_DB e2e=$NEED_E2E"
 
 pnpm run check:module-boundaries && note_ran "module-boundaries"
-pnpm run check:move-manifest && note_ran "move-manifest"
 pnpm run check:topology && note_ran "topology"
 if [[ "$NEED_FE" -eq 1 || "$NEED_BE_UNIT" -eq 1 ]]; then
   for mod_dir in packages/modules/*/; do
