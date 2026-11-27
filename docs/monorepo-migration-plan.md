@@ -608,7 +608,12 @@ are repointed in P7/P8 only.
 | `perf/`                   | baselines (lighthouse budgets) unchanged                                                                            | —     |
 | root docs/misc            | rewrite `README.md`, `SYSTEM_ARCHITECTURE.md`, `AGENTS.md` layout, `CONTRIBUTING.md` (P9); archive/delete the 11 `CONTACTS_*.md` + `ACTION_COLUMN_REVIEW.md` + `SETTINGS_REVIEW.md`; delete stray `failed_job.log` + `lhci-comment.md` (P0) | P0/P9 |
 
-### 5.16 Module roster (22 packages, frozen ids)
+### 5.16 Module roster (22 planned, **21 shipped** — `mod-workspace` stayed app-level)
+
+`@mms/mod-workspace` was planned in this roster and never extracted: the workspace registry/branding code
+remains app-level composition in `apps/api` (its behavioural suites live under
+`apps/api/src/__tests__/workspace*.test.ts`). The other 21 packages below exist and are enforced by
+`check:topology`; the blueprint's acceptance criterion 1 records the corrected count.
 
 Package names are lowercase-kebab (`@mms/mod-question-bank`); the `moduleId` column is the persisted
 camelCase identity and may differ in casing. `check:topology` enforces both the roster and the link between
@@ -636,7 +641,7 @@ camelCase identity and may differ in casing. `check:topology` enforces both the 
 | `@mms/mod-notifications`  | (in-app inbox, not a SYSTEM_MODULE)                | 3 + 1 route                              | 3                | P4    |
 | `@mms/mod-documents`      | `templates` (settings-gated, not a module grant)    | 2 + 1 route                              | editors in `components/template-editor` | P4    |
 | `@mms/mod-audit`          | audit governance (own permissions)                 | 3 + 4 routes                             | audit UI in settings | P4    |
-| `@mms/mod-workspace`      | workspace registry/branding (not a module grant)   | 8 repos + 1 route pair                   | settings           | P4    |
+| ~~`@mms/mod-workspace`~~  | workspace registry/branding (not a module grant)   | **not extracted** — stays app-level in `apps/api` | settings          | dropped |
 | `@mms/mod-platform`       | platform console backend (23 route files)          | 10 + 23 routes                           | 372              | P4    |
 
 ### 5.17 Repository family → module (438 files, 42 families)
@@ -1146,6 +1151,198 @@ unchanged.
 > (**75 entries: P1 21, P4 54** after the sessions/students/enrollments extraction caught up in P12e — the
 > ledger itself was retired on 2026-11-27, see P16).
 > Future extractions must add their entry in the same change.
+
+### P41 — the guide gate grew to workflows, and the rules verifier caught a moved path (landed)
+
+> Two follow-ups to P40, both small and both about the same principle — the guides are code and must be checked:
+>
+> - **`check:agent-skills-index` now covers workflows too.** Eight `.agent/workflows/*.md` exist and all eight are named
+>   in `AGENTS.md`; the gate asserts that (plus the skill/rule coverage and the stated counts), and its success line
+>   reports all three: *"51 skills, 24 rules, 8 workflows"*. Two tests added (6 total).
+> - **`verify:rules` failed on a path the extraction moved**: the `mms-reports-export` skill still pointed at
+>   `apps/tenant-web/src/components/reports/`, which the reports extraction retired. Repointed to
+>   `packages/modules/analytics/src/frontend/tenant/` (and its utils hint to
+>   `@mms/mod-analytics/frontend/tenant/lib/*`), mirrors resynced, verifier green.
+>
+> Both were found by the same command I now run every round — `pnpm verify:all` — which is the point: the gates only
+> help if one invocation actually exercises them.
+>
+> **State:** `pnpm verify:all` → **48 fast steps green** (46 gates), `test:scripts` **184/184**,
+> `check:agent-skills-index` green (51 skills, 24 rules, 8 workflows), `verify:rules` green.
+>
+> Transient noise worth knowing: while a concurrent `pnpm install` relinks `node_modules`, `pnpm exec` briefly reports
+> `prettier not found` and `check:i18n` reports `tsx not found`. Both commands pass on re-run once the link settles
+> (`apps/api/node_modules/.bin/tsx` exists; `pnpm install` says "Already up to date"). Re-run before believing either.
+
+### P40 — the most-read document was missing a skill; now a gate keeps the guides honest (landed)
+
+> `mms-contacts` existed as a skill (`.agent/skills/mms-contacts/SKILL.md`) and was listed in
+> `.agent/skills/README.md`, but the **skills table in `AGENTS.md` omitted it** — the one document every agent loads.
+> The stated count ("Skills (51)") happened to be right, which is exactly why counts and tables have to be checked
+> separately.
+>
+> - `AGENTS.md` gained the row (between `mms-code-review` and `mms-data-import`).
+> - **New gate `check:agent-skills-index`** (4 tests, CI-wired as *Agent guide coverage*): every
+>   `.agent/skills/<name>/SKILL.md` must be named in `AGENTS.md` **and** in `.agent/skills/README.md`; every
+>   `.cursor/rules/*.mdc` must appear in `.cursor/rules/README.md`; and the counts `AGENTS.md` states
+>   (`## Skills (N)`, `**N rules**`) must equal the corpus on disk.
+> - One test caught itself: the "omitted skill" fixture originally used `mms-contacts`, which my own fix had just
+>   documented, so the case silently stopped exercising the rule — the fixture now injects a name that cannot exist.
+>
+> **State:** `pnpm verify:all` → **48 fast steps green** (46 gates), `test:scripts` **182/182**,
+> `check:ci-gate-parity` "44 wired, 2 advisory", `check:agent-skills-index` green (51 skills, 24 rules).
+> Note for the next reader: `pnpm exec prettier` briefly reported "command not found" while pnpm was relinking
+> `node_modules`; running `node node_modules/.pnpm/prettier@*/…/bin/prettier.cjs` works in the meantime.
+
+### P39 — the guarded pruner's first clean application, including a cross-app duplicate (landed)
+
+> With `apps/tenant-web` quiet for the first time (0 files in 15 minutes), `pnpm prune:dead-copies --apply` removed the
+> three candidates it had been queuing since P32 — each verified dead **and** byte-identical at delete time:
+>
+> | File | Twin |
+> |---|---|
+> | `apps/tenant-web/src/lib/backgroundJobs/startServerSessionsCsvExport.ts` | `packages/modules/sessions/src/frontend/tenant/lib/…` |
+> | `apps/tenant-web/src/lib/examinations/startExamResultsExport.ts` | `packages/modules/examinations/src/frontend/tenant/lib/…` |
+> | `apps/tenant-web/src/lib/notify.ts` | `apps/platform-web/src/lib/notify.ts` — a **cross-app** duplicate |
+>
+> **Verified immediately, in the order the tool prescribes:** tenant typecheck **0**, platform typecheck **0**, and the
+> full tenant suite **342 files / 1,675 tests passed** (2 skipped). Nothing else in the app referenced them, which is
+> what "dead" means now that the config-reference trap of P31 is excluded.
+>
+> This is the tool paying for itself: the same three deletions took two painful manual rounds (P14, round 46) to
+> learn and would have been a coin-flip to repeat by hand.
+>
+> **Criterion-6 evidence refined:** the running dev API returns `404 {"type":"not_found"}` for `/` **and** `/contacts`,
+> so the public shell is served by neither the dev API nor a bare Vite server — which sharpens P38's hypothesis instead
+> of settling it. Recorded in §11.1; the eleven responsive specs remain its owner's call.
+>
+> **And the standards verifier caught the deletion immediately:** `mms-ui-ux-design.mdc` globbed
+> `apps/tenant-web/src/lib/notify.ts`, so `verify:rules` failed the moment it went. The glob now points at the surviving
+> `apps/platform-web/src/lib/notify.ts`, mirrors resynced, verifier green. That is the fail-closed chain working end to
+> end: pruner → typecheck → suite → rules gate, each naming the next thing to fix.
+>
+> **State:** `pnpm verify:all` (fast) green (47 steps), `test:scripts` 178/178, both typechecks 0, tenant suite green,
+> `check:docs` + `verify:rules` + `check:ratchet-baselines` green.
+
+### P38 — criterion 6 measured under CI's own selection: 15 passed / 13 failed, and they cluster (landed)
+
+> P37's numbers were measured **without** `CI=1`, so they included the `@local-only` specs — the config's
+> `grepInvert: process.env.CI && !isFullSuite ? /@local-only/ : undefined` means CI runs a smaller set. Re-measured the
+> way CI selects:
+>
+> | Selection | Result |
+> |---|---|
+> | `CI=1 npx playwright test --project=chromium` | **15 passed, 13 failed, 1 flaky** (12.2 min) |
+> | without `CI=1` (round 52) | 20 passed, 4 failed, 31 not run — **not** the CI set |
+>
+> **The 13 failures cluster, which matters more than the count:**
+> - **11 × `tests/responsive/responsive-shell.spec.ts`** — layout / touch-target / horizontal-overflow at 375, 768 and
+>   1440 px in both directions, plus the two pre-paint RTL specs. Failing at *every* viewport is the signature of the
+>   page not rendering, not of a layout regression.
+> - **1 × `tenant-settings-navigation.spec.ts`** — the apex `/` exposes neither `#platform-setup-email` nor
+>   `#platform-email`. Both ids exist in the code (`PlatformSetupRegisterForm`, and `PlatformSignIn` passes
+>   `emailFieldId: "platform-email"`), so the apex root simply is not that surface any more.
+> - **1 × `examinations-marks-entry.spec.ts`** — the marks-entry flow.
+>
+> **Ruled out this round:** DNS and Vite host config. Starting the tenant dev server by hand returns **200** for
+> `http://test1.localhost:<port>/` as well as for `127.0.0.1` with a subdomain `Host` header, and the tenant Vite
+> config already sets `host: true, allowedHosts: true`.
+>
+> **Working hypothesis for the next attempt:** those specs target the **public shell** (`/`, `/contacts`), which the
+> API serves for anonymous visitors — a bare Vite dev server on 5173 does not render it, so every viewport fails the
+> same way. Proving that needs either the API's static serving path or the production-like server mode, which is the
+> owner's call; I am not going to weaken eleven specs on a guess.
+>
+> **State:** no source changes this round; `pnpm verify:all` (fast) green, `test:scripts` 178/178.
+
+### P37 — local Playwright finally boots: a port race, not a missing stack (landed)
+
+> Criterion 6 was marked **manual** on the belief that E2E needs a deployed stack. It does not — it needs a backend,
+> and the harness was aborting before it ever got one:
+>
+> | Observation | Meaning |
+> |---|---|
+> | `[e2e-web-server] backend exited with code 1` in the first run | the harness spawns its own backend on :3000 |
+> | booting the API by hand showed `EADDRINUSE: address already in use 0.0.0.0:3000` | a dev server (from `restart_servers.sh`) already owns the port |
+> | `curl :3000/ready` → **200** | that other process is a perfectly good backend |
+> | `start-web-server.mjs` treated any backend exit as fatal | so every local run died when the dev stack was up |
+>
+> **Fixed:** the harness now tolerates a backend exit and lets `waitForBackend()` decide — if *a* backend answers
+> `/ready`, the run proceeds against it. (A backend that exits for a real reason still fails the run, because
+> `/ready` never answers.)
+>
+> **First real measurement of criterion 6 locally** — `npx playwright test --project=chromium`:
+> **20 passed, 4 failed, 31 not run, 11.6 min**. The four failures are genuine UI drift in the specs, not harness
+> problems: all are `expect(locator).toBeVisible()` against elements that no longer exist — e.g.
+> `tenant-settings-navigation.spec.ts` looks for `#platform-setup-email`/`#platform-email` on the apex, which the
+> migrated platform console no longer renders. That is the criterion-6 work its owner has to finish; the harness no
+> longer blocks it.
+>
+> **State:** docs ratchets green; `verify:rules` green; the E2E harness change is the only source edit this round.
+
+### P36 — acceptance criterion 7 is now a gate: the release artifact must ship every runtime dist (landed)
+
+> §11.1 marked criterion 7 (`mms-dist.tar.gz` contains `apps/api/dist`, both web dists and every package `dist`)
+> **manual**. It is not: `scripts/ci/package-dist.sh` assembles the artifact locally, so the check can be mechanical.
+>
+> **Verified by actually running it.** `pnpm build` → `bash scripts/ci/package-dist.sh` → a **11,108-member, 34 MB**
+> tarball containing `apps/{api,tenant-web,platform-web}/dist`, `packages/{be-core,contracts,db}/dist`,
+> `packages/db/migrations_drizzle` and all **21** module dists, with **zero** `*.map` members.
+>
+> **New gate `check:deploy-artifact`** (4 tests, CI-wired as *Deploy artifact* next to the bundle gate):
+> - derives the required set **from the API's runtime dependency graph** (transitively), not from "everything that
+>   builds" — which is why `@mms/ui` and `@mms/fe-core` stay out: their builds are `tsc --noEmit`, they are bundled
+>   into the SPAs. A new module that is imported at runtime but never packaged now fails;
+> - parses `DIST_PATHS` and the module loop **out of the packaging script**, so editing that script is followed rather
+>   than bypassed;
+> - when `mms-dist.tar.gz` exists it asserts every required dist is a member and that no `*.map` shipped.
+> - Two judgement calls the tests pin: a build of the form `tsc -p tsconfig.build.json && tsc --noEmit …` **does** emit
+>   (judged per `&&` segment), and a module dist covered by the packaging loop counts as covered.
+>
+> **State:** `pnpm verify:all` → **all 47 fast steps green** (45 gates), `test:scripts` **178/178**; `check:ci-gate-parity`
+> reports "43 wired, 2 advisory". Criterion 7 in §11.1 moves from manual to owner = `check:deploy-artifact`; only
+> criterion 6 (Playwright, needs a deployed stack) stays manual.
+
+### P35 — the acceptance list got an owner per criterion, and the roster was wrong by one (landed)
+
+> §11's acceptance criteria were prose with no trace to a check. Two findings from auditing them:
+>
+> - **Criterion 1 claimed "22 module packages"; the tree has 21.** `@mms/mod-workspace` was planned in the §5.16
+>   roster and never extracted — the workspace registry/branding stays app-level composition in `apps/api` (its
+>   behaviour is covered by `apps/api/src/__tests__/workspace*.test.ts`). The roster row is struck through and marked
+>   *not extracted*, and criterion 1 now states the shipped count with the reason.
+> - **Criterion 8 (independence) holds and is already gated** — `check:core-packages` asserts
+>   `contracts → leaf`, `db → contracts`, `be-core → contracts/db`, `fe-core → contracts/ui`, `ui → contracts` (no
+>   router/API). Verified independently by grep: no upward import in `packages/db/src`, no app/module import in
+>   `packages/ui/src` or `packages/fe-core/src`. `check:module-boundaries` is green again (the accounting →
+>   analytics frontend import from P30 is gone).
+>
+> **New §11.1 table maps all ten criteria to their owner** (gate, suite, or **manual** with the reason — criteria 6
+> and 7 need a deployed stack and a deploy rehearsal, which the local gate set does not pretend to cover). Criterion
+> 10 is owned by the `RETIRED_APPS` rule added in P33; criterion 4 is owned by `verify:all` plus
+> `check:ratchet-baselines` and the fail-closed `assertScanDirs` in every gate.
+>
+> **State:** docs ratchets green (32 tables, 0 issues); `check:docs`, `check:docs-paths`, `verify:rules` green;
+> `check:topology`, `check:core-packages`, `check:module-boundaries` green.
+
+### P34 — first fully green run of the whole surface, and the pruner learned to work in a busy monorepo (landed)
+
+> **`pnpm verify:all` passed all 48 steps** — both typechecks, all 44 gates, both Vitest suites and the script
+> tests in one invocation: `typecheck tenant-web 4.6 s`, `typecheck platform-web 6.5 s`, `suite tenant-web 78 s`,
+> `suite platform-web 63 s`, script tests 1.7 s. That is the strongest green the arc has had, and it is a single
+> reproducible command rather than an ad-hoc loop.
+>
+> **The pruner's quiescence guard became per-app.** Requiring a globally quiet monorepo meant it could almost never
+> run during an extraction — which is exactly when dead copies accumulate (this repo has moved 95–240 files every
+> 15 minutes for hours). The rule now measures **`apps/<app>/src` only**, and `chooseQuietApps` is exported and
+> tested (2 tests): a busy app is skipped with its count, quiet apps proceed, and twin drift while a module is being
+> rewritten is caught by the existing sha compare at delete time — a mismatch is skipped, never deleted.
+>
+> With the refined guard on today's tree: `apps/tenant-web` is busy (4 files/15 min) so it is skipped, and
+> `apps/platform-web` (quiet) yields **0 prunable** — its 34 dead-looking copies are all correctly rejected as
+> "reachable from a test". The two tenant-web candidates from P32 stay queued until that app is quiet.
+>
+> **State:** `pnpm verify:all` → **48/48 steps green**; `test:scripts` **174/174**.
 
 ### P33 — acceptance criterion 10 is now enforced: living docs may not name the retired apps (landed)
 
@@ -2353,8 +2550,10 @@ logs first). **No `/v2`** (`mms-api-interface` §8).
 
 ## 11. Acceptance criteria (final state)
 
-1. **Topology:** the tree matches §4.2; 22 module packages; a `check-topology` ratchet asserts exact
-   top-level dirs and package names.
+1. **Topology:** the tree matches §4.2; **21 module packages** (the roster planned 22 — `@mms/mod-workspace`
+   was never extracted, so the workspace registry/branding stays app-level composition in `apps/api`); a
+   `check-topology` ratchet asserts exact top-level dirs and package names, and `check:module-boundaries`
+   enforces the audience split.
 2. **Behaviour:** `/api/openapi.json` equals the P0 golden plus the `/api/tenant/*` aliases (legacy aliases
    only while the window is open); every existing module route answers identically on both prefixes.
 3. **Data:** fresh-DB migrate from zero and migrate-on-existing both succeed; journal 277 entries; snapshot
@@ -2371,6 +2570,24 @@ logs first). **No `/v2`** (`mms-api-interface` §8).
 9. **Docs:** `AGENTS.md`, `README.md`, `SYSTEM_ARCHITECTURE.md`, `docs/architecture.md`, the topology rule,
    ADRs 019–022 and `mms-migration-status` are updated; `docs/README.md` indexes this document.
 10. **Zero new dependencies** and no `apps/(frontend|backend)` reference outside historical docs.
+
+### 11.1 Which check owns each criterion
+
+Added in round 50 so the list above is traceable instead of aspirational: every criterion names the gate or
+suite that decides it, or is marked **manual** with the reason.
+
+| # | Owned by | State (2026-11-27) |
+|---|---|---|
+| 1 | `check:topology` (shape, naming, no root export) + `check:module-boundaries` | green; roster corrected to **21** shipped packages (`mod-workspace` never extracted) |
+| 2 | `apps/api` OpenAPI/route-parity suites | suite-owned (not a shell gate) |
+| 3 | db-integration suite against `mms_app` + `check:migrations-*` | green; finance coverage ratchet needs both db-coverage artifacts (P20) |
+| 4 | the gate suite itself — `pnpm verify:all` + `check:ratchet-baselines` + `verify:rules` | 48/48 green (P34); every scan root fails closed via `assertScanDirs`/`EmptyScanError` |
+| 5 | `mms-tenant-web build` + `check:bundle` + `check:pwa` | green after a build; closure ceiling is a backstop, bridges forbidden (P23) |
+| 6 | Playwright projects | **locally runnable as of P37** (harness port-race fixed); CI selection measured in P38: chromium **15 passed / 13 failed / 1 flaky**. P39 established the dev API 404s `/` and `/contacts`, so the public shell is served by neither dev API nor bare Vite — the 11 responsive specs need its owner's call |
+| 7 | `check:deploy-artifact` (derives the runtime dist set from the API graph, parses `package-dist.sh`, inspects the tarball) + `deploy.yml` rehearsal | gate green on a real 11,108-member tarball (P36); the deploy rehearsal itself stays manual |
+| 8 | `check:core-packages` (contracts→leaf, db→contracts, be-core→contracts/db, fe-core→contracts/ui, ui→contracts), `check:backend-boundaries`, `check:module-boundaries`, `check:web-app-isolation` | green; verified by grep too (no upward imports in `db`/`ui`/`fe-core`) |
+| 9 | `check:docs`, `verify:rules` (+ mirror parity) | green |
+| 10 | `check:docs-paths` `RETIRED_APPS` rule (P33) | green |
 
 ---
 

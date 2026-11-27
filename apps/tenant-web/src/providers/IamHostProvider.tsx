@@ -11,7 +11,7 @@ import { useMessageComposerState } from "@/hooks/useMessageComposerState";
 import { useContactById } from "@/tenant/hooks/collections/contacts";
 import { useUsersContractVerifyEmail } from "@/tenant/hooks/collections/users";
 import { useTenantProfile } from "@/tenant/hooks/useTenantProfile";
-import * as reportDateUtils from "@/lib/reports/reportDateUtils";
+import * as reportDateUtils from "@mms/mod-analytics/frontend/tenant/lib/reportDateUtils";
 import ContactPicker from "@/components/contactLink/ContactPicker";
 import { TenantMessageComposerLauncher } from "@/tenant/components/messaging/TenantMessageComposerLauncher";
 import { ReportDataGridContainer } from "@/tenant/components/moduleReports";

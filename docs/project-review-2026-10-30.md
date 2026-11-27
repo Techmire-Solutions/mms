@@ -87,13 +87,13 @@ Each claim was re-read in code and/or covered by a test that ran in this pass.
 #### P-01 — Major — Automatic printing is dead in production (inline script vs CSP)
 
 **Where:** [`printWindowHtml.ts:50`](../packages/fe-core/src/print/printWindowHtml.ts) and
-[`paperBuilderUtils.ts:161`](../apps/tenant-web/src/tenant/features/question-bank/lib/paperBuilderUtils.ts#L161)
+[`paperBuilderUtils.ts:161`](../packages/modules/question-bank/src/frontend/tenant/lib/paperBuilderUtils.ts#L161)
 write an inline `<script>` into a `window.open("")` document; consumers are the accounting payment
-voucher ([`usePaymentVoucherPrint.ts:129`](../apps/tenant-web/src/tenant/features/accounting/hooks/usePaymentVoucherPrint.ts#L129)),
+voucher ([`usePaymentVoucherPrint.ts:129`](../packages/modules/accounting/src/frontend/tenant/hooks/usePaymentVoucherPrint.ts#L129)),
 the obligations/invoice print controller
-([`usePrintInvoiceModalController.ts:69`](../apps/tenant-web/src/tenant/features/obligations/components/invoice/usePrintInvoiceModalController.ts#L69)),
+([`usePrintInvoiceModalController.ts:69`](../packages/modules/obligations/src/frontend/tenant/components/invoice/usePrintInvoiceModalController.ts#L69)),
 and the question-bank paper builder
-([`usePaperBuilderHandlers.ts:73`](../apps/tenant-web/src/tenant/features/question-bank/hooks/usePaperBuilderHandlers.ts#L73)).
+([`usePaperBuilderHandlers.ts:73`](../packages/modules/question-bank/src/frontend/tenant/hooks/usePaperBuilderHandlers.ts#L73)).
 
 **Evidence:** the app sends a nonce-only CSP (`script-src 'self' 'nonce-…'`, no `'unsafe-inline'`)
 on every response ([`security.ts:47`](../apps/api/src/plugins/security.ts#L47)). An `about:blank`

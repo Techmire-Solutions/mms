@@ -70,7 +70,7 @@ Ask these for every write surface; a "no" is a P1 unless the surface is genuinel
 | 6A | Contacts, Admissions / Student Lifecycle | `tenant/features/contacts`, `students`, `enrollments`, `sessions`, `tenant/pages/apply` | `mms-student-lifecycle` | `CONTACTS_AUDIT.md`, `CONTACTS_FUNCTIONAL_QA_REPORT.md`, `CONTACTS_ACCESSIBILITY_REPORT.md` |
 | 6B | Accounting, Finance | `tenant/features/accounting`, `finance`, `obligations` | `mms-finance-accounting` | `references/ledger-controls.md`, `references/policies-2026.md` |
 | 6C | Attendance, Academic Catalog/Calendar, Faculty | `tenant/features/attendance`, `examinations`, `faculty`, `workshops`, `tasks`, `question-bank`, `hasanat` | `mms-faculty-domain`, `mms-student-lifecycle` | timezone/FK/upload rules |
-| 6D | Messaging, Notifications, Document Templates, Reports, Users/Settings, Platform | `tenant/features/messaging`, `users`, `settings`, `components/reports`, `platform` | `mms-messaging`, `mms-document-templates`, `mms-reports-export`, `mms-user-management` | `verify-template-tokens.mjs`, `document-template-checklist.md` |
+| 6D | Messaging, Notifications, Document Templates, Reports, Users/Settings, Platform | `tenant/features/messaging`, `users`, `settings`, `packages/modules/analytics/src/frontend/tenant/features/components`, `platform` | `mms-messaging`, `mms-document-templates`, `mms-reports-export`, `mms-user-management` | `verify-template-tokens.mjs`, `document-template-checklist.md` |
 
 Run one sweep at a time. Each sweep ends with: the module's unit/integration tests, its
 `docs/forms-audit-2026-11-16.md` section filled, and `pnpm run check:forms` re-run with baselines lowered

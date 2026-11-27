@@ -13,7 +13,8 @@
 // Scope: the Vite apps and the modules' frontend trees. Backend imports are resolved by tsc through
 // other mechanisms and are intentionally out of scope.
 //
-// Usage: node scripts/check-module-exports.mjs [--json]
+// Usage: node scripts/check-module-exports.mjs [--json] [--fix]
+//   --fix writes the missing explicit exports entries into the offending package.json (additive only).
 
 import fs from "node:fs";
 import path from "node:path";
@@ -137,10 +138,54 @@ export function findUnresolved(byFile, readModule = readExports) {
   );
 }
 
+/**
+ * Additive fixer: for a failing specifier whose real file is a `.tsx`, write
+ *   "./<subpath>": "./src/<subpath>.tsx"
+ * into that module's exports. Never rewrites existing keys, so it is safe to re-run after the
+ * extraction regenerates a package.json.
+ */
+export function applyExplicitExports(failures, readModule = readExports) {
+  const bySlice = new Map();
+  for (const failure of failures) {
+    const slice = failure.specifier.slice("@mms/mod-".length).split("/")[0];
+    const subpath = failure.specifier.slice(`@mms/mod-${slice}/`.length);
+    const info = readModule(slice);
+    if (!info) continue;
+    const tsxFile = path.join(info.dir, "src", `${subpath}.tsx`);
+    if (!fs.existsSync(tsxFile)) continue;
+    if (!bySlice.has(slice)) bySlice.set(slice, new Set());
+    bySlice.get(slice).add(subpath);
+  }
+
+  const written = [];
+  for (const [slice, subpaths] of bySlice) {
+    const manifestPath = path.join(ROOT, "packages", "modules", slice, "package.json");
+    const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));
+    manifest.exports ??= {};
+    let changed = false;
+    for (const subpath of subpaths) {
+      const key = `./${subpath}`;
+      if (manifest.exports[key]) continue;
+      manifest.exports[key] = `./src/${subpath}.tsx`;
+      changed = true;
+      written.push(`packages/modules/${slice}/package.json  +=  "${key}": "./src/${subpath}.tsx"`);
+    }
+    if (changed) fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
+  }
+  return written;
+}
+
 function main() {
   const json = process.argv.includes("--json");
+  const fix = process.argv.includes("--fix");
   const byFile = collectModuleSpecifiers();
-  const failures = findUnresolved(byFile);
+  let failures = findUnresolved(byFile);
+
+  if (fix && failures.length > 0) {
+    const written = applyExplicitExports(failures);
+    for (const line of written) console.log(`fixed: ${line}`);
+    if (written.length > 0) failures = findUnresolved(byFile);
+  }
 
   if (json) {
     process.stdout.write(`${JSON.stringify({ files: byFile.size, failures }, null, 2)}\n`);

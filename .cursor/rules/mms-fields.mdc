@@ -1,6 +1,6 @@
 ---
 description: System vs custom fields registry, field tabs, delete guards, and column registry synchronization
-globs: packages/modules/contacts/src/frontend/tenant/lib/useContactConfig*.ts,packages/contracts/src/contacts/contactField*.ts,apps/tenant-web/src/tenant/features/**/*Fields*,apps/tenant-web/src/tenant/features/**/*Setup*,apps/platform-web/src/platform/**/*Fields*,apps/platform-web/src/platform/**/*Setup*,packages/contracts/src/**/contactTypes.ts,packages/contracts/src/**/contactEnabledTabs.ts,packages/contracts/src/**/contactColumnRegistrySync.ts,packages/contracts/src/**/contactFieldDependencies.ts,packages/contracts/src/**/*Field*,packages/contracts/src/contacts/contactSystemTags.ts,packages/modules/contacts/src/frontend/tenant/**/Contact*Tag*.tsx
+globs: packages/modules/contacts/src/frontend/tenant/lib/useContactConfig*.ts,packages/contracts/src/contacts/contactField*.ts,packages/modules/*/src/frontend/tenant/**/*Fields*,packages/modules/*/src/frontend/tenant/**/*Setup*,apps/platform-web/src/platform/**/*Fields*,apps/platform-web/src/platform/**/*Setup*,packages/contracts/src/**/contactTypes.ts,packages/contracts/src/**/contactEnabledTabs.ts,packages/contracts/src/**/contactColumnRegistrySync.ts,packages/contracts/src/**/contactFieldDependencies.ts,packages/contracts/src/**/*Field*,packages/contracts/src/contacts/contactSystemTags.ts,packages/modules/contacts/src/frontend/tenant/**/Contact*Tag*.tsx
 alwaysApply: false
 ---
 

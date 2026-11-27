@@ -39,6 +39,18 @@ function start(name, packageDir, command, args, extraEnv = {}) {
       return;
     }
 
+    // The backend is allowed to lose the port race: developers usually have a server on 3000 already
+    // (`restart_servers.sh`). `waitForBackend` below decides whether *a* backend answers /ready — if one
+    // does, the run can proceed against it instead of dying on EADDRINUSE (round 52: this aborted every
+    // local Playwright run while the dev stack was up).
+    if (name === "backend" && (code ?? 1) !== 0) {
+      console.warn(
+        `[e2e-web-server] backend exited with code ${code ?? 1}; continuing if something else already ` +
+          `serves http://127.0.0.1:${backendPort}/ready`,
+      );
+      return;
+    }
+
     const reason = signal ? `signal ${signal}` : `code ${code ?? 0}`;
     console.error(`[e2e-web-server] ${name} exited with ${reason}`);
     shutdown(code ?? 1);

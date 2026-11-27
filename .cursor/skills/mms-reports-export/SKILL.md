@@ -27,7 +27,7 @@ Saved report definitions remain live logic. An explicitly issued/exported financ
 
 ## Placement
 
-Reports tab **inside** each module — no standalone `/reports` page. Shared UI: `apps/tenant-web/src/components/reports/` · utils: `@/lib/reports/*`.
+Reports tab **inside** each module — no standalone `/reports` page. Shared UI: `packages/modules/analytics/src/frontend/tenant/` · utils: `@mms/mod-analytics/frontend/tenant/lib/*`.
 
 ## Data (Query-first)
 

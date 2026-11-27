@@ -8,7 +8,7 @@ paths:
   - "apps/tenant-web/src/tenant/components/**/*.tsx"
   - "apps/tenant-web/src/index.css"
   - "apps/tenant-web/src/tenant/hooks/useBranding.ts"
-  - "apps/tenant-web/src/lib/notify.ts"
+  - "apps/platform-web/src/lib/notify.ts"
 ---
 
 # MMS UI, UX & Design System

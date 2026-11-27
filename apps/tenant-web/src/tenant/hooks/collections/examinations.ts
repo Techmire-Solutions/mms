@@ -10,15 +10,15 @@ export {
   examinationsCommandMetricsQueryOptions,
   useExaminationsMetrics,
   useExaminationsMutations,
-} from "@/tenant/features/examinations/hooks/useExaminationsApi";
+} from "@mms/mod-examinations/frontend/tenant/hooks/useExaminationsApi";
 export {
   useComposedExaminationsSettings,
   useExaminationPreferencesMutation,
   useExaminationPreferencesQuery,
   EXAMINATIONS_PREFERENCES_QUERY_KEY,
-} from "@/tenant/features/examinations/hooks/useExaminationSetupConfig";
-export { invalidateExaminationsQueries } from "@/tenant/features/examinations/hooks/invalidateExaminationsQueries";
-export { EXAMINATIONS_ELIGIBILITY_QUERY_KEY } from "@/tenant/features/examinations/hooks/examinationsQueryKeys";
+} from "@mms/mod-examinations/frontend/tenant/hooks/useExaminationSetupConfig";
+export { invalidateExaminationsQueries } from "@mms/mod-examinations/frontend/tenant/hooks/invalidateExaminationsQueries";
+export { EXAMINATIONS_ELIGIBILITY_QUERY_KEY } from "@mms/mod-examinations/frontend/tenant/hooks/examinationsQueryKeys";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   examinationsExamsListQueryOptions,
@@ -30,5 +30,5 @@ export {
   useExaminationsContractBulkUpdateResults,
   useExaminationsContractDeleteExam,
   useExaminationsContractRestoreExam,
-} from "@/tenant/features/examinations/hooks/useExaminationsQueries";
-export { useExaminationsReportAggregates } from "@/tenant/features/examinations/hooks/useExaminationsReportAggregates";
+} from "@mms/mod-examinations/frontend/tenant/hooks/useExaminationsQueries";
+export { useExaminationsReportAggregates } from "@mms/mod-examinations/frontend/tenant/hooks/useExaminationsReportAggregates";

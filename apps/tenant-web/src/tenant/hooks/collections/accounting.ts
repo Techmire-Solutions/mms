@@ -11,18 +11,18 @@ export {
   accountingCommandMetricsQueryOptions,
   useAccountingMetrics,
   ACCOUNTING_REPORT_AGGREGATES_QUERY_KEY,
-} from "@/tenant/features/accounting/hooks/useAccountingApi";
+} from "@mms/mod-accounting/frontend/tenant/hooks/useAccountingApi";
 export {
   ACCOUNTING_ENTRIES_QUERY_KEY,
   ACCOUNTING_METRICS_QUERY_KEY,
-} from "@/tenant/features/accounting/hooks/accountingQueryKeys";
-export { invalidateAccountingQueries } from "@/tenant/features/accounting/hooks/invalidateAccountingQueries";
+} from "@mms/mod-accounting/frontend/tenant/hooks/accountingQueryKeys";
+export { invalidateAccountingQueries } from "@mms/mod-accounting/frontend/tenant/hooks/invalidateAccountingQueries";
 export {
   useComposedAccountingSettings,
   useAccountingPreferencesMutation,
   useAccountingPreferencesQuery,
   ACCOUNTING_PREFERENCES_QUERY_KEY,
-} from "@/tenant/features/accounting/hooks/useAccountingSetupConfig";
+} from "@mms/mod-accounting/frontend/tenant/hooks/useAccountingSetupConfig";
 // Phase 7: contract-driven tsrClient hooks & query factories
 export {
   accountingAccountsListQueryOptions,
@@ -38,13 +38,13 @@ export {
   useAccountingContractRestoreEntry,
   useAccountingContractBulkDeleteEntries,
   useAccountingContractBulkRestoreEntries,
-} from "@/tenant/features/accounting/hooks/useAccountingContractHooks";
+} from "@mms/mod-accounting/frontend/tenant/hooks/useAccountingContractHooks";
 export {
   type JournalEntryFilterState,
   EMPTY_JOURNAL_ENTRY_FILTERS,
-} from "@/tenant/features/accounting/lib/journalEntriesControllerFilters";
+} from "@mms/mod-accounting/frontend/tenant/lib/journalEntriesControllerFilters";
 export {
   useAccountingCurrencySettings,
   useExchangeRateLookup,
   ACCOUNTING_CURRENCY_SETTINGS_QUERY_KEY,
-} from "@/tenant/features/accounting/hooks/useAccountingFx";
+} from "@mms/mod-accounting/frontend/tenant/hooks/useAccountingFx";

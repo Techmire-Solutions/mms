@@ -1,6 +1,6 @@
 ---
 description: Embedded analytics, KPI cards, Recharts visualizations, report builder, and PDF/Excel/CSV exports
-globs: apps/tenant-web/src/lib/reports/**,apps/tenant-web/src/tenant/features/**/*Report*,apps/tenant-web/src/tenant/features/**/*Reports*,apps/platform-web/src/platform/features/reports/components/**,apps/tenant-web/src/tenant/features/dashboard*/**,apps/platform-web/src/platform/**/*Report*,packages/fe-core/src/components/ExportToolbar.tsx,packages/fe-core/src/components/ExportToolbarCompact.tsx,packages/fe-core/src/components/exportToolbarUtils.ts,packages/ui/src/app/SafeResponsiveContainer.tsx,packages/contracts/src/**/*Report*.ts
+globs: packages/modules/analytics/src/frontend/tenant/**,packages/modules/*/src/frontend/tenant/**/*Report*,packages/modules/*/src/frontend/tenant/**/*Reports*,apps/platform-web/src/platform/features/reports/components/**,packages/modules/analytics/src/frontend/tenant/features/dashboard*/**,apps/platform-web/src/platform/**/*Report*,packages/fe-core/src/components/ExportToolbar.tsx,packages/fe-core/src/components/ExportToolbarCompact.tsx,packages/fe-core/src/components/exportToolbarUtils.ts,packages/ui/src/app/SafeResponsiveContainer.tsx,packages/contracts/src/**/*Report*.ts
 alwaysApply: false
 ---
 

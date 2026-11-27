@@ -348,6 +348,10 @@ jobs:
       - name: Documentation ratchets
         run: pnpm run check:docs
 
+      # Living docs must name only paths that exist (dated audits/ADRs keep their history).
+      - name: Living docs paths
+        run: pnpm run check:docs-paths
+
       # Ratchet: the two web apps stay independent shells (no app<->app imports,
       # no cross-audience module imports). Baseline freezes the pre-existing backlog.
       - name: Web-app isolation ratchet
@@ -418,6 +422,14 @@ jobs:
       - name: Module exports resolve
         run: pnpm run check:module-exports
 
+      # fe-core must not import modules or apps (it is the shared client core).
+      - name: fe-core boundaries
+        run: pnpm run check:fe-core-boundaries
+
+      # Every gate script must be invoked by CI or listed as advisory with a reason.
+      - name: Gate parity
+        run: pnpm run check:ci-gate-parity
+
       # Topology (migration plan P0/P9): catches undeclared app/package/module
       # drift, half-created module dirs, a module root export, and a dropped
       # pnpm-workspace glob.
@@ -462,6 +474,10 @@ jobs:
           git diff --exit-code -- .agent .cursor .claude .dsh AGENTS.md || (echo "Agent rule/skill mirrors out of sync! Run 'bash .agent/scripts/sync-all.sh'" && exit 1)
           node scripts/verify-rules-integrity.mjs
 
+      # Every skill and rule is discoverable from AGENTS.md and the index READMEs.
+      - name: Agent guide coverage
+        run: pnpm run check:agent-skills-index
+
   build:
     name: Build & Release Artifact
     runs-on: ubuntu-24.04
@@ -493,6 +509,10 @@ jobs:
       # Frontend bundle budget gate: catches chunk bloat and un-lazy-loaded dependencies
       - name: Frontend bundle budget
         run: pnpm run check:bundle
+
+      # The release artifact must ship every runtime dist and no source maps.
+      - name: Deploy artifact
+        run: pnpm run check:deploy-artifact
 
       # Service-worker precache budget: keeps optional vendors/locale packs lazy
       - name: PWA precache budget

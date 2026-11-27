@@ -72,7 +72,7 @@ read the non-HttpOnly `csrf_token` cookie and call the authenticated API as the 
 itself is HttpOnly). In practice a user with write access to a journal/obligation/student record
 can execute script in an administrator's session when that administrator prints the record —
 a privilege-escalation path, not just self-XSS. The same class was already solved correctly in
-[`paperBuilderUtils.ts`](../apps/tenant-web/src/tenant/features/question-bank/lib/paperBuilderUtils.ts)
+[`paperBuilderUtils.ts`](../packages/modules/question-bank/src/frontend/tenant/lib/paperBuilderUtils.ts)
 (`escapeHtml(title)`), so this was an inconsistency rather than a missing capability.
 
 **Fix:** both helpers now run the title through

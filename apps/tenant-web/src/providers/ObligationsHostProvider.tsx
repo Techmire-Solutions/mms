@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React from "react";
 import { configureObligationsHost } from "@mms/mod-obligations/frontend/tenant/host";
 import { usePermissions, useModulePermissions } from "@/tenant/hooks/usePermissions";
