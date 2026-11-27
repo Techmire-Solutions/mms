@@ -1,9 +1,3 @@
-/**
- * TODO(accounting-migration): this app-origin integration suite still mocks the
- * pre-migration app seams. The feature now lives in @mms/mod-accounting and needs a
- * module-host test harness (see the analytics host test setup) before it can run
- * against the module implementation; re-enable once that harness lands.
- */
 vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
   ...(await importOriginal<any>()),
   useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
@@ -102,7 +96,7 @@ vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock("../host/useCurrency", () => ({
+vi.mock("../hooks/useAccountingCurrency", () => ({
   useAccountingCurrency: () => ({
     activeCurrency: { symbol: "$", code: "USD" },
     formatCurrency: (amount: number | string | null | undefined) => `$${amount ?? "—"}`,
@@ -231,7 +225,7 @@ function findButton(container: HTMLElement, textFragment: string): HTMLButtonEle
   return button as HTMLButtonElement;
 }
 
-describe.skip("SimpleTransactionWizard", () => {
+describe("SimpleTransactionWizard", () => {
   let container: HTMLDivElement;
   let root: Root;
   let onSave: Mock<JournalEntrySave>;

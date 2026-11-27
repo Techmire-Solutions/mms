@@ -1,9 +1,3 @@
-/**
- * TODO(accounting-migration): this app-origin integration suite still mocks the
- * pre-migration app seams. The feature now lives in @mms/mod-accounting and needs a
- * module-host test harness (see the analytics host test setup) before it can run
- * against the module implementation; re-enable once that harness lands.
- */
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -30,7 +24,7 @@ vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
   }),
 }));
 
-vi.mock("../host/useCurrency", () => ({
+vi.mock("../hooks/useAccountingCurrency", () => ({
   useAccountingCurrency: () => ({ formatCurrency: (value: number) => `PKR ${value}` }),
 }));
 
@@ -84,7 +78,7 @@ function button(name: string): HTMLButtonElement | undefined {
   );
 }
 
-describe.skip("JournalReverseDialog", () => {
+describe("JournalReverseDialog", () => {
   let container: HTMLDivElement;
   let root: Root;
 

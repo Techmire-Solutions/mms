@@ -1,9 +1,3 @@
-/**
- * TODO(accounting-migration): this app-origin integration suite still mocks the
- * pre-migration app seams. The feature now lives in @mms/mod-accounting and needs a
- * module-host test harness (see the analytics host test setup) before it can run
- * against the module implementation; re-enable once that harness lands.
- */
 import React from "react";
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -38,7 +32,7 @@ vi.mock("../host/useBranding", () => ({
   }),
 }));
 
-vi.mock("../host/useCurrency", () => ({
+vi.mock("../hooks/useAccountingCurrency", () => ({
   useAccountingCurrency: () => ({
     formatCurrency: (value: number) => `Rs ${value}`,
     activeCurrency: { code: "PKR" },
@@ -56,7 +50,7 @@ vi.mock("@mms/fe-core/notify", async (importOriginal) => ({
   notify: { success: vi.fn(), error: vi.fn() },
 }));
 
-describe.skip("AccountingVoucherTemplateEditor", () => {
+describe("AccountingVoucherTemplateEditor", () => {
   it("given default props, should render an embedded editor with branded sample data and both presets", () => {
     // Act
     const html = renderToStaticMarkup(

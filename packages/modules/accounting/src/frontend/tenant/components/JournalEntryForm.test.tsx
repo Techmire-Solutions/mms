@@ -1,9 +1,3 @@
-/**
- * TODO(accounting-migration): this app-origin integration suite still mocks the
- * pre-migration app seams. The feature now lives in @mms/mod-accounting and needs a
- * module-host test harness (see the analytics host test setup) before it can run
- * against the module implementation; re-enable once that harness lands.
- */
 vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
   ...(await importOriginal<any>()),
   useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
@@ -45,7 +39,7 @@ vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
   }),
 }));
 
-vi.mock("../host/useCurrency", () => ({
+vi.mock("../hooks/useAccountingCurrency", () => ({
   useAccountingCurrency: () => ({
     formatCurrency: (amount: number | string | null | undefined) => `$${amount ?? 0}`,
   }),
@@ -177,7 +171,7 @@ const mockFiscalYears: FiscalYear[] = [
   },
 ];
 
-describe.skip("JournalEntryForm Component", () => {
+describe("JournalEntryForm Component", () => {
   let container: HTMLDivElement;
   let root: Root;
 

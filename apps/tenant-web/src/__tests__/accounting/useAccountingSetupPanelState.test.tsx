@@ -1,9 +1,3 @@
-/**
- * TODO(accounting-migration): this app-origin integration suite still mocks the
- * pre-migration app seams. The feature now lives in @mms/mod-accounting and needs a
- * module-host test harness (see the analytics host test setup) before it can run
- * against the module implementation; re-enable once that harness lands.
- */
 import React, { act } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRoot, type Root } from "react-dom/client";
@@ -18,11 +12,12 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@mms/fe-core/query/optionalQueryContext", async (importOriginal) => ({
-  ...(await importOriginal<any>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   useAuthOrNull: () => ({ isAuthenticated: true, user: { id: "u-1" }, token: "test-token" }),
 }));
 
-vi.mock("@mms/fe-core/api/tsRest", () => ({
+vi.mock("@mms/fe-core/api/tsRest", async (importOriginal) => ({
+  ...(await importOriginal<Record<string, unknown>>()),
   apiContract: {
     accounting: {
       getPreferences: mocks.getPreferences,
@@ -32,13 +27,13 @@ vi.mock("@mms/fe-core/api/tsRest", () => ({
 }));
 
 vi.mock("@mms/fe-core/auth/AuthContext", async (importOriginal) => ({
-  ...(await importOriginal<any>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   useAuth: () => ({ isAuthenticated: true }),
   useOptionalAuth: () => ({ isAuthenticated: true }),
 }));
 
 vi.mock("@mms/fe-core/notify", async (importOriginal) => ({
-  ...(await importOriginal<any>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   notify: {
     success: mocks.notifySuccess,
     error: mocks.notifyError,
@@ -49,18 +44,47 @@ vi.mock("@mms/fe-core/notify", async (importOriginal) => ({
 }));
 
 vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
-  ...(await importOriginal<any>()),
+  ...(await importOriginal<Record<string, unknown>>()),
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
 import {
   useAccountingSetupPanelState,
   type UseAccountingSetupPanelStateReturn,
-} from "./useAccountingSetupPanelState";
+} from "@mms/mod-accounting/frontend/tenant/hooks/useAccountingSetupPanelState";
+
+import { configureAccountingHost } from "@mms/mod-accounting/frontend/tenant/host";
+import { useModuleSettingsEditor } from "@/tenant/hooks/useModuleSettingsEditor";
+import { useAccountingCurrency } from "@/hooks/useCurrency";
+import { useDocumentCurrency } from "@/tenant/hooks/useDocumentCurrency";
+import { usePermissions, useModulePermissions } from "@/tenant/hooks/usePermissions";
+import { useBrandPalette } from "@/lib/contexts/BrandingPaletteContext";
+import { useBranding } from "@/tenant/hooks/useBranding";
+import { useAccountingConfig } from "@/hooks/useStandardModuleConfig";
+import { useGenericModuleExport } from "@/lib/backgroundJobs/useGenericModuleExport";
+
+configureAccountingHost({
+  useAccountingCurrency: useAccountingCurrency as never,
+  useAccountingConfig: useAccountingConfig as never,
+  useGenericModuleExport: useGenericModuleExport as never,
+  useBrandPalette: useBrandPalette as never,
+  useBranding: useBranding as never,
+  useDocumentCurrency: useDocumentCurrency as never,
+  useModuleSettingsEditor: useModuleSettingsEditor as never,
+  useModulePermissions: useModulePermissions as never,
+  usePermissions: usePermissions as never,
+  facultyResolveQueryOptions: (() => ({ queryKey: ["faculty"], queryFn: async () => [] })) as never,
+  RegistryPersonSelect: (() => null) as never,
+  ReportDataGridContainer: (({ children }: { children?: unknown }) => children) as never,
+  ModuleReportsTier: (() => null) as never,
+  PinnedWidgets: (({ children }: { children?: unknown }) => children) as never,
+  MutedTableHeaderRow: (() => null) as never,
+  FinancialDebitCreditTableChrome: (() => null) as never,
+});
 
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-describe.skip("useAccountingSetupPanelState", () => {
+describe("useAccountingSetupPanelState", () => {
   let container: HTMLDivElement;
   let root: Root;
   let queryClient: QueryClient;

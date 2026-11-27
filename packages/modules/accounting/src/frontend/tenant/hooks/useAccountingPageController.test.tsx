@@ -1,9 +1,3 @@
-/**
- * TODO(accounting-migration): this app-origin integration suite still mocks the
- * pre-migration app seams. The feature now lives in @mms/mod-accounting and needs a
- * module-host test harness (see the analytics host test setup) before it can run
- * against the module implementation; re-enable once that harness lands.
- */
 import { describe, expect, it, vi } from "vitest";
 import React, { act } from "react";
 import { createRoot } from "react-dom/client";
@@ -52,7 +46,7 @@ vi.mock("../host/useStandardModuleConfig", () => ({
   }),
 }));
 
-vi.mock("../host/useCurrency", () => ({
+vi.mock("../hooks/useAccountingCurrency", () => ({
   useAccountingCurrency: () => ({
     activeCurrency: { code: "PKR" },
   }),
@@ -109,7 +103,7 @@ function renderHook(hook: () => ReturnType<typeof useAccountingPageController>) 
   return { result, unmount: () => act(() => root.unmount()) };
 }
 
-describe.skip("useAccountingPageController", () => {
+describe("useAccountingPageController", () => {
   it("given accountant permissions (no setupView), delegates canViewSetup=false to useFilteredModuleTierTabs", () => {
     mockUseModulePermissions.mockReturnValue({
       canWrite: true,

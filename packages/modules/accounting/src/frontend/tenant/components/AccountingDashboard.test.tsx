@@ -1,9 +1,3 @@
-/**
- * TODO(accounting-migration): this app-origin integration suite still mocks the
- * pre-migration app seams. The feature now lives in @mms/mod-accounting and needs a
- * module-host test harness (see the analytics host test setup) before it can run
- * against the module implementation; re-enable once that harness lands.
- */
 import React from "react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -68,7 +62,7 @@ vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
   }),
 }));
 
-vi.mock("../host/useCurrency", () => ({
+vi.mock("../hooks/useAccountingCurrency", () => ({
   useAccountingCurrency: () => ({
     formatCurrency: (val: number) => `$${val.toLocaleString()}`,
   }),
@@ -101,7 +95,7 @@ vi.mock("recharts", () => ({
   Cell: () => null,
 }));
 
-describe.skip("AccountingDashboard Component", () => {
+describe("AccountingDashboard Component", () => {
   const dummyAccounts: Account[] = [
     {
       id: "acc-1",

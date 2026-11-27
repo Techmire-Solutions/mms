@@ -22,7 +22,7 @@ vi.mock("@mms/fe-core/i18n", async (importOriginal) => ({
   }),
 }));
 
-vi.mock("../host/useCurrency", () => ({
+vi.mock("../hooks/useAccountingCurrency", () => ({
   useAccountingCurrency: () => ({
     activeCurrency: { symbol: "$", code: "USD" },
     formatCurrency: (amount: number | string | null | undefined) => `$${amount ?? "—"}`,
