@@ -42,7 +42,7 @@ import {
 import {
   OBLIGATIONS_COLLECTIONS_QUERY_KEY,
   OBLIGATIONS_WAKALA_QUERY_KEY,
-} from "@/tenant/features/obligations/hooks/obligationsQueryKeys";
+} from "@mms/mod-obligations/frontend/tenant/hooks/obligationsQueryKeys";
 import { HASANAT_DISTRIBUTIONS_QUERY_KEY } from "@mms/mod-hasanat/frontend/tenant/hooks/hasanatQueryKeys";
 import { attendanceQueryKeys } from "@mms/mod-attendance/frontend/tenant/hooks/attendanceQueryKeys";
 

@@ -232,7 +232,8 @@ export const TENANT_APP_ENTRIES: readonly TenantAppEntry[] = [
     id: "obligations",
     path: TENANT_PATHS.obligations,
     access: moduleAccess("obligations"),
-    loader: () => import("@/tenant/features/obligations/ObligationsPage"),
+    loader: () =>
+      import("@mms/mod-obligations/frontend/tenant").then((m) => ({ default: m.ObligationsPage })),
     nav: { labelKey: "nav.obligations", icon: Scale, order: 8 },
     apexRedirectable: true,
   },
