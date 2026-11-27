@@ -8,9 +8,12 @@ import { AppProviders } from "@/providers/AppProviders";
 import RouterBridge from "@/components/routing/RouterBridge";
 import { preloadLoginOnEntryBoot } from "@/tenant/routes/preloadLogin";
 
-const tenantRoutesPromise = import("@/tenant/routes/TenantRoutes");
+const tenantRoutesPromise =
+  import.meta.env.MODE === "test" ? null : import("@/tenant/routes/TenantRoutes");
 preloadLoginOnEntryBoot();
-const TenantRoutes = React.lazy(() => tenantRoutesPromise);
+const TenantRoutes = React.lazy(
+  () => tenantRoutesPromise ?? import("@/tenant/routes/TenantRoutes"),
+);
 const UserNotRegisteredError = React.lazy(
   () => import("@/components/routing/UserNotRegisteredError"),
 );

@@ -9,9 +9,9 @@ export function loadLoginPage(): Promise<typeof import("@/tenant/pages/auth/Logi
   return loginPromise;
 }
 
-/** Starts loading the Login route chunk early when booting at `/` or `/login`. */
+/** Starts loading the Login route chunk early when booting at `/` or `/login` outside Vitest. */
 export function preloadLoginOnEntryBoot(): void {
-  if (typeof window === "undefined") return;
+  if (import.meta.env.MODE === "test" || typeof window === "undefined") return;
   const { pathname } = window.location;
   if (pathname === ROUTES.home || pathname === ROUTES.login) {
     void loadLoginPage();
