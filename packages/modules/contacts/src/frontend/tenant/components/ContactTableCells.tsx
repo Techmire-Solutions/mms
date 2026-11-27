@@ -82,7 +82,7 @@ export function renderContactTableCell({
           prefs={prefs}
           allContacts={allContacts}
           contactsMap={contactsMap}
-          variant="table"
+          variant="card"
           style={widthStyle}
         />
       );

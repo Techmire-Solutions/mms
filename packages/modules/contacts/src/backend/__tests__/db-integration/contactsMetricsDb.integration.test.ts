@@ -50,6 +50,7 @@ beforeAll(async () => {
         firstName: "Ali",
         lastName: "Khan",
         name: "Ali Khan",
+        whatsappStatus: "registered",
       },
       {
         id: contactWithoutPhonesId,
@@ -94,12 +95,12 @@ afterAll(async () => {
 });
 
 describe("contacts metrics aggregate (Postgres)", () => {
-  it("counts WhatsApp by the primary phone and incomplete by required tabs", async () => {
+  it("counts WhatsApp by registered status and incomplete by required tabs", async () => {
     const metrics = await aggregateContactsCommandMetrics(tenant, fieldConfig);
 
     expect(metrics.total).toBe(2);
-    // Primary phone digits (12) are within the 8–15 WhatsApp window; the
-    // contact with no phone does not match.
+    // Only the contact whose whatsapp_status is 'registered' counts; the
+    // default 'unknown' contact does not match.
     expect(metrics.whatsappCount).toBe(1);
     // Only the contact without a phone is incomplete for requiredTabs: ["phones"].
     expect(metrics.incompleteCount).toBe(1);
