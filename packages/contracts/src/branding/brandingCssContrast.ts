@@ -10,6 +10,7 @@ import {
   meetsWcagAaTextContrast,
   tone,
 } from "./brandingColorUtils.js";
+import { NEUTRAL_SURFACES } from "./brandingNeutralPalette.js";
 
 function withAbsoluteLightness(color: HslColor, targetLightness: number): HslColor {
   return { ...color, l: clamp(targetLightness, 0, 100) };
@@ -46,21 +47,13 @@ export const MAX_RESTING_TINT_BY_MODE: Record<BrandingThemeMode, number> = {
  */
 export const FIT_MARGIN = 0.15;
 
-/**
- * The two surfaces a semantic token is read against as text.
- *
- * Mirrors `buildBrandingSurfaceTokens` exactly — light mode's card is pure white
- * and its background is a near-white brand tint (l=98), dark mode's card and
- * background are near-black (l=8 / l=5). Keep these in step: a token tuned only
- * against white still fails on the tinted background.
- */
-export function brandingSurfaces(
-  mode: BrandingThemeMode,
-  surfaceHue: number,
-): { card: HslColor; background: HslColor } {
-  return mode === "light"
-    ? { card: { h: 0, s: 0, l: 100 }, background: { h: surfaceHue, s: 20, l: 98 } }
-    : { card: { h: surfaceHue, s: 20, l: 8 }, background: { h: surfaceHue, s: 20, l: 5 } };
+/** The two surfaces a semantic token is read against as text (see `NEUTRAL_SURFACES`). */
+export function brandingSurfaces(mode: BrandingThemeMode): {
+  card: HslColor;
+  background: HslColor;
+} {
+  const { card, background } = NEUTRAL_SURFACES[mode];
+  return { card, background };
 }
 
 /** `bg-<token>/<alpha>` composited over `base` — what the eye actually sees. */
@@ -202,7 +195,7 @@ export function ensureAccessibleFillSurface(
 ): HslColor {
   const resolved = surfaces
     ? [...surfaces]
-    : [brandingSurfaces(mode, color.h).card, brandingSurfaces(mode, color.h).background];
+    : [brandingSurfaces(mode).card, brandingSurfaces(mode).background];
   return fitTokenToAllRoles(color, mode, resolved);
 }
 
@@ -287,7 +280,7 @@ export function ensureAccessibleSemanticPair(
 ): { fill: string; foreground: string } {
   const resolved = surfaces
     ? [...surfaces]
-    : [brandingSurfaces(mode, base.h).card, brandingSurfaces(mode, base.h).background];
+    : [brandingSurfaces(mode).card, brandingSurfaces(mode).background];
   const fitted = fitTokenToAllRoles(base, mode, resolved);
   return {
     fill: hslColorToToken(fitted),

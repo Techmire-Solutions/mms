@@ -11,9 +11,14 @@ import {
   pickAccessibleTextToken,
   restingTintedSurfaces,
 } from "./brandingCssContrast.js";
+import { NEUTRAL_SURFACES } from "./brandingNeutralPalette.js";
 
 /** Muted text carries the same fit margin as every other token — see `FIT_MARGIN`. */
 const MUTED_FIT_MIN_RATIO = WCAG_AA_TEXT_MIN_RATIO + FIT_MARGIN;
+
+/** Neutral (achromatic) text: shadcn's base palette has no hue on ink either. */
+const NEUTRAL_HUE = 0;
+const NEUTRAL_SATURATION = 0;
 
 /**
  * `--muted-foreground` is the token most often read *inside someone else's tint*
@@ -29,113 +34,55 @@ function mutedForegroundBackgrounds(
   return [...surfaces, ...restingTintedSurfaces(mode, surfaces, tintSources)];
 }
 
-function buildLightModeSurfaceTokens(
-  surfaceHue: number,
-  accentHue: number,
-  tintSources: readonly HslColor[],
-): Record<string, string> {
-  const card = { h: 0, s: 0, l: 100 };
-  const background = { h: surfaceHue, s: 20, l: 98 };
-  const raised = { h: surfaceHue, s: 15, l: 91 };
-  const muted = { h: surfaceHue, s: 15, l: 94 };
-  const sidebarBackground = { h: surfaceHue, s: 30, l: 10 };
-  const sidebarAccent = { h: surfaceHue, s: 25, l: 16 };
-  const foreground = pickAccessibleTextToken(
-    surfaceHue,
-    30,
-    [background],
-    descendingLightness(10, 8),
-  );
-  const mutedForeground = pickAccessibleTextToken(
-    surfaceHue,
-    10,
-    mutedForegroundBackgrounds("light", [card, muted, background, raised], tintSources),
-    descendingLightness(37, 20),
-    MUTED_FIT_MIN_RATIO,
-  );
-  const sidebarForeground = pickAccessibleTextToken(
-    accentHue,
-    15,
-    [sidebarBackground],
-    ascendingLightness(85, 92),
-  );
-  const sidebarAccentForeground = pickAccessibleTextToken(
-    accentHue,
-    15,
-    [sidebarAccent],
-    ascendingLightness(92, 96),
-  );
-  const sidebarMutedForeground = pickAccessibleTextToken(
-    surfaceHue,
-    10,
-    mutedForegroundBackgrounds("light", [sidebarBackground, sidebarAccent], tintSources),
-    ascendingLightness(55, 72),
-    MUTED_FIT_MIN_RATIO,
-  );
-
-  return {
-    "--background": hslColorToToken(background),
-    "--foreground": foreground,
-    "--card": `0 0% 100%`,
-    "--card-foreground": foreground,
-    "--popover": `0 0% 100%`,
-    "--popover-foreground": foreground,
-    "--muted": hslColorToToken(muted),
-    "--muted-foreground": mutedForeground,
-    "--border": `${surfaceHue} 15% 90%`,
-    "--input": `${surfaceHue} 15% 90%`,
-    "--sidebar-background": hslColorToToken(sidebarBackground),
-    "--sidebar-foreground": sidebarForeground,
-    "--sidebar-accent": hslColorToToken(sidebarAccent),
-    "--sidebar-accent-foreground": sidebarAccentForeground,
-    "--sidebar-border": `${surfaceHue} 20% 18%`,
-    "--sidebar-muted-foreground": sidebarMutedForeground,
-  };
+function pickInk(
+  backgrounds: readonly HslColor[],
+  lightness: readonly number[],
+  minRatio?: number,
+): string {
+  return pickAccessibleTextToken(NEUTRAL_HUE, NEUTRAL_SATURATION, backgrounds, lightness, minRatio);
 }
 
-function buildDarkModeSurfaceTokens(
-  surfaceHue: number,
-  accentHue: number,
-  tintSources: readonly HslColor[],
+/**
+ * Builds light- or dark-mode surface and sidebar tokens on the stock shadcn/ui
+ * neutral base. Ink tokens are still fitted for WCAG AA (with `FIT_MARGIN`) against
+ * every surface — and every resting brand/status tint — they are read on.
+ */
+export function buildBrandingSurfaceTokens(
+  mode: BrandingThemeMode,
+  tintSources: readonly HslColor[] = [],
 ): Record<string, string> {
-  const background = { h: surfaceHue, s: 20, l: 5 };
-  const muted = { h: surfaceHue, s: 15, l: 14 };
-  const card = { h: surfaceHue, s: 20, l: 8 };
-  const sidebarBackground = { h: surfaceHue, s: 25, l: 6 };
-  const sidebarAccent = { h: surfaceHue, s: 20, l: 12 };
-  const foreground = pickAccessibleTextToken(
-    accentHue,
-    15,
-    [background],
-    ascendingLightness(92, 96),
+  const surface = NEUTRAL_SURFACES[mode];
+  const { background, card, muted, raised, sidebar, sidebarAccent } = surface;
+  const light = mode === "light";
+
+  const foreground = pickInk(
+    [background, card, muted],
+    light ? descendingLightness(4, 0) : ascendingLightness(98, 100),
   );
-  const mutedForeground = pickAccessibleTextToken(
-    surfaceHue,
-    10,
-    mutedForegroundBackgrounds("dark", [muted, background, card], tintSources),
-    ascendingLightness(55, 82),
+  const mutedForeground = pickInk(
+    mutedForegroundBackgrounds(mode, [card, muted, background, raised], tintSources),
+    light ? descendingLightness(45, 20) : ascendingLightness(64, 85),
     MUTED_FIT_MIN_RATIO,
   );
-  const sidebarForeground = pickAccessibleTextToken(
-    accentHue,
-    15,
-    [sidebarBackground],
-    ascendingLightness(85, 92),
+  const sidebarForeground = pickInk(
+    [sidebar, sidebarAccent],
+    light ? descendingLightness(26, 10) : ascendingLightness(90, 98),
   );
-  const sidebarAccentForeground = pickAccessibleTextToken(
-    accentHue,
-    15,
+  const sidebarAccentForeground = pickInk(
     [sidebarAccent],
-    ascendingLightness(92, 96),
+    light ? descendingLightness(9, 0) : ascendingLightness(96, 100),
   );
-  const sidebarMutedForeground = pickAccessibleTextToken(
-    surfaceHue,
-    10,
-    mutedForegroundBackgrounds("dark", [sidebarBackground, sidebarAccent], tintSources),
-    ascendingLightness(50, 82),
+  const sidebarMutedForeground = pickInk(
+    mutedForegroundBackgrounds(mode, [sidebar, sidebarAccent], tintSources),
+    light ? descendingLightness(45, 20) : ascendingLightness(64, 85),
     MUTED_FIT_MIN_RATIO,
+  );
+  const accentForeground = pickInk(
+    [muted],
+    light ? descendingLightness(9, 0) : ascendingLightness(98, 100),
   );
 
+  const border = hslColorToToken(surface.border);
   return {
     "--background": hslColorToToken(background),
     "--foreground": foreground,
@@ -145,25 +92,15 @@ function buildDarkModeSurfaceTokens(
     "--popover-foreground": foreground,
     "--muted": hslColorToToken(muted),
     "--muted-foreground": mutedForeground,
-    "--border": `${surfaceHue} 15% 16%`,
-    "--input": `${surfaceHue} 15% 16%`,
-    "--sidebar-background": hslColorToToken(sidebarBackground),
+    "--accent": hslColorToToken(muted),
+    "--accent-foreground": accentForeground,
+    "--border": border,
+    "--input": border,
+    "--sidebar-background": hslColorToToken(sidebar),
     "--sidebar-foreground": sidebarForeground,
     "--sidebar-accent": hslColorToToken(sidebarAccent),
     "--sidebar-accent-foreground": sidebarAccentForeground,
-    "--sidebar-border": `${surfaceHue} 15% 14%`,
+    "--sidebar-border": hslColorToToken(light ? surface.border : sidebarAccent),
     "--sidebar-muted-foreground": sidebarMutedForeground,
   };
-}
-
-/** Builds light- or dark-mode surface and sidebar tokens. */
-export function buildBrandingSurfaceTokens(
-  mode: BrandingThemeMode,
-  surfaceHue: number,
-  accentHue: number,
-  tintSources: readonly HslColor[] = [],
-): Record<string, string> {
-  return mode === "light"
-    ? buildLightModeSurfaceTokens(surfaceHue, accentHue, tintSources)
-    : buildDarkModeSurfaceTokens(surfaceHue, accentHue, tintSources);
 }

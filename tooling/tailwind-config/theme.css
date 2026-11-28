@@ -372,9 +372,9 @@
    */
   interpolate-size: allow-keywords;
   --font-sans:
-    "Plus Jakarta Sans", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Geist", "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     "Noto Sans Arabic", sans-serif;
-  --font-display: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  --font-display: "Geist", "Inter", system-ui, sans-serif;
   --animation-stagger-unit: 0.04s;
 
   /*
@@ -417,35 +417,35 @@
    *  - Button radius is `rounded-lg`, which resolves to `var(--radius)` — the same
    *    scale as inputs, so tenant corner presets apply unchanged.
    */
-  --surface-base: 40 10% 98%;
+  --surface-base: 0 0% 100%;
   --surface-raised: 0 0% 100%;
   --surface-overlay: 0 0% 100%;
 
-  --background: 40 10% 98%;
-  --foreground: 28 50% 12%;
+  --background: 0 0% 100%;
+  --foreground: 0 0% 4%;
   --card: 0 0% 100%;
-  --card-foreground: 28 50% 12%;
+  --card-foreground: 0 0% 4%;
   --popover: 0 0% 100%;
-  --popover-foreground: 28 50% 12%;
-  --primary: 42 85% 27%;
+  --popover-foreground: 0 0% 4%;
+  --primary: 43 84% 27%;
   --primary-foreground: 0 0% 100%;
-  --secondary: 28 65% 22%;
-  --secondary-foreground: 40 10% 98%;
-  --muted: 40 8% 94%;
-  --muted-foreground: 28 12% 38%;
-  --accent: 40 8% 94%;
-  --accent-foreground: 28 50% 12%;
-  --destructive: 0 84% 40%;
-  --destructive-foreground: 0 0% 98%;
-  --success: 142 71% 26%;
+  --secondary: 28 67% 22%;
+  --secondary-foreground: 0 0% 100%;
+  --muted: 0 0% 96%;
+  --muted-foreground: 0 0% 34%;
+  --accent: 0 0% 96%;
+  --accent-foreground: 0 0% 9%;
+  --destructive: 0 66% 45%;
+  --destructive-foreground: 0 0% 100%;
+  --success: 142 63% 28%;
   --success-foreground: 0 0% 100%;
-  --warning: 32 95% 30%;
+  --warning: 32 83% 32%;
   --warning-foreground: 0 0% 100%;
-  --info: 217 91% 40%;
+  --info: 217 83% 44%;
   --info-foreground: 0 0% 100%;
-  --border: 40 8% 88%;
-  --input: 40 8% 88%;
-  --ring: 42 85% 27%;
+  --border: 0 0% 90%;
+  --input: 0 0% 90%;
+  --ring: 43 84% 27%;
   /*
    * Solid-button hover/active fills. Light mode darkens; see the toggle in
    * `.dark` for the lighten direction. Values are mixed at computed-value time so
@@ -459,22 +459,22 @@
   --button-destructive-active: color-mix(in srgb, hsl(var(--destructive)) 82%, black);
   --button-success-hover: color-mix(in srgb, hsl(var(--success)) 90%, black);
   --button-success-active: color-mix(in srgb, hsl(var(--success)) 82%, black);
-  --chart-1: 42 88% 46%;
-  --chart-2: 158 72% 38%;
-  --chart-3: 217 91% 54%;
-  --chart-4: 28 75% 48%;
-  --chart-5: 265 60% 55%;
+  --chart-1: 43 84% 27%;
+  --chart-2: 28 67% 22%;
+  --chart-3: 43 46% 35%;
+  --chart-4: 28 44% 10%;
+  --chart-5: 43 21% 49%;
   --radius: 0.625rem;
 
-  --sidebar-background: 28 45% 10%;
-  --sidebar-foreground: 40 25% 90%;
-  --sidebar-primary: 42 85% 48%;
-  --sidebar-primary-foreground: 28 50% 10%;
-  --sidebar-accent: 28 35% 16%;
-  --sidebar-accent-foreground: 40 25% 95%;
-  --sidebar-border: 28 30% 18%;
-  --sidebar-ring: 42 85% 48%;
-  --sidebar-muted-foreground: 40 15% 60%;
+  --sidebar-background: 0 0% 98%;
+  --sidebar-foreground: 0 0% 26%;
+  --sidebar-primary: 43 84% 27%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 0 0% 94%;
+  --sidebar-accent-foreground: 0 0% 9%;
+  --sidebar-border: 0 0% 90%;
+  --sidebar-ring: 43 84% 27%;
+  --sidebar-muted-foreground: 0 0% 35%;
 
   --oklch-primary: oklch(0.68 0.16 75);
   --oklch-secondary: oklch(0.35 0.08 60);
@@ -493,35 +493,35 @@
 
 .dark {
   color-scheme: dark;
-  --surface-base: 32 10% 7%;
-  --surface-raised: 32 8% 11%;
-  --surface-overlay: 32 8% 13%;
+  --surface-base: 0 0% 4%;
+  --surface-raised: 0 0% 9%;
+  --surface-overlay: 0 0% 9%;
 
-  --background: 32 10% 7%;
-  --foreground: 40 25% 92%;
-  --card: 32 8% 11%;
-  --card-foreground: 40 25% 92%;
-  --popover: 32 8% 11%;
-  --popover-foreground: 40 25% 92%;
-  --primary: 42 90% 50%;
-  --primary-foreground: 28 65% 10%;
-  --secondary: 38 55% 65%;
-  --secondary-foreground: 32 10% 7%;
-  --muted: 32 8% 15%;
-  --muted-foreground: 40 15% 60%;
-  --accent: 32 8% 16%;
-  --accent-foreground: 40 25% 92%;
-  --destructive: 0 72% 71%;
-  --destructive-foreground: 0 72% 12%;
-  --success: 158 65% 42%;
-  --success-foreground: 158 65% 12%;
-  --warning: 32 80% 52%;
-  --warning-foreground: 32 80% 12%;
-  --info: 217 85% 66%;
-  --info-foreground: 217 85% 12%;
-  --border: 32 8% 18%;
-  --input: 32 8% 18%;
-  --ring: 42 90% 50%;
+  --background: 0 0% 4%;
+  --foreground: 0 0% 98%;
+  --card: 0 0% 9%;
+  --card-foreground: 0 0% 98%;
+  --popover: 0 0% 9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: 43 70% 55%;
+  --primary-foreground: 43 30% 12%;
+  --secondary: 28 16% 58%;
+  --secondary-foreground: 28 30% 12%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 67%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 31% 63%;
+  --destructive-foreground: 0 30% 12%;
+  --success: 142 55% 42%;
+  --success-foreground: 142 30% 12%;
+  --warning: 32 82% 46%;
+  --warning-foreground: 32 30% 12%;
+  --info: 217 70% 64%;
+  --info-foreground: 217 30% 12%;
+  --border: 0 0% 15%;
+  --input: 0 0% 15%;
+  --ring: 43 70% 55%;
   /* Dark labels are the dark ink, so hover/active lighten instead of darken. */
   --button-primary-hover: color-mix(in srgb, hsl(var(--primary)) 90%, white);
   --button-primary-active: color-mix(in srgb, hsl(var(--primary)) 82%, white);
@@ -531,21 +531,21 @@
   --button-destructive-active: color-mix(in srgb, hsl(var(--destructive)) 82%, white);
   --button-success-hover: color-mix(in srgb, hsl(var(--success)) 90%, white);
   --button-success-active: color-mix(in srgb, hsl(var(--success)) 82%, white);
-  --chart-1: 42 90% 50%;
-  --chart-2: 158 65% 45%;
-  --chart-3: 217 85% 60%;
-  --chart-4: 28 70% 55%;
-  --chart-5: 265 60% 65%;
+  --chart-1: 43 70% 55%;
+  --chart-2: 28 16% 58%;
+  --chart-3: 43 38% 63%;
+  --chart-4: 28 10% 46%;
+  --chart-5: 43 17% 77%;
 
-  --sidebar-background: 32 40% 6%;
-  --sidebar-foreground: 40 25% 90%;
-  --sidebar-primary: 42 90% 50%;
-  --sidebar-primary-foreground: 28 65% 10%;
-  --sidebar-accent: 32 25% 12%;
-  --sidebar-accent-foreground: 40 25% 92%;
-  --sidebar-border: 32 20% 15%;
-  --sidebar-ring: 42 90% 50%;
-  --sidebar-muted-foreground: 40 15% 55%;
+  --sidebar-background: 0 0% 9%;
+  --sidebar-foreground: 0 0% 90%;
+  --sidebar-primary: 43 70% 55%;
+  --sidebar-primary-foreground: 43 30% 12%;
+  --sidebar-accent: 0 0% 15%;
+  --sidebar-accent-foreground: 0 0% 96%;
+  --sidebar-border: 0 0% 15%;
+  --sidebar-ring: 43 70% 55%;
+  --sidebar-muted-foreground: 0 0% 67%;
 
   --oklch-primary: oklch(0.72 0.18 75);
   --oklch-secondary: oklch(0.65 0.08 70);

@@ -37,14 +37,10 @@ export interface SemanticStatusPair {
  * strings. The surface tokens need the colours (a status callout can sit behind
  * `muted-foreground` text), so the same fit is used for both rather than recomputed.
  *
- * `surfaceHue` should be the brand surface hue so the constraint is evaluated against
- * the real `--card` / `--background` values rather than pure white.
+ * Evaluated against the neutral `--card` / `--background` (`NEUTRAL_SURFACES`).
  */
-export function buildSemanticStatusPairs(
-  mode: BrandingThemeMode,
-  surfaceHue = 0,
-): SemanticStatusPair[] {
-  const surfaces = brandingSurfaces(mode, surfaceHue);
+export function buildSemanticStatusPairs(mode: BrandingThemeMode): SemanticStatusPair[] {
+  const surfaces = brandingSurfaces(mode);
   return Object.entries(SEMANTIC_STATUS_BASES[mode]).map(([key, base]) => {
     // Evaluate against the REAL surfaces — the same hues the surface tokens use.
     // Re-hueing them per status token made the constraint disagree with the shipped
@@ -60,12 +56,9 @@ export function buildSemanticStatusPairs(
 }
 
 /** Builds accessible semantic status fill and foreground tokens. */
-export function buildSemanticStatusTokens(
-  mode: BrandingThemeMode,
-  surfaceHue = 0,
-): Record<string, string> {
+export function buildSemanticStatusTokens(mode: BrandingThemeMode): Record<string, string> {
   const tokens: Record<string, string> = {};
-  for (const { key, fill, foreground } of buildSemanticStatusPairs(mode, surfaceHue)) {
+  for (const { key, fill, foreground } of buildSemanticStatusPairs(mode)) {
     tokens[key] = fill;
     tokens[`${key}-foreground`] = foreground;
   }

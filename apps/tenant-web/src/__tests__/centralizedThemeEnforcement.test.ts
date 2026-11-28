@@ -57,9 +57,8 @@ describe("Centralised Theme Enforcement", () => {
     expect(root.style.getPropertyValue("--primary-foreground")).toMatch(/\d+/);
     expect(root.style.getPropertyValue("--secondary")).toMatch(/\d+/);
     expect(root.style.getPropertyValue("--secondary-foreground")).toMatch(/\d+/);
-    expect(root.style.getPropertyValue("--accent")).toBe(
-      root.style.getPropertyValue("--secondary"),
-    );
+    // shadcn neutral base: accent is the muted hover surface, not the brand secondary.
+    expect(root.style.getPropertyValue("--accent")).toBe(root.style.getPropertyValue("--muted"));
     expect(root.style.getPropertyValue("--ring")).toBe(root.style.getPropertyValue("--primary"));
     expect(root.style.getPropertyValue("--chart-1")).toBe(root.style.getPropertyValue("--primary"));
     expect(root.style.getPropertyValue("--chart-2")).toBe(

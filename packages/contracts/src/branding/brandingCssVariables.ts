@@ -27,10 +27,9 @@ export function buildBrandingCssVariables(
   const primaryBase = hexToHslColor(primaryHex) ?? DEFAULT_PRIMARY;
   const secondaryBase = hexToHslColor(secondaryHex) ?? DEFAULT_SECONDARY;
 
-  // The surfaces the tokens are read against, built from the same hues the
-  // surface tokens use so the contrast constraint is evaluated against reality
-  // rather than pure white.
-  const surfaces = brandingSurfaces(mode, primaryBase.h);
+  // The neutral surfaces the tokens are read against — the same values the
+  // surface tokens emit, so the contrast fit is evaluated against reality.
+  const surfaces = brandingSurfaces(mode);
 
   const primaryUi = ensureAccessibleFillSurface(
     mode === "dark" ? darkModePrimaryUi(primaryBase) : primaryBase,
@@ -49,7 +48,7 @@ export function buildBrandingCssVariables(
   const chart4 = tone(secondaryUi, { s: -Math.round(secondaryUi.s * 0.35), l: -12 });
   const chart5 = tone(primaryUi, { s: -Math.round(primaryUi.s * 0.75), l: 22 });
 
-  const statusPairs = buildSemanticStatusPairs(mode, primaryBase.h);
+  const statusPairs = buildSemanticStatusPairs(mode);
   const semanticTokens = Object.fromEntries(
     statusPairs.flatMap(({ key, fill, foreground }) => [
       [key, fill],
@@ -60,28 +59,21 @@ export function buildBrandingCssVariables(
   // surface tokens fit `--muted-foreground` against each fill's resting tint, so
   // `bg-primary/5 text-muted-foreground` (and status callouts) cannot fall below AA.
   const tintSources = [primaryUi, secondaryUi, ...statusPairs.map((pair) => pair.fillColor)];
-  const surfaceTokens = buildBrandingSurfaceTokens(
-    mode,
-    primaryBase.h,
-    secondaryBase.h,
-    tintSources,
-  );
+  const surfaceTokens = buildBrandingSurfaceTokens(mode, tintSources);
   const brandTokens = {
     "--primary": primaryToken,
     "--primary-foreground": foregroundForSurface(primaryUi),
     "--secondary": secondaryToken,
     "--secondary-foreground": foregroundForSurface(secondaryUi),
-    "--accent": secondaryToken,
-    "--accent-foreground": foregroundForSurface(secondaryUi),
     "--ring": primaryToken,
     "--chart-1": primaryToken,
     "--chart-2": secondaryToken,
     "--chart-3": hslColorToToken(chart3),
     "--chart-4": hslColorToToken(chart4),
     "--chart-5": hslColorToToken(chart5),
-    "--sidebar-primary": secondaryToken,
-    "--sidebar-primary-foreground": foregroundForSurface(secondaryUi),
-    "--sidebar-ring": secondaryToken,
+    "--sidebar-primary": primaryToken,
+    "--sidebar-primary-foreground": foregroundForSurface(primaryUi),
+    "--sidebar-ring": primaryToken,
   };
 
   return {
