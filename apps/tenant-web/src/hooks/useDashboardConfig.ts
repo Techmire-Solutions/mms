@@ -4,6 +4,7 @@ import type { QueryClient } from "@tanstack/react-query";
 import {
   DASHBOARD_MODULE_MANIFEST,
   DEFAULT_DASHBOARD_PREFERENCES,
+  findDuplicateDashboardWidget,
   type DashboardPreferences,
 } from "@mms/contracts";
 import {
@@ -201,6 +202,12 @@ export function useDashboardConfig() {
   /** Upsert only the affected widget (inserts new, updates existing; leaves others untouched). Resolves on success so builder flows can await before closing (§7). */
   const saveWidget = (savedWidget: CustomWidget) => {
     if (!canWriteDashboard) return Promise.resolve();
+    const duplicate = findDuplicateDashboardWidget(savedWidget, customWidgets);
+    if (duplicate) {
+      const errorMsg = t("reports.widgets.builder.duplicateWidget");
+      notify.error(errorMsg);
+      return Promise.reject(new Error(errorMsg));
+    }
     return widgetsMutation.mutateAsync({ body: [savedWidget] });
   };
 

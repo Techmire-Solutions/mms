@@ -60,6 +60,7 @@ export * from "../branding/chartPalettes.js";
 export * from "../dashboard/dashboardPreferencesTypes.js";
 export * from "../dashboard/dashboardPreferencesChartOptions.js";
 export * from "../dashboard/dashboardWidgetSchema.js";
+export * from "../dashboard/dashboardWidgetDuplicates.js";
 export * from "../dashboard/tenantNotifications.js";
 export * from "../dashboard/dashboardSeriesUtils.js";
 export * from "../core/dateFormatUtils.js";

@@ -343,4 +343,30 @@ describe("useDashboardConfig", () => {
     renderTree(root, queryClient);
     expect(latestApi?.customWidgets).toEqual([]);
   });
+
+  it("rejects saving a widget that duplicates an existing widget configuration", async () => {
+    state.serverWidgets = [{ ...SEED_WIDGET, id: "custom-1" }];
+    renderTree(root, queryClient);
+
+    const duplicateWidget = {
+      ...SEED_WIDGET,
+      id: "custom-2",
+      title: "Duplicate Title",
+    };
+
+    let caughtError: Error | null = null;
+    await act(async () => {
+      try {
+        await latestApi?.saveWidget(
+          duplicateWidget as unknown as Parameters<NonNullable<ConfigApi>["saveWidget"]>[0],
+        );
+      } catch (err) {
+        caughtError = err as Error;
+      }
+    });
+
+    const finalError = caughtError as Error | null;
+    expect(finalError?.message).toBe("reports.widgets.builder.duplicateWidget");
+    expect(spies.putWidgetsAsync).not.toHaveBeenCalled();
+  });
 });

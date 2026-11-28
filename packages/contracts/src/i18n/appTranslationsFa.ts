@@ -8200,6 +8200,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "reports.widgets.builder.conditionGt": "بیشتر شود از <",
   "reports.widgets.builder.conditionLt": "کمتر شود از >",
   "reports.widgets.builder.createWidget": "ایجاد ابزارک",
+  "reports.widgets.builder.duplicateWidget": "ویجتی با این پیکربندی از قبل در داشبورد وجود دارد.",
   "reports.widgets.builder.dashboardRole": "نقش هدف در داشبورد",
   "reports.widgets.builder.dataCollection": "مجموعه داده‌های هدف",
   "reports.widgets.builder.deactivated": "(غیرفعال شده)",

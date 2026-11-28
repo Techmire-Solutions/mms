@@ -8257,6 +8257,7 @@ export const APP_TRANSLATIONS_EN = {
   "reports.widgets.builder.conditionGt": "> Exceeds",
   "reports.widgets.builder.conditionLt": "< Drops Below",
   "reports.widgets.builder.createWidget": "Create Widget",
+  "reports.widgets.builder.duplicateWidget": "A widget with this configuration already exists on the dashboard.",
   "reports.widgets.builder.dashboardRole": "Target Dashboard Role",
   "reports.widgets.builder.dataCollection": "Target Data Collection",
   "reports.widgets.builder.deactivated": "(Deactivated)",

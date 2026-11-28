@@ -86,6 +86,7 @@ export function DashboardCustomizePanel({
               category={widgetScope.category}
               mode="dashboard"
               initialWidgetType={widgetBuilderType}
+              existingWidgets={customWidgets}
               renderWidget={(widget, isCompact) => (
                 <CustomWidgetRenderer
                   widget={widget}

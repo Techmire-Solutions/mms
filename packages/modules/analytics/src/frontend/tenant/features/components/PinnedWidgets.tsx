@@ -61,6 +61,7 @@ export default function PinnedWidgets({ category }: { category: string }): React
         category={category}
         onCancelEdit={handleCancelBuilder}
         onSaveWidget={handleSaveWidget}
+        existingWidgets={widgets}
         renderWidget={(widget: any, isCompact: any) => (
           <CustomWidgetRenderer
             widget={widget}
