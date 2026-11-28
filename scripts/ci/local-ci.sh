@@ -259,6 +259,11 @@ if [[ "$WITH_DB" -eq 1 && "$NEED_BE_DB" -eq 1 ]]; then
     for mod_dir in packages/modules/*/; do
       [[ -f "${mod_dir}vitest.db.config.ts" ]] || continue
       mod_slice="$(basename "$mod_dir")"
+      # A module may ship the config before it has any suite of its own (platform,
+      # tasks today); vitest exits 1 on "No test files found", aborting the phase.
+      if ! find "${mod_dir}src/backend/__tests__/db-integration" -name '*.integration.test.ts' 2>/dev/null | grep -q .; then
+        continue
+      fi
       if ! grep -Fq "packages/modules/${mod_slice}/" apps/api/vitest.db.config.ts; then
         pnpm --filter "@mms/mod-${mod_slice}" run test:db
       fi
