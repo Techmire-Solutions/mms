@@ -189,13 +189,9 @@ export function ContactAddressEntryCard({
                   options={countryOptions}
                   value={addr.country || defaultCountry || countryOptions[0] || ""}
                   onChange={(val) => {
-                    const nextProvinces = getProvincesForCountry(val);
-                    const currentState = addr.state?.trim() ?? "";
-                    const keepState =
-                      !currentState ||
-                      nextProvinces.length === 0 ||
-                      nextProvinces.some((p) => p.toLowerCase() === currentState.toLowerCase());
-                    onUpdateAddress(keepState ? { country: val } : { country: val, state: "" });
+                    if (val !== addr.country) {
+                      onUpdateAddress({ country: val, city: "", state: "" });
+                    }
                   }}
                   onUpdateOptions={onUpdateCountryOptions}
                   className="w-full min-w-0"
