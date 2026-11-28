@@ -234,7 +234,7 @@ export function AppSidebarNav({
             {showHeader ? (
               <div
                 className={cn(
-                  "px-3 pb-1 text-2xs uppercase tracking-wider font-mono text-sidebar-muted-foreground/80 font-bold",
+                  "px-3 pb-1 text-2xs uppercase tracking-wider font-mono text-sidebar-muted-foreground font-bold",
                   sIndex > 0 ? "pt-2" : "",
                 )}
               >
