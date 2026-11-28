@@ -3,12 +3,13 @@ import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 const deploy = readFileSync(new URL("../deploy-on-server.sh", import.meta.url), "utf8");
 const rollback = readFileSync(new URL("../deploy-rollback.sh", import.meta.url), "utf8");
 const packageDist = readFileSync(new URL("./package-dist.sh", import.meta.url), "utf8");
 const remoteDeploy = readFileSync(new URL("./remote/deploy.sh", import.meta.url), "utf8");
-const repoRoot = path.resolve(new URL("../..", import.meta.url).pathname);
+const repoRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 test("deploy shell scripts pass bash syntax check", () => {
   for (const rel of [
