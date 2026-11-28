@@ -21,14 +21,17 @@ import {
 } from "../../services/dashboardPreferencesService.js";
 import {
   loadDashboardWidgets,
-  upsertDashboardWidgets,
   deleteDashboardWidget,
   reorderDashboardWidgets,
   broadcastDashboardWidgetsChanged,
 } from "../../lib/dashboardWidgetsService.js";
 import { loadDashboardSummary } from "../../services/dashboardSummaryService.js";
 import { logger } from "../../lib/logger.js";
-import { handleDashboardRead, handleDashboardWrite } from "./dashboard/dashboardRouteHelpers.js";
+import {
+  executePutWidgets,
+  handleDashboardRead,
+  handleDashboardWrite,
+} from "./dashboard/dashboardRouteHelpers.js";
 
 const auditDashboard = createCollectionAuditHelper("dashboard");
 const s = initServer();
@@ -142,28 +145,7 @@ const dashboardRouter = s.router(dashboardContract, {
     request,
   }: ContractRouteArgs<(typeof dashboardContract)["putWidgets"]>): Promise<
     ContractRouteResponse<(typeof dashboardContract)["putWidgets"]>
-  > => {
-    try {
-      const result = await handleDashboardWrite(request, async (user) => {
-        const widgets = await upsertDashboardWidgets(body as DashboardWidgetDto[]);
-        try {
-          await auditDashboard(user, "dashboard.widgets", "Updated dashboard widgets", "widgets");
-        } catch {
-          /* non-critical */
-        }
-        return widgets;
-      });
-      if (!result.ok) return result.error;
-      await broadcastDashboardWidgetsChanged();
-      return { status: 200 as const, body: { success: true, widgets: result.data } };
-    } catch (err) {
-      request.log.error({ err }, "Failed to save dashboard widgets");
-      return {
-        status: 500 as const,
-        body: { type: "database_error", message: "Failed to save dashboard widgets" },
-      };
-    }
-  },
+  > => executePutWidgets(request, body as DashboardWidgetDto[], auditDashboard),
 
   deleteWidget: async ({
     params: { id },

@@ -8168,6 +8168,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "reports.widgets.builder.conditionGt": "سے زیادہ ہونے پر",
   "reports.widgets.builder.conditionLt": "سے کم ہونے پر",
   "reports.widgets.builder.createWidget": "وجیٹ بنائیں",
+  "reports.widgets.builder.duplicateWidget": "اس ترتیب کا ویجیٹ پہلے سے ڈیش بورڈ پر موجود ہے۔",
   "reports.widgets.builder.dashboardRole": "ڈیش بورڈ رول",
   "reports.widgets.builder.dataCollection": "ڈیٹا کلیکشن",
   "reports.widgets.builder.deactivated": "(غیر فعال)",

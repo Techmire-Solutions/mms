@@ -156,6 +156,21 @@ describe("dashboard config routes", () => {
     expect(widgetsWriteOk.statusCode).toBe(200);
     expect(mockUpsertDashboardWidgets).toHaveBeenCalled();
 
+    // PUT duplicate widget configuration (different id/title) — rejected as validation error.
+    const duplicateWidget = {
+      ...sampleWidget,
+      id: "custom-2",
+      title: "Target Data Collection",
+    };
+    const duplicateWriteRes = await app.inject({
+      method: "PUT",
+      url: "/api/dashboard/widgets",
+      headers: { host: "demo.localhost", authorization: `Bearer ${adminToken(app)}` },
+      payload: [duplicateWidget],
+    });
+    expect(duplicateWriteRes.statusCode).toBe(400);
+    expect(duplicateWriteRes.json().type).toBe("validation_error");
+
     // Partial PUT must merge over the stored document, not reset omitted keys.
     mockLoadDashboardPreferences.mockResolvedValue({
       preferences: {

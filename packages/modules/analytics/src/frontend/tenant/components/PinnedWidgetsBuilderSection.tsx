@@ -11,6 +11,7 @@ interface PinnedWidgetsBuilderSectionProps {
   onCancelEdit: () => void;
   onSaveWidget: (savedWidget: CustomWidget) => void;
   renderWidget: (widget: CustomWidget, isCompact: boolean) => React.ReactNode;
+  existingWidgets?: CustomWidget[];
 }
 
 export function PinnedWidgetsBuilderSection({
@@ -21,6 +22,7 @@ export function PinnedWidgetsBuilderSection({
   onCancelEdit,
   onSaveWidget,
   renderWidget,
+  existingWidgets,
 }: PinnedWidgetsBuilderSectionProps): React.JSX.Element {
   return (
     <AnimatePresence>
@@ -32,6 +34,7 @@ export function PinnedWidgetsBuilderSection({
           onSaveWidget={onSaveWidget}
           category={category}
           renderWidget={renderWidget}
+          existingWidgets={existingWidgets}
         />
       )}
     </AnimatePresence>

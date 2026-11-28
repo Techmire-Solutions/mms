@@ -16,6 +16,7 @@ interface WidgetBuilderProps {
   mode?: "dashboard" | "kpi";
   initialWidgetType?: CustomWidget["widgetType"];
   renderWidget: (widget: CustomWidget, isCompact: boolean) => React.ReactNode;
+  existingWidgets?: CustomWidget[];
 }
 
 export function WidgetBuilder({
@@ -27,6 +28,7 @@ export function WidgetBuilder({
   mode = "kpi",
   initialWidgetType = "kpi",
   renderWidget,
+  existingWidgets,
 }: WidgetBuilderProps): React.JSX.Element {
   const {
     collections,
@@ -53,6 +55,7 @@ export function WidgetBuilder({
     mode,
     initialWidgetType,
     onSaveWidget,
+    existingWidgets,
   });
 
   return (

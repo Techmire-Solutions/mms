@@ -5,10 +5,21 @@
  * statement timeout; every write is permission-gated *before* the repository call
  * and runs in a write transaction so the audit row commits with the change.
  */
-import { DASHBOARD_MODULE_MANIFEST, type User } from "@mms/contracts";
+import {
+  areDashboardWidgetsDuplicate,
+  findDuplicateDashboardWidget,
+  DASHBOARD_MODULE_MANIFEST,
+  type DashboardWidgetDto,
+  type User,
+} from "@mms/contracts";
 import { withTenant } from "@mms/db/context";
 import { requireTenant } from "../../../lib/tenantContext.js";
 import { userHasPermission } from "../../../lib/userPermissionContext.js";
+import {
+  loadDashboardWidgets,
+  upsertDashboardWidgets,
+  broadcastDashboardWidgetsChanged,
+} from "../../../lib/dashboardWidgetsService.js";
 
 export function canWriteDashboard(user: User): boolean {
   // Workspace-wide board: customization requires the global settings write.
@@ -57,4 +68,66 @@ export async function handleDashboardWrite<T>(
   const tenant = requireTenant();
   const data = await withTenant(tenant, () => action(user, tenant), { readOnly: false });
   return { ok: true, data };
+}
+
+export function findDuplicateWidgetInBatch(
+  incoming: DashboardWidgetDto[],
+  existing: DashboardWidgetDto[],
+): string | null {
+  for (let i = 0; i < incoming.length; i++) {
+    const widget = incoming[i];
+    const duplicateInDb = findDuplicateDashboardWidget(widget, existing);
+    if (duplicateInDb) {
+      return "A widget with this configuration already exists on the dashboard";
+    }
+    for (let j = 0; j < i; j++) {
+      if (areDashboardWidgetsDuplicate(widget, incoming[j])) {
+        return "A widget with this configuration already exists on the dashboard";
+      }
+    }
+  }
+  return null;
+}
+
+export async function executePutWidgets(
+  request: { user?: User; log: { error: (payload: unknown, message?: string) => void } },
+  body: DashboardWidgetDto[],
+  auditDashboard: (
+    user: User,
+    action: string,
+    description: string,
+    recordId: string,
+  ) => Promise<unknown>,
+) {
+  try {
+    const result = await handleDashboardWrite(request, async (user) => {
+      const existingWidgets = await loadDashboardWidgets();
+      const duplicateError = findDuplicateWidgetInBatch(body, existingWidgets);
+      if (duplicateError) {
+        return { kind: "duplicate" as const, message: duplicateError };
+      }
+      const widgets = await upsertDashboardWidgets(body);
+      try {
+        await auditDashboard(user, "dashboard.widgets", "Updated dashboard widgets", "widgets");
+      } catch {
+        /* non-critical */
+      }
+      return { kind: "saved" as const, widgets };
+    });
+    if (!result.ok) return result.error;
+    if (result.data.kind === "duplicate") {
+      return {
+        status: 400 as const,
+        body: { type: "validation_error" as const, message: result.data.message },
+      };
+    }
+    await broadcastDashboardWidgetsChanged();
+    return { status: 200 as const, body: { success: true as const, widgets: result.data.widgets } };
+  } catch (err) {
+    request.log.error({ err }, "Failed to save dashboard widgets");
+    return {
+      status: 500 as const,
+      body: { type: "database_error" as const, message: "Failed to save dashboard widgets" },
+    };
+  }
 }

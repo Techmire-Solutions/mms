@@ -8086,6 +8086,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "reports.widgets.builder.conditionGt": "يتجاوز",
   "reports.widgets.builder.conditionLt": "ينخفض عن",
   "reports.widgets.builder.createWidget": "إنشاء الأداة",
+  "reports.widgets.builder.duplicateWidget": "توجد أداة بهذا التكوين بالفعل على لوحة التحكم.",
   "reports.widgets.builder.dashboardRole": "دور اللوحة المستهدف",
   "reports.widgets.builder.dataCollection": "مجموعة البيانات المستهدفة",
   "reports.widgets.builder.deactivated": "(معطل)",

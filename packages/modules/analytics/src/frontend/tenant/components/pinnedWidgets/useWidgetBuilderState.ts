@@ -1,5 +1,7 @@
 import { useCallback, useState } from "react";
+import { findDuplicateDashboardWidget } from "@mms/contracts";
 import { useTranslation } from "@mms/fe-core/i18n";
+import { notify } from "@mms/fe-core/notify";
 import type { CustomWidget } from "../../lib/pinnedWidgetTypes";
 import { useWidgetCollections } from "../../lib/useReportCollections";
 import type { ReportCollection } from "../../lib/reportMetadata";
@@ -20,6 +22,7 @@ interface UseWidgetBuilderStateOptions {
   mode?: "dashboard" | "kpi";
   initialWidgetType?: CustomWidget["widgetType"];
   onSaveWidget: (widget: CustomWidget) => void | Promise<void>;
+  existingWidgets?: CustomWidget[];
 }
 
 export function useWidgetBuilderState({
@@ -29,6 +32,7 @@ export function useWidgetBuilderState({
   mode = "kpi",
   initialWidgetType = "kpi",
   onSaveWidget,
+  existingWidgets = [],
 }: UseWidgetBuilderStateOptions) {
   const { t } = useTranslation();
   const [saving, setSaving] = useState(false);
@@ -214,6 +218,13 @@ export function useWidgetBuilderState({
       trendType,
       builderRole,
     );
+    const duplicate = findDuplicateDashboardWidget(widget, existingWidgets);
+    if (duplicate) {
+      const errorMsg = t("reports.widgets.builder.duplicateWidget");
+      setSaveError(errorMsg);
+      notify.error(errorMsg);
+      return;
+    }
     setSaving(true);
     try {
       await onSaveWidget(widget);
@@ -272,6 +283,8 @@ export function useWidgetBuilderState({
       setSwitchCollection,
       switchRecordId,
       setSwitchRecordId,
+      switchField,
+      setSwitchField,
       switchLabelOn,
       setSwitchLabelOn,
       switchLabelOff,
