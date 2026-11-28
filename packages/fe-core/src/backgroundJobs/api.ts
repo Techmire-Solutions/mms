@@ -45,14 +45,43 @@ export async function downloadBackgroundJobArtifact(
   jobId: string,
   fallbackFilename = "export.csv",
 ): Promise<void> {
-  const response = await apiFetch(`${BACKGROUND_JOBS_API_PATH}/${jobId}/download`);
-  if (!response.ok) {
-    throw new Error("Download failed");
+  const maxAttempts = 3;
+  let lastError: Error | null = null;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      const response = await apiFetch(`${BACKGROUND_JOBS_API_PATH}/${jobId}/download`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const filename = parseFilenameFromDisposition(
+          response.headers.get("Content-Disposition"),
+          fallbackFilename,
+        );
+        triggerFileDownload(blob, filename);
+        return;
+      }
+
+      if (response.status === 404 && attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 400));
+        continue;
+      }
+
+      const errorText = await response.text().catch(() => "");
+      let parsedMessage: string | undefined;
+      try {
+        const json = JSON.parse(errorText) as { message?: string };
+        parsedMessage = json.message;
+      } catch {
+        /* not JSON */
+      }
+      throw new Error(parsedMessage || errorText || "Download failed");
+    } catch (err) {
+      lastError = err instanceof Error ? err : new Error(String(err));
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 400));
+      }
+    }
   }
-  const blob = await response.blob();
-  const filename = parseFilenameFromDisposition(
-    response.headers.get("Content-Disposition"),
-    fallbackFilename,
-  );
-  triggerFileDownload(blob, filename);
+
+  throw lastError ?? new Error("Download failed");
 }

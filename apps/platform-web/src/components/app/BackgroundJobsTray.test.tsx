@@ -113,6 +113,19 @@ describe("BackgroundJobsTray", () => {
     });
     expect(onClearFinished).toHaveBeenCalledTimes(1);
 
+    // Verify exactly one Close button exists in the footer
+    const footerButtons = Array.from(
+      document.body.querySelectorAll<HTMLButtonElement>("[data-slot='modal-footer'] button"),
+    );
+    expect(footerButtons).toHaveLength(1);
+    expect(footerButtons[0]?.textContent).toContain("common.close");
+
+    // Clicking close dismisses the modal
+    await act(async () => {
+      footerButtons[0]?.click();
+    });
+    expect(document.body.querySelector("[data-slot='modal-footer']")).toEqual(null);
+
     await act(async () => {
       root.unmount();
     });

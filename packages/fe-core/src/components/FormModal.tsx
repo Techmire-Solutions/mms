@@ -67,6 +67,7 @@ export function FormModal<K extends string = string>({
   discardConfirmLabel,
   discardCancelLabel,
   children,
+  footer,
 }: FormModalProps<K>): React.JSX.Element | null {
   const { t } = useTranslation();
   const [discardOpen, setDiscardOpen] = useState(false);
@@ -147,6 +148,7 @@ export function FormModal<K extends string = string>({
         hideFooter={hideFooter || builderMode}
         formId={formId}
         saveVariant={saveVariant}
+        footer={footer}
       >
         {children}
       </Modal>

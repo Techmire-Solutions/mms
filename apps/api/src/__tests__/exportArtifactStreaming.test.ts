@@ -104,6 +104,21 @@ describe("streamed export artifacts", () => {
     await deleteExportArtifact("user-1", "job-1");
     expect(existsSync(blobPath)).toBe(false);
 
-    expect(await getExportArtifact("user-1", "job-1")).toBeNull();
+    expect(await getExportArtifact("user-1", "job-1")).toEqual(null);
+  });
+
+  it("resolves artifact across user buckets in tenant when user identity varies", async () => {
+    await saveStreamedExportArtifact("user-effective-id", "job-mismatch", {
+      key: "tenants/tenant-1/exports/test-effective.csv",
+      storageType: "local",
+      filename: "test-effective.csv",
+    });
+
+    const artifact = await getExportArtifact("user-auth-id", "job-mismatch");
+    expect(artifact?.filename).toBe("test-effective.csv");
+    expect(artifact?.key).toBe("tenants/tenant-1/exports/test-effective.csv");
+
+    await deleteExportArtifact("user-auth-id", "job-mismatch");
+    expect(await getExportArtifact("user-auth-id", "job-mismatch")).toEqual(null);
   });
 });

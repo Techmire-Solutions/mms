@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Download, Loader2, CheckCircle2, AlertCircle, RefreshCw, X } from "lucide-react";
 import { useTranslation } from "../i18n/index.js";
+import { notify } from "../notify.js";
 import { FormModal } from "./FormModal.js";
 import { Badge } from "@mms/ui";
 import { Button } from "@mms/ui";
@@ -59,6 +60,10 @@ export function BackgroundJobsTray({
     setDownloadingId(jobId);
     try {
       await onDownload(jobId);
+    } catch (err) {
+      notify.error(t("backgroundJobs.download"), {
+        description: err instanceof Error ? err.message : String(err),
+      });
     } finally {
       setDownloadingId(null);
     }
@@ -91,9 +96,18 @@ export function BackgroundJobsTray({
           onClose={() => setOpen(false)}
           title={t("backgroundJobs.panelTitle")}
           size="sm"
-          cancelLabel={t("common.close")}
-          saveLabel={t("common.close")}
-          onSave={() => setOpen(false)}
+          footer={
+            <div className="flex w-full justify-end">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+                className="w-full sm:w-auto min-h-11 cursor-pointer"
+              >
+                {t("common.close")}
+              </Button>
+            </div>
+          }
         >
           <div className="space-y-3">
             <div className="flex flex-wrap items-start justify-between gap-3">

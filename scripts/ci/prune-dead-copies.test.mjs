@@ -32,8 +32,8 @@ describe("dead-copy pruner selection", () => {
     });
     const { prunable, skipped } = selectPrunable({ apps: ["demo"], repoRoot: root });
     assert.equal(prunable.length, 1);
-    assert.match(prunable[0].file, /apps\/demo\/src\/orphan\.ts$/);
-    assert.match(prunable[0].twin, /packages\/thing\/src\/orphan\.ts$/);
+    assert.match(prunable[0].file, /apps[\\/]demo[\\/]src[\\/]orphan\.ts$/);
+    assert.match(prunable[0].twin, /packages[\\/]thing[\\/]src[\\/]orphan\.ts$/);
     assert.equal(skipped.length, 0);
   });
 
