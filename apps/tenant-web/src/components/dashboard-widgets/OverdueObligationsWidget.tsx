@@ -1,8 +1,10 @@
 import { useState, useMemo, useCallback } from "react";
+import { Link } from "react-router-dom";
 import { WidgetCard } from "@mms/ui";
 import { WidgetCardHeader } from "@mms/ui";
 import { AlertTriangle, Bell, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@mms/ui";
+import { ROUTES } from "@mms/fe-core/config/routes";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { formatDateToIso, getOutstandingAmountForInvoice } from "@mms/contracts";
 import { useMessageComposerState } from "@/hooks/useMessageComposerState";
@@ -118,61 +120,88 @@ export default function OverdueObligationsWidget({ title }: { title?: string }) 
     });
   }, [filteredStudents, studentMap, openComposer]);
 
+  const hasOverdue = overdueStudents.length > 0;
+
   return (
-    <WidgetCard ariaLabelledby="overdue-obligations-heading" accentColor="destructive">
+    <WidgetCard
+      ariaLabelledby="overdue-obligations-heading"
+      accentColor={hasOverdue ? "destructive" : "primary"}
+    >
       <WidgetCardHeader
-        variant="destructive"
+        variant={hasOverdue ? "destructive" : "default"}
         headingId="overdue-obligations-heading"
         icon={
           <div
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-destructive/15"
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
+              hasOverdue ? "bg-destructive/15" : "bg-muted/60"
+            }`}
             aria-hidden="true"
           >
-            <AlertTriangle className="w-4 h-4 text-destructive animate-pulse" />
+            <AlertTriangle
+              className={`w-4 h-4 ${
+                hasOverdue ? "text-destructive animate-pulse" : "text-muted-foreground"
+              }`}
+            />
           </div>
         }
         title={title || t("dashboard.widgets.overdueObligations")}
         subtitle={`${t("dashboard.widgets.studentsCount", { count: filteredStudents.length })} · ${formatCurrency(totalOverdue)} ${t("finance.report.outstanding")}`}
         actions={
-          <div className="flex shrink-0 flex-wrap items-center gap-2">
-            {canWriteMessaging && (
-              <Button variant="destructive" size="caps" onClick={handleRemindAll}>
-                <Bell className="w-3 h-3" aria-hidden="true" />
-                {t("dashboard.widgets.remindAll")}
-              </Button>
-            )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setExpanded((value) => !value)}
-              aria-expanded={expanded}
-              aria-label={t("dashboard.widgets.toggleOverdueList")}
-              className="rounded-lg hover:bg-destructive/15 text-destructive hover:text-destructive transition-colors shadow-none cursor-pointer"
-            >
-              {expanded ? (
-                <ChevronUp className="w-4 h-4" aria-hidden="true" />
-              ) : (
-                <ChevronDown className="w-4 h-4" aria-hidden="true" />
+          hasOverdue ? (
+            <div className="flex shrink-0 flex-wrap items-center gap-2">
+              {canWriteMessaging && (
+                <Button variant="destructive" size="caps" onClick={handleRemindAll}>
+                  <Bell className="w-3 h-3" aria-hidden="true" />
+                  {t("dashboard.widgets.remindAll")}
+                </Button>
               )}
-            </Button>
-          </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setExpanded((value) => !value)}
+                aria-expanded={expanded}
+                aria-label={t("dashboard.widgets.toggleOverdueList")}
+                className="rounded-lg hover:bg-destructive/15 text-destructive hover:text-destructive transition-colors shadow-none cursor-pointer"
+              >
+                {expanded ? (
+                  <ChevronUp className="w-4 h-4" aria-hidden="true" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" aria-hidden="true" />
+                )}
+              </Button>
+            </div>
+          ) : undefined
         }
       />
 
-      <OverdueObligationsWidgetList
-        expanded={expanded}
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        paginatedStudents={paginatedStudents}
-        students={students}
-        remindedIds={remindedIds}
-        canWriteMessaging={canWriteMessaging}
-        activeCurrencyCode={activeCurrency.code}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        onPageChange={setCurrentPage}
-        onRemind={handleRemind}
-      />
+      {hasOverdue ? (
+        <OverdueObligationsWidgetList
+          expanded={expanded}
+          searchQuery={searchQuery}
+          onSearchChange={handleSearchChange}
+          paginatedStudents={paginatedStudents}
+          students={students}
+          remindedIds={remindedIds}
+          canWriteMessaging={canWriteMessaging}
+          activeCurrencyCode={activeCurrency.code}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          onRemind={handleRemind}
+        />
+      ) : (
+        <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground m-0">
+            {t("dashboard.widgets.noOverdueObligations")}
+          </p>
+          <Link
+            to={ROUTES.obligations}
+            className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline shrink-0"
+          >
+            {t("dashboard.widgets.viewObligations")}
+          </Link>
+        </div>
+      )}
 
       <MessageComposerLauncher messagingTarget={messagingTarget} onClose={closeComposer} />
     </WidgetCard>

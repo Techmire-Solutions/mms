@@ -118,6 +118,7 @@ export function useDashboardPageController() {
     can,
     data: dashboardData,
     t,
+    formatCurrency,
   });
 
   const handleEditCustomCard = (customCardId: string) => {
@@ -147,36 +148,43 @@ export function useDashboardPageController() {
 
   const pinnedDashboardWidgetCount = visiblePinnedWidgets.length;
 
-  const notifications = useMemo(
-    () =>
-      buildDashboardNotifications(
-        dashboardRole,
-        {
-          outstandingInvoiceCount: financeMetrics?.outstanding ?? 0,
-          outstandingBalance: financeMetrics?.outstandingBalance ?? 0,
-          attendanceRate:
-            attendanceMetrics?.selectedDatePresentRate ??
-            attendanceMetrics?.overallPresentRate ??
-            null,
-          inactiveStudents: studentMetricsInactive,
-        },
-        t,
-        formatCurrency,
-        can,
-        { lowAttendanceThreshold, urgentAttendanceThreshold },
-      ),
-    [
+  const notifications = useMemo(() => {
+    const todayAttendanceRecordedCount = attendanceMetrics
+      ? attendanceMetrics.selectedDatePresent +
+        attendanceMetrics.selectedDateAbsent +
+        attendanceMetrics.selectedDateLate +
+        attendanceMetrics.selectedDateExcused
+      : null;
+
+    return buildDashboardNotifications(
       dashboardRole,
-      financeMetrics,
-      attendanceMetrics,
-      studentMetricsInactive,
+      {
+        outstandingInvoiceCount: financeMetrics?.outstanding ?? 0,
+        outstandingBalance: financeMetrics?.outstandingBalance ?? 0,
+        attendanceRate:
+          attendanceMetrics?.selectedDatePresentRate ??
+          attendanceMetrics?.overallPresentRate ??
+          null,
+        attendanceRecordedToday:
+          todayAttendanceRecordedCount === null ? undefined : todayAttendanceRecordedCount > 0,
+        inactiveStudents: studentMetricsInactive,
+      },
       t,
       formatCurrency,
       can,
-      lowAttendanceThreshold,
-      urgentAttendanceThreshold,
-    ],
-  );
+      { lowAttendanceThreshold, urgentAttendanceThreshold },
+    );
+  }, [
+    dashboardRole,
+    financeMetrics,
+    attendanceMetrics,
+    studentMetricsInactive,
+    t,
+    formatCurrency,
+    can,
+    lowAttendanceThreshold,
+    urgentAttendanceThreshold,
+  ]);
 
   const handleResetCards = () => {
     updatePref("disabledCardIds", []);

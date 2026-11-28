@@ -23,7 +23,7 @@ interface WelcomeBannerProps {
 }
 
 const DATE_CHIP_CLASS =
-  "border border-foreground/10 bg-muted/30 hover:bg-muted/50 rounded-xl px-3.5 py-2 transition-colors duration-150 ease-out flex items-center gap-2 shadow-2xs print:bg-transparent print:border-border print:text-foreground print:shadow-none";
+  "border border-foreground/10 bg-muted/30 hover:bg-muted/50 rounded-xl px-3 py-1.5 transition-colors duration-150 ease-out flex items-center gap-1.5 shadow-2xs print:bg-transparent print:border-border print:text-foreground print:shadow-none";
 
 /** Dashboard welcome header with dashboardRole-specific messaging and localized date. */
 export function WelcomeBanner({
@@ -56,14 +56,14 @@ export function WelcomeBanner({
       initial={reducedMotion ? false : { opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-card p-6 md:p-8 text-card-foreground shadow-xs print:bg-none print:border print:border-border print:shadow-none print:p-4"
+      className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-card p-5 md:p-6 text-card-foreground shadow-xs print:bg-none print:border print:border-border print:shadow-none print:p-4"
     >
-      <div className="relative z-elevated flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
+      <div className="relative z-elevated flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         {/* `min-w-0 flex-1` keeps the greeting from being squeezed into a 150 px
             column by the date chips + page actions (it wrapped to four lines,
             144 px tall, at 1440 — 2026-10-31 review, UX-08). */}
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="flex items-center gap-2 mb-1.5">
             <SectionLabel toneClassName="text-primary font-bold">
               {t(DASHBOARD_ROLE_BADGE_KEYS[dashboardRole])}
             </SectionLabel>
@@ -73,34 +73,39 @@ export function WelcomeBanner({
               ? t("dashboard.greeting.personal", { name: userName })
               : t(DASHBOARD_ROLE_GREETING_KEYS[dashboardRole])}
           </h1>
-          <p className="text-xs md:text-sm text-muted-foreground mt-2 max-w-lg mb-0 font-medium leading-relaxed text-pretty">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1.5 max-w-lg mb-0 font-medium leading-relaxed text-pretty">
             {subtitle}
           </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 self-start lg:max-w-[58%] lg:justify-end">
-          <div className={DATE_CHIP_CLASS}>
-            <span className="w-1.5 h-1.5 rounded-xs bg-primary print:hidden" aria-hidden="true" />
-            <span className="text-sm font-semibold text-foreground whitespace-nowrap tracking-wide">
-              {dayName}
-            </span>
-          </div>
-          <div className={DATE_CHIP_CLASS}>
-            <span className="w-1.5 h-1.5 rounded-xs bg-info print:hidden" aria-hidden="true" />
-            <span className="text-sm font-semibold text-foreground whitespace-nowrap tracking-wide">
-              {gregDate}
-            </span>
-          </div>
-          {hijriDate ? (
+        <div className="flex flex-col items-start lg:items-end gap-2.5 shrink-0">
+          <div className="flex flex-wrap items-center gap-2">
             <div className={DATE_CHIP_CLASS}>
-              <span className="w-1.5 h-1.5 rounded-xs bg-success print:hidden" aria-hidden="true" />
-              <span className="text-sm font-semibold text-foreground whitespace-nowrap tracking-wide">
-                {hijriDate}
+              <span className="w-1.5 h-1.5 rounded-xs bg-primary print:hidden" aria-hidden="true" />
+              <span className="text-xs font-semibold text-foreground whitespace-nowrap tracking-wide">
+                {dayName}
               </span>
             </div>
-          ) : null}
+            <div className={DATE_CHIP_CLASS}>
+              <span className="w-1.5 h-1.5 rounded-xs bg-info print:hidden" aria-hidden="true" />
+              <span className="text-xs font-semibold text-foreground whitespace-nowrap tracking-wide">
+                {gregDate}
+              </span>
+            </div>
+            {hijriDate ? (
+              <div className={DATE_CHIP_CLASS}>
+                <span
+                  className="w-1.5 h-1.5 rounded-xs bg-success print:hidden"
+                  aria-hidden="true"
+                />
+                <span className="text-xs font-semibold text-foreground whitespace-nowrap tracking-wide">
+                  {hijriDate}
+                </span>
+              </div>
+            ) : null}
+          </div>
           {actions ? (
-            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto print:hidden">
+            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto lg:justify-end print:hidden">
               {actions}
             </div>
           ) : null}

@@ -83,16 +83,24 @@ export default function OutstandingFeesTable({ title }: { title?: string }) {
   );
 
   return (
-    <WidgetCard ariaLabelledby="outstanding-fees-heading" accentColor="destructive">
+    <WidgetCard
+      ariaLabelledby="outstanding-fees-heading"
+      accentColor={totalUnpaid > 0 ? "destructive" : "primary"}
+    >
       <WidgetCardHeader
         headingId="outstanding-fees-heading"
-        icon={<AlertCircle className="w-4 h-4 shrink-0 text-destructive" aria-hidden="true" />}
+        icon={
+          <AlertCircle
+            className={`w-4 h-4 shrink-0 ${totalUnpaid > 0 ? "text-destructive" : "text-muted-foreground"}`}
+            aria-hidden="true"
+          />
+        }
         title={title || t("dashboard.widgets.outstandingPayments")}
         badge={
           <Badge
             as="span"
             pill
-            tone="destructive"
+            tone={totalUnpaid > 0 ? "destructive" : "muted"}
             className="uppercase tracking-wider font-bold"
             aria-label={t("dashboard.widgets.studentsCount", { count: totalUnpaid })}
           >
@@ -100,7 +108,7 @@ export default function OutstandingFeesTable({ title }: { title?: string }) {
           </Badge>
         }
         actions={
-          canWriteMessaging && (
+          totalUnpaid > 0 && canWriteMessaging ? (
             <Button
               variant="link"
               className="min-h-11 h-auto shrink-0 p-0 text-sm font-bold"
@@ -116,40 +124,56 @@ export default function OutstandingFeesTable({ title }: { title?: string }) {
             >
               {t("dashboard.widgets.sendAllReminders")}
             </Button>
-          )
+          ) : undefined
         }
       />
 
-      <div className="p-3 px-6 border-b border-border/40 flex items-center gap-2 bg-muted/10">
-        <SearchBar
-          placeholder={t("dashboard.widgets.searchStudents")}
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className="flex-1"
-        />
-      </div>
+      {totalUnpaid === 0 ? (
+        <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground m-0">
+            {t("dashboard.widgets.noOutstandingInvoices")}
+          </p>
+          <Link
+            to={ROUTES.finance}
+            className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline shrink-0"
+          >
+            {t("dashboard.widgets.viewAllOutstanding")}
+          </Link>
+        </div>
+      ) : (
+        <>
+          <div className="p-3 px-6 border-b border-border/40 flex items-center gap-2 bg-muted/10">
+            <SearchBar
+              placeholder={t("dashboard.widgets.searchStudents")}
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="flex-1"
+            />
+          </div>
 
-      <div className="space-y-3 p-3 md:hidden">
-        <OutstandingFeesTableMobileList rows={paginatedRows} {...listProps} />
-      </div>
+          <div className="space-y-3 p-3 md:hidden">
+            <OutstandingFeesTableMobileList rows={paginatedRows} {...listProps} />
+          </div>
 
-      <OutstandingFeesTableDesktopBody rows={paginatedRows} {...listProps} />
+          <OutstandingFeesTableDesktopBody rows={paginatedRows} {...listProps} />
 
-      <footer className="px-5 py-3.5 border-t border-border/45 flex flex-wrap items-center justify-between gap-2 bg-muted/10 select-none">
-        <Link
-          to={ROUTES.finance}
-          className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline"
-        >
-          {t("dashboard.widgets.viewAllOutstanding")}
-        </Link>
-        <ListPagination
-          variant="compact"
-          page={currentPage}
-          total={totalPages}
-          limit={1}
-          onPageChange={setCurrentPage}
-        />
-      </footer>
+          <footer className="px-5 py-3.5 border-t border-border/45 flex flex-wrap items-center justify-between gap-2 bg-muted/10 select-none">
+            <Link
+              to={ROUTES.finance}
+              className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline"
+            >
+              {t("dashboard.widgets.viewAllOutstanding")}
+            </Link>
+            <ListPagination
+              variant="compact"
+              page={currentPage}
+              total={totalPages}
+              limit={1}
+              onPageChange={setCurrentPage}
+            />
+          </footer>
+        </>
+      )}
 
       <MessageComposerLauncher messagingTarget={messagingTarget} onClose={closeComposer} />
     </WidgetCard>

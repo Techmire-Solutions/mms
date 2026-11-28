@@ -18,8 +18,15 @@ vi.mock("../../../host/collections", async (importOriginal) => ({
 vi.mock("./NotificationsPanel", () => ({
   default: () => <div data-testid="notifications-panel" />,
 }));
+const capturedQuickActionsProps = vi.hoisted(() => ({
+  highlightedActionId: undefined as string | undefined,
+}));
+
 vi.mock("./QuickActionsPanel", () => ({
-  default: () => <div data-testid="quick-actions-panel" />,
+  default: (props: { highlightedActionId?: string }) => {
+    capturedQuickActionsProps.highlightedActionId = props.highlightedActionId;
+    return <div data-testid="quick-actions-panel" />;
+  },
 }));
 
 import DashboardRolePanel from "./DashboardRolePanel";
@@ -32,6 +39,7 @@ describe("DashboardRolePanel", () => {
 
   beforeEach(() => {
     quickActions.current = [];
+    capturedQuickActionsProps.highlightedActionId = undefined;
     container = document.createElement("div");
     document.body.appendChild(container);
     root = createRoot(container);
@@ -42,9 +50,9 @@ describe("DashboardRolePanel", () => {
     container.remove();
   });
 
-  const render = () =>
+  const render = (notifications: any[] = []) =>
     act(() => {
-      root.render(<DashboardRolePanel dashboardRole="admin" notifications={[]} />);
+      root.render(<DashboardRolePanel dashboardRole="admin" notifications={notifications} />);
     });
 
   it("gives notifications the full row when no quick action is permitted", () => {
@@ -63,5 +71,33 @@ describe("DashboardRolePanel", () => {
     const grid = container.firstElementChild as HTMLElement;
     expect(grid.className).toContain("lg:grid-cols-3");
     expect(grid.firstElementChild?.className).toContain("lg:col-span-2");
+  });
+
+  it("highlights the quick action that resolves the top urgent alert", () => {
+    quickActions.current = [
+      { id: "add-student" },
+      { id: "take-attendance" },
+      { id: "record-payment" },
+    ];
+    render([
+      {
+        id: "attendance-not-taken",
+        type: "attendance",
+        title: "Attendance not yet taken",
+        desc: "No attendance recorded",
+        time: "Today",
+        urgent: false,
+      },
+      {
+        id: "unpaid-invoices",
+        type: "fee",
+        title: "3 unpaid invoices",
+        desc: "1000 outstanding",
+        time: "Just now",
+        urgent: true,
+      },
+    ]);
+
+    expect(capturedQuickActionsProps.highlightedActionId).toBe("record-payment");
   });
 });

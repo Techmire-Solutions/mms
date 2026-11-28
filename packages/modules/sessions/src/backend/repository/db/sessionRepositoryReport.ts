@@ -104,8 +104,17 @@ export async function loadSessionsReportAggregatesSql(
             AND e.deleted_at IS NULL
             AND ${enrollmentHoldsSeatSql("e")}
         ) AS students,
-        CASE WHEN tt.start_time IS NOT NULL THEN 'live' ELSE 'upcoming' END AS status
+        CASE
+          WHEN tt.start_time IS NOT NULL
+            AND tt.end_time IS NOT NULL
+            AND to_char(now() AT TIME ZONE COALESCE(NULLIF(trim(w.timezone), ''), 'UTC'), 'HH24:MI')
+                BETWEEN tt.start_time AND tt.end_time
+            THEN 'live'
+          ELSE 'upcoming'
+        END AS status
       FROM sessions s
+      LEFT JOIN workspaces w
+        ON w.subdomain = s.workspace_subdomain
       INNER JOIN session_classes c
         ON c.workspace_subdomain = s.workspace_subdomain
         AND c.session_id = s.id

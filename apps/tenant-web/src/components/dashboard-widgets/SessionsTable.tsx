@@ -38,7 +38,7 @@ function mapTodayRows(
   return rows.map((item) => ({
     ...item,
     teacher: item.teacher || t("sessions.classes.unassigned"),
-    time: item.time || t("dashboard.widgets.defaultSessionTime"),
+    time: item.time || t("dashboard.widgets.unscheduled"),
     room: item.room || t("common.notAvailable"),
   }));
 }

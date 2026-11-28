@@ -146,4 +146,35 @@ describe("buildDashboardNotifications", () => {
     );
     expect(items.length).toBeLessThanOrEqual(MAX_DASHBOARD_NOTIFICATIONS);
   });
+
+  it("emits a non-urgent attendance-not-taken reminder instead of an urgent 0% alarm when no attendance is recorded today", () => {
+    const items = buildDashboardNotifications(
+      "admin",
+      { ...baseMetrics, attendanceRate: 0, attendanceRecordedToday: false },
+      mockT,
+      (val) => `$${val}`,
+      () => true,
+    );
+
+    expect(items.find((n) => n.id === "low-attendance")).toBeUndefined();
+    const reminder = items.find((n) => n.id === "attendance-not-taken");
+    expect(reminder).toBeDefined();
+    expect(reminder?.urgent).toBe(false);
+    expect(reminder?.type).toBe("attendance");
+  });
+
+  it("keeps the urgent low-attendance alert when attendance was recorded today and rate is 0%", () => {
+    const items = buildDashboardNotifications(
+      "admin",
+      { ...baseMetrics, attendanceRate: 0, attendanceRecordedToday: true },
+      mockT,
+      (val) => `$${val}`,
+      () => true,
+    );
+
+    expect(items.find((n) => n.id === "attendance-not-taken")).toBeUndefined();
+    const alert = items.find((n) => n.id === "low-attendance");
+    expect(alert).toBeDefined();
+    expect(alert?.urgent).toBe(true);
+  });
 });
