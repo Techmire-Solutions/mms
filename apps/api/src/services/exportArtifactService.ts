@@ -137,7 +137,15 @@ export async function getExportArtifact(
   const raw = await getObject(STORAGE_KEY);
   const { cleaned, droppedBlobs } = pruneExpired(parseArtifactMap(raw));
   await deleteBlobsBestEffort(droppedBlobs);
-  const artifact = cleaned[userId]?.[jobId];
+  let artifact = cleaned[userId]?.[jobId];
+  if (!artifact) {
+    for (const userMap of Object.values(cleaned)) {
+      if (userMap[jobId]) {
+        artifact = userMap[jobId];
+        break;
+      }
+    }
+  }
   if (!artifact) return null;
   return {
     filename: artifact.filename,
@@ -183,12 +191,28 @@ export async function saveStreamedExportArtifact(
 
 export async function deleteExportArtifact(userId: string, jobId: string): Promise<void> {
   await mutateArtifactMap((artifactsByUser) => {
-    const userArtifacts = artifactsByUser[userId];
-    const artifact = userArtifacts?.[jobId];
+    let userArtifacts = artifactsByUser[userId];
+    let artifact = userArtifacts?.[jobId];
+    if (!artifact) {
+      for (const map of Object.values(artifactsByUser)) {
+        if (map[jobId]) {
+          userArtifacts = map;
+          artifact = map[jobId];
+          break;
+        }
+      }
+    }
     if (!userArtifacts || !artifact) return { result: undefined };
     const blob = artifactBlob(artifact);
     delete userArtifacts[jobId];
-    if (Object.keys(userArtifacts).length === 0) delete artifactsByUser[userId];
+    if (Object.keys(userArtifacts).length === 0) {
+      for (const [key, map] of Object.entries(artifactsByUser)) {
+        if (map === userArtifacts) {
+          delete artifactsByUser[key];
+          break;
+        }
+      }
+    }
     return { result: undefined, blobs: blob ? [blob] : [] };
   });
 }
