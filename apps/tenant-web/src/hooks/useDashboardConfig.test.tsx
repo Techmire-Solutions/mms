@@ -354,16 +354,19 @@ describe("useDashboardConfig", () => {
       title: "Duplicate Title",
     };
 
-    let error: Error | null = null;
+    let caughtError: Error | null = null;
     await act(async () => {
       try {
-        await latestApi?.saveWidget(duplicateWidget);
+        await latestApi?.saveWidget(
+          duplicateWidget as unknown as Parameters<NonNullable<ConfigApi>["saveWidget"]>[0],
+        );
       } catch (err) {
-        error = err as Error;
+        caughtError = err as Error;
       }
     });
 
-    expect(error?.message).toBe("reports.widgets.builder.duplicateWidget");
+    const finalError = caughtError as Error | null;
+    expect(finalError?.message).toBe("reports.widgets.builder.duplicateWidget");
     expect(spies.putWidgetsAsync).not.toHaveBeenCalled();
   });
 });
