@@ -25,6 +25,7 @@ export interface RenderContactTableCellParams {
   t: Translate;
   onView?: (contact: Contact) => void;
   onWhatsApp?: (contacts: Contact[]) => void;
+  onSms?: (contacts: Contact[]) => void;
   rowIndex?: number;
 }
 
@@ -43,6 +44,7 @@ export function renderContactTableCell({
   t,
   onView,
   onWhatsApp,
+  onSms,
   rowIndex,
 }: RenderContactTableCellParams): React.JSX.Element {
   const width = getColumnWidth(col.id) ?? col.width;
@@ -70,6 +72,7 @@ export function renderContactTableCell({
         showArchived,
         t,
         onWhatsApp,
+        onSms,
       });
     case "email":
       return renderContactEmailCell({ contact, widthStyle, showArchived, t });

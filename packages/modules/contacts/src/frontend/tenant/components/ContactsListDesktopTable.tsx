@@ -154,6 +154,7 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
             t,
             onView,
             onWhatsApp,
+            onSms,
             rowIndex: idx,
           });
         },
@@ -171,6 +172,7 @@ export const ContactsListDesktopTable = React.memo(function ContactsListDesktopT
     t,
     onView,
     onWhatsApp,
+    onSms,
   ]);
 
   return (

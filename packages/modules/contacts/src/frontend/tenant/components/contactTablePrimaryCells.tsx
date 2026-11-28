@@ -80,6 +80,7 @@ export interface RenderContactPhoneCellParams {
   showArchived?: boolean;
   t: ContactCellTranslate;
   onWhatsApp?: (contacts: Contact[]) => void;
+  onSms?: (contacts: Contact[]) => void;
 }
 
 export function renderContactPhoneCell({
@@ -91,6 +92,7 @@ export function renderContactPhoneCell({
   showArchived = false,
   t,
   onWhatsApp,
+  onSms,
 }: RenderContactPhoneCellParams): React.JSX.Element {
   const allPhones = resolveAllContactPhones(contact, prefs, countryCodesMap, countryCodes);
   const displayName = getDisplayName(contact) || "";
@@ -122,6 +124,7 @@ export function renderContactPhoneCell({
             copied: t("contacts.table.copied"),
           }}
           onWhatsApp={onWhatsApp ? () => onWhatsApp([contact]) : undefined}
+          onSms={onSms ? () => onSms([contact]) : undefined}
         />
       ))}
     </div>
