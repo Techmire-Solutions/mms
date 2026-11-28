@@ -108,8 +108,8 @@ export function WidgetBuilderTypeSelector({
       <SectionLabel as="p" toneClassName="text-foreground" tracking="wider" className="block">
         {t("reports.widgets.builder.focusType")}
       </SectionLabel>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {widgetTypeOptions.map((widgetTypeOption: any) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+        {widgetTypeOptions.map((widgetTypeOption) => {
           const isSelectedType = widgetType === widgetTypeOption.id;
           return (
             <Button
@@ -122,14 +122,14 @@ export function WidgetBuilderTypeSelector({
                   setBuilderOperation("count");
                 }
               }}
-              className={`h-auto p-3 rounded-2xl border text-start flex flex-col justify-between transition-all shadow-none ${
+              className={`h-auto w-full p-3 rounded-2xl border text-start flex flex-col items-start justify-between gap-1 whitespace-normal transition-all shadow-none ${
                 isSelectedType
                   ? "border-primary bg-primary/10 text-primary shadow-sm"
                   : "border-border bg-card/30 text-muted-foreground hover:border-muted-foreground/20"
               }`}
             >
               <span className="text-xs font-black uppercase block">{widgetTypeOption.label}</span>
-              <span className="text-xs text-muted-foreground block mt-1 leading-none">
+              <span className="text-xs text-muted-foreground block leading-snug">
                 {widgetTypeOption.desc}
               </span>
             </Button>
