@@ -133,7 +133,7 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
         subtitle={displayDate}
         actions={
           <div className="text-end shrink-0">
-            <p className="text-base font-black text-foreground m-0 tabular-nums">
+            <p className="text-base font-bold text-foreground m-0 tabular-nums">
               {formatCurrency(totalCollected)}
             </p>
             <div

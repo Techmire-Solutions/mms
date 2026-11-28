@@ -113,7 +113,7 @@ export function StatisticsGrid({
             key={statItem.id}
             {...motionProps}
             accentColor={accent}
-            className="p-4 md:p-4.5 flex flex-col justify-between"
+            className="p-3.5 md:p-4 flex flex-col justify-between"
           >
             <StatCardBody
               titleHeadingLevel={3}

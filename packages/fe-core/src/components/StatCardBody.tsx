@@ -56,10 +56,10 @@ export function StatCardBody({
       <header
         // Content header: exempt from the global print rule that hides chrome headers.
         data-print-header
-        className={cn("flex items-start justify-between mb-3 select-none", className)}
+        className={cn("flex items-start justify-between mb-2 select-none", className)}
       >
         <div
-          className={`w-9 h-9 rounded-lg ${colorTheme.bg} ring-4 ${colorTheme.ring} flex items-center justify-center aspect-square flex-shrink-0 transition-transform group-hover:scale-105 duration-300`}
+          className={`w-8 h-8 rounded-lg ${colorTheme.bg} ring-4 ${colorTheme.ring} flex items-center justify-center aspect-square flex-shrink-0 transition-transform group-hover:scale-105 duration-300`}
           aria-hidden="true"
         >
           {icon}
@@ -95,18 +95,18 @@ export function StatCardBody({
           </div>
         )}
       </header>
-      <div className="flex items-end justify-between mt-1">
-        <div className="space-y-0.5 flex-1 min-w-0">
-          <p className="text-xl sm:text-2xl font-black text-foreground tracking-tight leading-tight m-0 break-words tabular-nums">
-            <bdi dir="ltr">{value}</bdi>
-          </p>
-          <HeadingTag className="text-sm font-bold text-foreground mt-1.5 m-0 break-words tracking-wide">
+      <div className="flex items-end justify-between mt-0.5">
+        <div className="space-y-1 flex-1 min-w-0">
+          <HeadingTag className="text-xs font-bold text-muted-foreground m-0 break-words tracking-wide">
             {title}
           </HeadingTag>
+          <p className="text-xl sm:text-2xl font-bold text-foreground tracking-tight leading-tight m-0 break-words tabular-nums">
+            <bdi dir="ltr">{value}</bdi>
+          </p>
         </div>
       </div>
       {footer && (
-        <footer className="text-xs font-medium text-foreground mt-3 border-t border-border/30 pt-2 m-0 break-words">
+        <footer className="text-xs font-medium text-muted-foreground mt-2 border-t border-border/30 pt-1.5 m-0 break-words">
           {footer}
         </footer>
       )}

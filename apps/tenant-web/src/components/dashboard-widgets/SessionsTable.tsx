@@ -20,6 +20,7 @@ export interface UpcomingSessionItem {
   name: string;
   teacher: string;
   time: string;
+  hasSchedule: boolean;
   room: string;
   students: number;
   status: "live" | "upcoming";
@@ -31,16 +32,31 @@ interface SessionsTableProps {
   items?: SessionsReportTodaySession[];
 }
 
+export function normalizeRoomLabel(room: string): string {
+  return room
+    .trim()
+    .replace(
+      /\b(room)\s+([a-z])\b/gi,
+      (_, prefix: string, letter: string) =>
+        `${prefix[0].toUpperCase()}${prefix.slice(1).toLowerCase()} ${letter.toUpperCase()}`,
+    );
+}
+
 function mapTodayRows(
   rows: SessionsReportTodaySession[],
   t: TranslationFunction,
 ): UpcomingSessionItem[] {
-  return rows.map((item) => ({
-    ...item,
-    teacher: item.teacher || t("sessions.classes.unassigned"),
-    time: item.time || t("dashboard.widgets.unscheduled"),
-    room: item.room || t("common.notAvailable"),
-  }));
+  return rows.map((item) => {
+    const trimmedTime = item.time?.trim() || "";
+    const normalizedRoom = item.room ? normalizeRoomLabel(item.room) : "";
+    return {
+      ...item,
+      teacher: item.teacher || t("sessions.classes.unassigned"),
+      time: trimmedTime || t("dashboard.widgets.unscheduled"),
+      hasSchedule: Boolean(trimmedTime),
+      room: normalizedRoom || t("common.notAvailable"),
+    };
+  });
 }
 
 const SESSION_SEARCH_FIELDS = (session: UpcomingSessionItem) => [
@@ -77,6 +93,12 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
     searchFields: SESSION_SEARCH_FIELDS,
   });
 
+  const scheduledCount = filteredSessions.filter((session) => session.hasSchedule).length;
+  const badgeLabel =
+    scheduledCount > 0 || filteredSessions.length === 0
+      ? t("dashboard.widgets.sessionsScheduled", { count: scheduledCount })
+      : t("dashboard.widgets.sessionsActiveCount", { count: filteredSessions.length });
+
   return (
     <WidgetCard ariaLabelledby="sessions-table-heading" accentColor="primary">
       <WidgetCardHeader
@@ -84,7 +106,7 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
         title={title || t("dashboard.widgets.todaysSessions")}
         badge={
           <Badge pill tone="primary" className="uppercase tracking-wider font-bold">
-            {t("dashboard.widgets.sessionsScheduled", { count: filteredSessions.length })}
+            {badgeLabel}
           </Badge>
         }
         actions={
@@ -97,16 +119,18 @@ export default function SessionsTable({ title, items }: SessionsTableProps) {
         }
       />
 
-      <div className="p-3 px-6 border-b border-border/40 flex items-center gap-2 bg-muted/10">
-        <SearchBar
-          placeholder={t("dashboard.widgets.searchSessions")}
-          value={searchQuery}
-          onChange={handleSearchChange}
-          className="flex-1"
-        />
-      </div>
+      {sessions.length > 1 && (
+        <div className="p-3 px-6 border-b border-border/40 flex items-center gap-2 bg-muted/10">
+          <SearchBar
+            placeholder={t("dashboard.widgets.searchSessions")}
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="flex-1"
+          />
+        </div>
+      )}
 
-      <div className="divide-y divide-border/40 min-h-chart-md">
+      <div className={`divide-y divide-border/40 ${sessions.length > 2 ? "min-h-chart-md" : ""}`}>
         {paginatedSessions.length === 0 ? (
           <EmptyState
             title={t("sessions.report.noData")}

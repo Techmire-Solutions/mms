@@ -3342,6 +3342,7 @@ export const APP_TRANSLATIONS_UR: Record<AppTranslationKey, string> = {
   "dashboard.widgets.sendReminderTo": "{name} کو یاددہانی بھیجیں",
   "dashboard.widgets.sent": "بھیج دیا گیا",
   "dashboard.widgets.sessionLiveAria": "سیشن جاری ہے",
+  "dashboard.widgets.sessionsActiveCount": "{count} فعال",
   "dashboard.widgets.sessionsScheduled": "{count} سیشن شیڈولڈ",
   "dashboard.widgets.studentsCount": "{count} طلباء",
   "dashboard.widgets.todaysAttendanceSummary": "آج کی حاضری کا خلاصہ",

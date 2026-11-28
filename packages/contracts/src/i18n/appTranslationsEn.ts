@@ -3366,6 +3366,7 @@ export const APP_TRANSLATIONS_EN = {
   "dashboard.widgets.sendReminderTo": "Send reminder to {name}",
   "dashboard.widgets.sent": "Sent",
   "dashboard.widgets.sessionLiveAria": "Session is live",
+  "dashboard.widgets.sessionsActiveCount": "{count} active",
   "dashboard.widgets.sessionsScheduled": "{count} scheduled",
   "dashboard.widgets.studentsCount": "{count} students",
   "dashboard.widgets.todaysAttendanceSummary": "Today's Attendance Summary",
