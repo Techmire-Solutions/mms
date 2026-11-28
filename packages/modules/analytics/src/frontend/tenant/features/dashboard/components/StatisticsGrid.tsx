@@ -46,7 +46,7 @@ export function StatisticsGrid({
       <section
         aria-label={t("dashboard.statsSectionLabel")}
         aria-busy="true"
-        className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans"
+        className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 font-sans"
       >
         <h2 className="sr-only">{t("dashboard.statsSectionLabel")}</h2>
         {Array.from({ length: 4 }).map((_, idx) => (
@@ -92,7 +92,7 @@ export function StatisticsGrid({
   return (
     <section
       aria-label={t("dashboard.statsSectionLabel")}
-      className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-4 font-sans"
+      className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4 font-sans"
     >
       <h2 className="sr-only">{t("dashboard.statsSectionLabel")}</h2>
       {statItems.map((statItem, statIndex) => {

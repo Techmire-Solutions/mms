@@ -12,6 +12,7 @@ interface DashboardWidgetsGridProps {
   widgets: CustomWidget[];
   gridMode: "comfortable" | "compact";
   isEditMode: boolean;
+  hasOverdueObligations?: boolean;
   onUnpin: (id: string) => void;
   onEditWidget?: (widget: CustomWidget) => void;
   onDeleteWidget?: (id: string) => void;
@@ -22,6 +23,7 @@ export function DashboardWidgetsGrid({
   widgets,
   gridMode,
   isEditMode,
+  hasOverdueObligations = true,
   onUnpin,
   onEditWidget,
   onDeleteWidget,
@@ -42,7 +44,7 @@ export function DashboardWidgetsGrid({
         {widgets.map((widget: any) => {
           let colSpanClass = "";
           if (gridMode !== "compact") {
-            if (widget.widgetType === "overdue-obligations") {
+            if (widget.widgetType === "overdue-obligations" && hasOverdueObligations) {
               colSpanClass = "col-span-full";
             } else if (isComposedWidgetType(widget.widgetType)) {
               colSpanClass = "lg:col-span-2 md:col-span-3 col-span-1";

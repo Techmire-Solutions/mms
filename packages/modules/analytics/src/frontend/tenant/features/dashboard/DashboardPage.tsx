@@ -12,6 +12,7 @@ import { LazyDeferredView } from "@mms/ui/app/LazyDeferredView";
 import { ErrorBoundary } from "@mms/fe-core/components/ErrorBoundary";
 import { ModulePageShell } from "@mms/fe-core/components/ModulePageShell";
 import { Button } from "@mms/ui";
+import { DashboardInsightsToggle } from "./components/DashboardInsightsToggle";
 import { useDashboardPageController } from "./hooks/useDashboardPageController";
 import { useDashboardSnapshotPrintState } from "./hooks/useDashboardSnapshotPrintState";
 import { useBranding } from "../../host/collections";
@@ -58,6 +59,7 @@ export function DashboardPage() {
     notifications,
     activeSessionsCount,
     studentMetricsActive,
+    hasOverdueObligations,
     isConfigReady,
     summaryError,
     retrySummary,
@@ -232,6 +234,7 @@ export function DashboardPage() {
             onEditWidget={handleEditWidget}
             onDeleteWidget={handleDeleteWidget}
             showHeader={primaryWidgets.length > 0}
+            hasOverdueObligations={hasOverdueObligations}
           />
         </LazyDeferredView>
         {secondaryWidgets.length > 0 ? (
@@ -239,20 +242,12 @@ export function DashboardPage() {
           // the dashboard 3,650 px tall with four empty analytics panels. The
           // disclosure is now the same on every viewport (2026-10-31 review, UX-08).
           <div className="mt-4 space-y-3">
-            <div className="flex justify-center">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="min-h-11 w-full rounded-xl text-xs sm:w-auto"
-                aria-expanded={showInsights}
-                onClick={() => setShowInsights((current: any) => !current)}
-              >
-                {showInsights
-                  ? t("dashboard.hideInsights")
-                  : t("dashboard.showInsights", { count: secondaryWidgets.length })}
-              </Button>
-            </div>
+            <DashboardInsightsToggle
+              widgets={secondaryWidgets}
+              showInsights={showInsights}
+              onToggle={() => setShowInsights((current: any) => !current)}
+              t={t}
+            />
             {showInsights ? (
               <LazyDeferredView minHeight={280}>
                 <DashboardWidgets

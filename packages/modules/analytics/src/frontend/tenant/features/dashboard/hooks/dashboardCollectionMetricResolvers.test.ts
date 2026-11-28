@@ -137,4 +137,24 @@ describe("resolveServerMetricValue", () => {
       sub: "dashboard.widgets.noAttendanceRecorded",
     });
   });
+
+  it("shows 'All {total} active' on the admin Total Students card when every student is active", () => {
+    const data = {
+      studentMetrics: { total: 13, active: 13 },
+      studentsTotal: 13,
+      studentMetricsActive: 13,
+    } as unknown as DashboardData;
+    const mockT = ((key: string, params?: Record<string, string | number>) =>
+      params?.total ? `${key}:${params.total}` : key) as TranslationFunction;
+
+    const resolved = resolveServerMetricValue(
+      widget({ id: "def-card-admin-students", collection: "students" }),
+      data,
+      { t: mockT },
+    );
+    expect(resolved).toEqual({
+      value: formatNumber(13),
+      sub: "widget.subtitle.allStudentsActive:13",
+    });
+  });
 });

@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useRef } from "react";
-import { DASHBOARD_MODULE_MANIFEST } from "@mms/contracts";
+import { DASHBOARD_MODULE_MANIFEST, SESSIONS_MODULE_MANIFEST } from "@mms/contracts";
 import { resolveDashboardRole } from "../../../lib/dashboardRole";
 import {
   getActiveCustomCardIds,
@@ -9,7 +9,7 @@ import { usePermissions } from "../../../host/usePermissions";
 import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import { useDashboardData } from "./useDashboardData";
 import { useDashboardMetricCards } from "./useDashboardMetricCards";
-import { useModuleAccess } from "../../../host/collections";
+import { useModuleAccess, useSessionsReportAggregates } from "../../../host/collections";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { useDashboardConfig } from "../../../host/useDashboardConfig";
 import { buildDashboardNotifications } from "../../../lib/buildDashboardNotifications";
@@ -148,6 +148,23 @@ export function useDashboardPageController() {
 
   const pinnedDashboardWidgetCount = visiblePinnedWidgets.length;
 
+  const canReadSessions =
+    Boolean(enabledModules?.sessions) && can(SESSIONS_MODULE_MANIFEST.permissions.read);
+  const { data: sessionsReport } = useSessionsReportAggregates({ enabled: canReadSessions }) ?? {};
+
+  const todayScheduleWindow = useMemo<string | undefined>(() => {
+    const todaysSessions = sessionsReport?.todaysSessions;
+    if (!Array.isArray(todaysSessions) || todaysSessions.length === 0) return undefined;
+    const uniqueTimes = Array.from(
+      new Set(
+        todaysSessions
+          .map((session: { time?: string }) => (session.time ?? "").trim())
+          .filter((value: string) => value.length > 0),
+      ),
+    );
+    return uniqueTimes.length > 0 ? uniqueTimes.slice(0, 2).join(" · ") : "";
+  }, [sessionsReport]);
+
   const notifications = useMemo(() => {
     const todayAttendanceRecordedCount = attendanceMetrics
       ? attendanceMetrics.selectedDatePresent +
@@ -167,6 +184,7 @@ export function useDashboardPageController() {
           null,
         attendanceRecordedToday:
           todayAttendanceRecordedCount === null ? undefined : todayAttendanceRecordedCount > 0,
+        todayScheduleWindow,
         inactiveStudents: studentMetricsInactive,
       },
       t,
@@ -178,6 +196,7 @@ export function useDashboardPageController() {
     dashboardRole,
     financeMetrics,
     attendanceMetrics,
+    todayScheduleWindow,
     studentMetricsInactive,
     t,
     formatCurrency,
@@ -226,6 +245,7 @@ export function useDashboardPageController() {
     notifications,
     activeSessionsCount: sessionsMetrics?.active ?? 0,
     studentMetricsActive,
+    hasOverdueObligations: (financeMetrics?.outstanding ?? 0) > 0,
     isConfigReady,
     summaryError: dashboardData.summaryError,
     retrySummary: dashboardData.retrySummary,
