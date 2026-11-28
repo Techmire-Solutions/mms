@@ -3360,6 +3360,7 @@ export const APP_TRANSLATIONS_FA: Partial<Record<AppTranslationKey, string>> = {
   "dashboard.widgets.sendReminderTo": "ارسال یادآوری به {name}",
   "dashboard.widgets.sent": "ارسال شد",
   "dashboard.widgets.sessionLiveAria": "جلسه در حال برگزاری است",
+  "dashboard.widgets.sessionsActiveCount": "{count} فعال",
   "dashboard.widgets.sessionsScheduled": "{count} جلسه برنامه‌ریزی شده",
   "dashboard.widgets.studentsCount": "{count} دانش‌آموز",
   "dashboard.widgets.todaysAttendanceSummary": "خلاصه حضور و غیاب امروز",

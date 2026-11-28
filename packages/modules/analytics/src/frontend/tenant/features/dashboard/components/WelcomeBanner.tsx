@@ -56,29 +56,28 @@ export function WelcomeBanner({
       initial={reducedMotion ? false : { opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.2, ease: "easeOut" }}
-      className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-card p-5 md:p-6 text-card-foreground shadow-xs print:bg-none print:border print:border-border print:shadow-none print:p-4"
+      className="relative overflow-hidden rounded-2xl border border-foreground/10 bg-card p-4 md:p-5 text-card-foreground shadow-xs print:bg-none print:border print:border-border print:shadow-none print:p-4"
     >
-      <div className="relative z-elevated flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        {/* `min-w-0 flex-1` keeps the greeting from being squeezed into a 150 px
-            column by the date chips + page actions (it wrapped to four lines,
-            144 px tall, at 1440 — 2026-10-31 review, UX-08). */}
+      <div className="relative z-elevated flex flex-col xl:flex-row xl:items-center xl:justify-between gap-3.5">
+        {/* `min-w-0 flex-1` keeps the greeting from being squeezed into a narrow
+            column by the date chips + page actions on medium laptop widths. */}
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-1.5">
+          <div className="flex items-center gap-2 mb-1">
             <SectionLabel toneClassName="text-primary font-bold">
               {t(DASHBOARD_ROLE_BADGE_KEYS[dashboardRole])}
             </SectionLabel>
           </div>
-          <h1 className="text-xl md:text-2xl lg:text-3xl font-black tracking-tight m-0 text-foreground text-balance">
+          <h1 className="text-xl md:text-2xl font-black tracking-tight m-0 text-foreground text-balance">
             {userName
               ? t("dashboard.greeting.personal", { name: userName })
               : t(DASHBOARD_ROLE_GREETING_KEYS[dashboardRole])}
           </h1>
-          <p className="text-xs md:text-sm text-muted-foreground mt-1.5 max-w-lg mb-0 font-medium leading-relaxed text-pretty">
+          <p className="text-xs md:text-sm text-muted-foreground mt-1 max-w-xl mb-0 font-medium leading-relaxed text-pretty">
             {subtitle}
           </p>
         </div>
 
-        <div className="flex flex-col items-start lg:items-end gap-2.5 shrink-0">
+        <div className="flex flex-col items-start xl:items-end gap-2 shrink-0">
           <div className="flex flex-wrap items-center gap-2">
             <div className={DATE_CHIP_CLASS}>
               <span className="w-1.5 h-1.5 rounded-xs bg-primary print:hidden" aria-hidden="true" />

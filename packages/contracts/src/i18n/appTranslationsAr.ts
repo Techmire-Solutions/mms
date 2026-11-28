@@ -3311,6 +3311,7 @@ export const APP_TRANSLATIONS_AR: Record<AppTranslationKey, string> = {
   "dashboard.widgets.sendReminderTo": "إرسال تذكير إلى {name}",
   "dashboard.widgets.sent": "تم الإرسال",
   "dashboard.widgets.sessionLiveAria": "الحصة مباشرة",
+  "dashboard.widgets.sessionsActiveCount": "{count} نشط",
   "dashboard.widgets.sessionsScheduled": "مجدول {count}",
   "dashboard.widgets.studentsCount": "{count} طلاب",
   "dashboard.widgets.todaysAttendanceSummary": "ملخص حضور اليوم",

@@ -91,8 +91,8 @@ export function AttendanceChart({ isEditMode = false }: { isEditMode?: boolean }
               />
             )}
             <div className="text-end select-none">
-              <p className="text-lg font-black text-foreground m-0 tabular-nums">
-                <bdi dir="ltr">{formatPercent(avg)}</bdi>
+              <p className="text-lg font-bold text-foreground m-0 tabular-nums">
+                <bdi dir="ltr">{hasAttendanceData ? formatPercent(avg) : "—"}</bdi>
               </p>
               <p className="text-xs text-muted-foreground mt-0.5 m-0 font-medium">
                 {t("dashboard.charts.attendance.weeklyAvg")}

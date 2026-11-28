@@ -221,9 +221,9 @@ export function CustomWidgetComfortableLayout({
         )}
 
         {resolvedWidgetType === "chart" && (
-          <div className="w-full h-20 -mb-2">
+          <div className="w-full">
             <React.Suspense
-              fallback={<div className="w-full h-full bg-muted/20 animate-pulse rounded-xl" />}
+              fallback={<div className="w-full h-24 bg-muted/20 animate-pulse rounded-xl" />}
             >
               <CustomWidgetChartFallback widget={widget} collections={collections} />
             </React.Suspense>
