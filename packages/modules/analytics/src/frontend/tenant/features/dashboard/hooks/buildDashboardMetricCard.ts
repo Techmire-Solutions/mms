@@ -28,6 +28,7 @@ interface BuildDashboardMetricCardArgs {
   data: DashboardData;
   trends: DashboardMetricTrends;
   t: TranslationFunction;
+  formatCurrency?: (amount: number | string | null | undefined) => string;
 }
 
 const CUSTOM_CARD_EVALUATORS = {
@@ -88,6 +89,7 @@ export function buildDashboardMetricCard({
   data,
   trends,
   t,
+  formatCurrency,
 }: BuildDashboardMetricCardArgs): StatItem {
   let resolvedMetric: { value: string; sub?: string } | null = null;
   let customTrend: number | undefined;
@@ -108,7 +110,7 @@ export function buildDashboardMetricCard({
   }
 
   if (!resolvedMetric) {
-    resolvedMetric = resolveServerMetricValue(widget, data);
+    resolvedMetric = resolveServerMetricValue(widget, data, { formatCurrency, t });
   }
 
   const unavailable = resolvedMetric === null;

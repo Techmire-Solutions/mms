@@ -2,7 +2,10 @@ import React from "react";
 import QuickActionsPanel from "./QuickActionsPanel";
 import NotificationsPanel from "./NotificationsPanel";
 import type { DashboardRole } from "../../../lib/dashboardRole";
-import type { buildDashboardNotifications } from "../../../lib/buildDashboardNotifications";
+import type {
+  buildDashboardNotifications,
+  DashboardNotificationType,
+} from "../../../lib/buildDashboardNotifications";
 import { useDashboardQuickActions } from "../hooks/useDashboardQuickActions";
 import { useOpenTenantNotification } from "../../../host/collections";
 import { useNotificationReadState } from "../../../host/collections";
@@ -11,6 +14,12 @@ interface DashboardRolePanelProps {
   dashboardRole: DashboardRole;
   notifications: ReturnType<typeof buildDashboardNotifications>;
 }
+
+const ALERT_TYPE_TO_QUICK_ACTION: Partial<Record<DashboardNotificationType, string>> = {
+  attendance: "take-attendance",
+  fee: "record-payment",
+  student: "add-student",
+};
 
 /** Quick actions + notifications strip for the active dashboard layout role. */
 export function DashboardRolePanel({
@@ -24,6 +33,13 @@ export function DashboardRolePanel({
   // otherwise notifications take the whole row instead of leaving a blank hole.
   const hasQuickActions = quickActions.length > 0;
 
+  const topAlert = notifications.find((item) => item.urgent) ?? notifications[0];
+  const candidateActionId = topAlert ? ALERT_TYPE_TO_QUICK_ACTION[topAlert.type] : undefined;
+  const highlightedActionId =
+    candidateActionId && quickActions.some((action) => action.id === candidateActionId)
+      ? candidateActionId
+      : undefined;
+
   return (
     <div
       className={
@@ -32,7 +48,7 @@ export function DashboardRolePanel({
     >
       {hasQuickActions ? (
         <div className="lg:col-span-2">
-          <QuickActionsPanel actions={quickActions} />
+          <QuickActionsPanel actions={quickActions} highlightedActionId={highlightedActionId} />
         </div>
       ) : null}
       <div>

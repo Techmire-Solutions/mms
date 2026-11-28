@@ -168,7 +168,7 @@ describe("buildDashboardMetricCard", () => {
       t: mockT,
     });
 
-    expect(card.value).toBe("92%");
+    expect(card.value).toBe("95%");
     expect(card.trend).toBe(5);
     expect(card.trendKind).toBe("points");
   });

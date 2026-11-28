@@ -1,21 +1,26 @@
 import { formatMoney, formatNumber, formatPercent } from "@mms/contracts";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import type { useDashboardData } from "./useDashboardData";
 
 type DashboardData = ReturnType<typeof useDashboardData>;
 
+export interface MetricResolverOptions {
+  formatCurrency?: (amount: number | string | null | undefined) => string;
+  t?: TranslationFunction;
+}
+
 export type CollectionMetricResolver = (
   widget: CustomWidget,
   data: DashboardData,
+  options?: MetricResolverOptions,
 ) => { value: string; sub?: string } | null;
 
 /**
- * Dashboard cards read the same workspace currency as the rest of the product:
- * symbol-prefixed (`Rs 7,250`), matching the summary widgets below them. The
- * default `formatMoney` emits the ISO code (`PKR 7,250`), which made one screen
- * show two different money notations (2026-10-31 review, UX-05).
+ * Fallback currency formatter when a caller does not inject `useFinanceCurrency()`.
+ * Keeps symbol-prefixed output consistent with summary widgets.
  */
-const money = (value: number | string | null | undefined): string =>
+const defaultMoney = (value: number | string | null | undefined): string =>
   formatMoney(value, undefined, { useSymbol: true });
 
 /** Counts and percentages use the active locale's numeral system (UX-06). */
@@ -40,12 +45,27 @@ function resolveQuestionBankMetric(
 
 const COLLECTION_METRIC_RESOLVERS: Record<string, CollectionMetricResolver> = {
   contacts: (_widget, data) => (data.contactMetrics ? { value: count(data.contactsTotal) } : null),
-  students: (widget, data) => {
+  students: (widget, data, options) => {
     if (!data.studentMetrics) return null;
     if (widget.filterValue === "active") {
       return { value: count(data.studentMetricsActive) };
     }
-    return { value: count(data.studentsTotal) };
+    const showActiveBreakdown =
+      widget.id === "def-card-admin-students" &&
+      typeof data.studentMetrics.active === "number" &&
+      data.studentMetrics.active !== data.studentsTotal &&
+      options?.t;
+    return {
+      value: count(data.studentsTotal),
+      ...(showActiveBreakdown
+        ? {
+            sub: options.t!("widget.subtitle.activeStudentsCount", {
+              active: count(data.studentMetricsActive),
+              total: count(data.studentsTotal),
+            }),
+          }
+        : {}),
+    };
   },
   faculty: (_widget, data) => (data.facultyMetrics ? { value: count(data.facultyTotal) } : null),
   sessions: (widget, data) => {
@@ -59,9 +79,29 @@ const COLLECTION_METRIC_RESOLVERS: Record<string, CollectionMetricResolver> = {
     }
     return { value: count(sessionsMetrics.total) };
   },
-  attendance_records: (widget, data) => {
+  attendance_records: (widget, data, options) => {
     const { attendanceMetrics } = data;
     if (!attendanceMetrics) return null;
+    const isTodayCard = widget.id === "def-card-admin-attendance";
+    const hasTodayBreakdown =
+      typeof attendanceMetrics.selectedDatePresent === "number" &&
+      typeof attendanceMetrics.selectedDateAbsent === "number" &&
+      typeof attendanceMetrics.selectedDateLate === "number" &&
+      typeof attendanceMetrics.selectedDateExcused === "number";
+    if (isTodayCard && widget.operation === "percentage" && hasTodayBreakdown) {
+      const todayCount =
+        attendanceMetrics.selectedDatePresent +
+        attendanceMetrics.selectedDateAbsent +
+        attendanceMetrics.selectedDateLate +
+        attendanceMetrics.selectedDateExcused;
+      if (todayCount === 0) {
+        return {
+          value: "—",
+          sub: options?.t?.("dashboard.widgets.noAttendanceRecorded"),
+        };
+      }
+      return { value: formatPercent(attendanceMetrics.selectedDatePresentRate) };
+    }
     const rate = attendanceMetrics.overallPresentRate ?? attendanceMetrics.selectedDatePresentRate;
     if (rate === undefined) return null;
     if (widget.operation === "percentage") {
@@ -69,7 +109,8 @@ const COLLECTION_METRIC_RESOLVERS: Record<string, CollectionMetricResolver> = {
     }
     return { value: count(attendanceMetrics.total) };
   },
-  finance_invoices: (widget, data) => {
+  finance_invoices: (widget, data, options) => {
+    const money = options?.formatCurrency ?? defaultMoney;
     const { financeMetrics, accountingMetrics } = data;
     if (widget.id.includes("revenue") || widget.id.includes("expenses")) {
       if (!accountingMetrics) return null;
@@ -111,7 +152,8 @@ const COLLECTION_METRIC_RESOLVERS: Record<string, CollectionMetricResolver> = {
 export function resolveServerMetricValue(
   widget: CustomWidget,
   data: DashboardData,
+  options?: MetricResolverOptions,
 ): { value: string; sub?: string } | null {
   const resolver = COLLECTION_METRIC_RESOLVERS[widget.collection];
-  return resolver ? resolver(widget, data) : null;
+  return resolver ? resolver(widget, data, options) : null;
 }

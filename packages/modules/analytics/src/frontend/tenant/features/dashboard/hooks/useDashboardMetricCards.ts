@@ -21,6 +21,7 @@ interface UseDashboardMetricCardsArgs {
   can?: (permission: Permission) => boolean;
   data: DashboardData;
   t: TranslationFunction;
+  formatCurrency?: (amount: number | string | null | undefined) => string;
 }
 
 /**
@@ -36,6 +37,7 @@ export function useDashboardMetricCards({
   can,
   data,
   t,
+  formatCurrency,
 }: UseDashboardMetricCardsArgs): StatItem[] {
   return useMemo(() => {
     const trends = computeDashboardMetricTrends(data);
@@ -48,7 +50,7 @@ export function useDashboardMetricCards({
     );
 
     return enabledDashboardCardWidgets.map((widget: any) =>
-      buildDashboardMetricCard({ widget, data, trends, t }),
+      buildDashboardMetricCard({ widget, data, trends, t, formatCurrency }),
     );
-  }, [customWidgets, dashboardRole, enabledModules, can, data, t]);
+  }, [customWidgets, dashboardRole, enabledModules, can, data, t, formatCurrency]);
 }

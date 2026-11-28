@@ -46,6 +46,8 @@ export interface DashboardNotificationMetrics {
   outstandingInvoiceCount: number;
   outstandingBalance: number;
   attendanceRate: number | null;
+  /** Whether any attendance record exists for today; when explicitly false, emits a calm reminder instead of an urgent 0% alarm. */
+  attendanceRecordedToday?: boolean;
   inactiveStudents: number;
 }
 
@@ -110,12 +112,25 @@ export function buildDashboardNotifications(
     }
   }
 
-  if (canAttendance && attendanceRate !== null && attendanceRate < lowThreshold) {
+  if (canAttendance && dashboardNotificationInput.attendanceRecordedToday === false) {
+    dashboardNotifications.push({
+      id: "attendance-not-taken",
+      type: "attendance",
+      title: t("notifications.attendanceNotTakenTitle"),
+      desc: t("notifications.attendanceNotTakenDesc"),
+      time: t("notifications.timeToday"),
+      urgent: false,
+      target: { kind: "attendanceDay", date: todayISO() },
+    });
+  } else if (canAttendance && attendanceRate !== null && attendanceRate < lowThreshold) {
     dashboardNotifications.push({
       id: "low-attendance",
       type: "attendance",
       title: t("notifications.lowAttendanceTitle"),
-      desc: t("notifications.lowAttendanceDesc", { rate: attendanceRate }),
+      desc: t("notifications.lowAttendanceDesc", {
+        rate: attendanceRate,
+        threshold: lowThreshold,
+      }),
       time: t("notifications.timeToday"),
       urgent: attendanceRate < urgentThreshold,
       target: { kind: "attendanceDay", date: todayISO() },

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { formatMoney, formatNumber, formatPercent } from "@mms/contracts";
+import type { TranslationFunction } from "@mms/fe-core/i18n";
 import type { CustomWidget } from "@mms/mod-analytics/frontend/tenant/lib/pinnedWidgetTypes";
 import type { DashboardData } from "./useDashboardData";
 import { resolveServerMetricValue } from "./dashboardCollectionMetricResolvers";
@@ -93,5 +94,47 @@ describe("resolveServerMetricValue", () => {
     } as unknown as DashboardData;
     const resolved = resolveServerMetricValue(revenueWidget, withAccounting);
     expect(resolved?.value).toBe(formatMoney(1000, undefined, { useSymbol: true }));
+  });
+
+  it("uses the injected formatCurrency callback so stat cards share currency formatting SSOT", () => {
+    const data = {
+      financeMetrics: { collectedTotal: 2500, outstandingBalance: 500 },
+    } as unknown as DashboardData;
+    const customFormat = (amount: number | string | null | undefined) => `CUSTOM ${amount}`;
+
+    const resolved = resolveServerMetricValue(
+      widget({ collection: "finance_invoices", targetField: "paidAmt" }),
+      data,
+      { formatCurrency: customFormat },
+    );
+    expect(resolved?.value).toBe("CUSTOM 2500");
+  });
+
+  it("returns em-dash for today's attendance card when no attendance has been recorded today", () => {
+    const data = {
+      attendanceMetrics: {
+        total: 10,
+        selectedDatePresent: 0,
+        selectedDateAbsent: 0,
+        selectedDateLate: 0,
+        selectedDateExcused: 0,
+        selectedDatePresentRate: 0,
+        overallPresentRate: 85,
+      },
+    } as unknown as DashboardData;
+
+    const resolved = resolveServerMetricValue(
+      widget({
+        id: "def-card-admin-attendance",
+        collection: "attendance_records",
+        operation: "percentage",
+      }),
+      data,
+      { t: ((key: string) => key) as TranslationFunction },
+    );
+    expect(resolved).toEqual({
+      value: "—",
+      sub: "dashboard.widgets.noAttendanceRecorded",
+    });
   });
 });

@@ -1,5 +1,5 @@
 import React from "react";
-import { WidgetCard } from "@mms/ui";
+import { Badge, WidgetCard } from "@mms/ui";
 import { Link } from "react-router-dom";
 import { m } from "framer-motion";
 import { Sparkles } from "lucide-react";
@@ -15,17 +15,29 @@ import { useReducedMotion } from "@mms/fe-core/tenant";
 interface QuickActionsPanelProps {
   /** Already filtered by role, module availability, and permission by the caller. */
   actions: DashboardQuickAction[];
+  /** Action ID that resolves the top active alert — promoted and visually emphasized. */
+  highlightedActionId?: string;
 }
 
 /**
  * Role-specific quick actions. Presentational: `DashboardRolePanel` resolves the
  * permitted actions once so it can also decide the row layout.
  */
-export function QuickActionsPanel({ actions }: QuickActionsPanelProps): React.JSX.Element | null {
+export function QuickActionsPanel({
+  actions,
+  highlightedActionId,
+}: QuickActionsPanelProps): React.JSX.Element | null {
   const { t } = useTranslation();
   const reducedMotion = useReducedMotion();
 
   if (actions.length === 0) return null;
+
+  const orderedActions = highlightedActionId
+    ? [
+        ...actions.filter((action) => action.id === highlightedActionId),
+        ...actions.filter((action) => action.id !== highlightedActionId),
+      ]
+    : actions;
 
   return (
     <WidgetCard
@@ -40,10 +52,11 @@ export function QuickActionsPanel({ actions }: QuickActionsPanelProps): React.JS
         </h3>
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {actions.map((quickAction, actionIndex) => {
+        {orderedActions.map((quickAction, actionIndex) => {
           const Icon = quickAction.icon;
           const label = t(quickAction.labelKey);
           const href = quickAction.route || ROUTES.home;
+          const isHighlighted = quickAction.id === highlightedActionId;
           return (
             <m.div
               key={quickAction.id}
@@ -57,24 +70,40 @@ export function QuickActionsPanel({ actions }: QuickActionsPanelProps): React.JS
             >
               <Link
                 to={href}
-                className="relative overflow-hidden group/item flex flex-col items-start gap-2.5 p-3.5 rounded-xl border border-border/70 bg-card/20 hover:bg-card/45 hover:-translate-y-1 hover:border-primary/20 hover:shadow-md transition-all duration-300 text-start h-full w-full shadow-xs"
+                className={`relative overflow-hidden group/item flex flex-col items-start gap-2.5 p-3.5 rounded-xl border transition-all duration-300 text-start h-full w-full shadow-xs hover:-translate-y-1 hover:shadow-md ${
+                  isHighlighted
+                    ? "border-primary/60 bg-primary/5 ring-1 ring-primary/25 hover:bg-primary/10 hover:border-primary"
+                    : "border-border/70 bg-card/20 hover:bg-card/45 hover:border-primary/20"
+                }`}
               >
                 <div
                   className={`absolute -end-8 -top-8 w-20 h-20 rounded-full transition-all duration-500 blur-xl opacity-40 group-hover/item:opacity-70 ${getQuickActionGlowClass(quickAction.color)}`}
                   aria-hidden="true"
                 />
 
-                <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center transition-transform group-hover/item:scale-110 duration-300 ${getQuickActionIconClasses(quickAction.color)}`}
-                  aria-hidden="true"
-                >
-                  <Icon className="w-4.5 h-4.5" />
+                <div className="flex w-full items-center justify-between gap-2">
+                  <div
+                    className={`w-9 h-9 rounded-lg flex items-center justify-center transition-transform group-hover/item:scale-110 duration-300 ${getQuickActionIconClasses(quickAction.color)}`}
+                    aria-hidden="true"
+                  >
+                    <Icon className="w-4.5 h-4.5" />
+                  </div>
+                  {isHighlighted ? (
+                    <Badge
+                      as="span"
+                      pill
+                      tone="primary"
+                      className="uppercase tracking-wider font-bold text-xs shrink-0"
+                    >
+                      {t("action.recommendedNextStep")}
+                    </Badge>
+                  ) : null}
                 </div>
                 <div>
                   <p className="text-sm font-bold text-foreground group-hover/item:text-primary transition-colors m-0 leading-tight">
                     {label}
                   </p>
-                  <p className="text-xs font-medium text-foreground mt-1 m-0 leading-normal text-pretty">
+                  <p className="text-xs font-medium text-muted-foreground mt-1 m-0 leading-normal text-pretty">
                     {t(quickAction.descKey)}
                   </p>
                 </div>
