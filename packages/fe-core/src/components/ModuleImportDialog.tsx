@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { Download, FileSpreadsheet, Upload, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Download, FileSpreadsheet, Upload, AlertCircle, CheckCircle2, X } from "lucide-react";
 import type { BackgroundJobRecord } from "@mms/contracts";
 import { DashedFileDropZone } from "@mms/ui/app/DashedFileDropZone";
 import { Modal } from "./Modal";
@@ -174,12 +174,14 @@ export function ModuleImportDialog<TRow = Record<string, unknown>>({
               {!isImporting ? (
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="ghost"
+                  size="icon"
                   onClick={handleReset}
-                  className="shrink-0 cursor-pointer"
+                  aria-label={t("module.import.changeFile")}
+                  title={t("module.import.changeFile")}
+                  className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground cursor-pointer"
                 >
-                  {t("module.import.changeFile")}
+                  <X className="w-4 h-4" aria-hidden="true" />
                 </Button>
               ) : null}
             </div>
