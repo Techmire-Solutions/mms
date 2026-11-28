@@ -97,8 +97,8 @@ export function getLanguageFontStacks(code: string): { sans: string; display: st
       };
     default:
       return {
-        sans: "'Inter', sans-serif",
-        display: "'Plus Jakarta Sans', 'Inter', system-ui, sans-serif",
+        sans: "'Geist', 'Inter', sans-serif",
+        display: "'Geist', 'Inter', system-ui, sans-serif",
       };
   }
 }
