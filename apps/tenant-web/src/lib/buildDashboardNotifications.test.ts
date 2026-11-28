@@ -177,4 +177,37 @@ describe("buildDashboardNotifications", () => {
     expect(alert).toBeDefined();
     expect(alert?.urgent).toBe(true);
   });
+
+  it("includes today's schedule window in the attendance-not-taken reminder when provided", () => {
+    const tWithWindow = (key: string, params?: Record<string, string | number>) =>
+      params?.window ? `${key}:${params.window}` : key;
+
+    const scheduled = buildDashboardNotifications(
+      "admin",
+      {
+        ...baseMetrics,
+        attendanceRate: 0,
+        attendanceRecordedToday: false,
+        todayScheduleWindow: "09:00 - 11:00",
+      },
+      tWithWindow,
+      (val) => `$${val}`,
+      () => true,
+    ).find((n) => n.id === "attendance-not-taken");
+    expect(scheduled?.desc).toBe("notifications.attendanceNotTakenScheduledDesc:09:00 - 11:00");
+
+    const flexible = buildDashboardNotifications(
+      "admin",
+      {
+        ...baseMetrics,
+        attendanceRate: 0,
+        attendanceRecordedToday: false,
+        todayScheduleWindow: "",
+      },
+      tWithWindow,
+      (val) => `$${val}`,
+      () => true,
+    ).find((n) => n.id === "attendance-not-taken");
+    expect(flexible?.desc).toBe("notifications.attendanceNotTakenFlexibleDesc");
+  });
 });

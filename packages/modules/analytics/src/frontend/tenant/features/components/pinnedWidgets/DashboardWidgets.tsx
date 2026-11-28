@@ -33,6 +33,8 @@ interface DashboardWidgetsProps {
   onDeleteWidget?: (id: string) => void;
   /** Hide the section header when the parent already rendered one. */
   showHeader?: boolean;
+  /** When false, empty Overdue Obligations shares a 2-column row instead of spanning full width. */
+  hasOverdueObligations?: boolean;
 }
 
 /**
@@ -47,6 +49,7 @@ export function DashboardWidgets({
   onEditWidget,
   onDeleteWidget,
   showHeader = true,
+  hasOverdueObligations = true,
 }: DashboardWidgetsProps = {}): React.JSX.Element | null {
   const { t } = useTranslation();
   const { gridMode, updatePref, canPin } = useDashboardConfig();
@@ -125,6 +128,7 @@ export function DashboardWidgets({
         widgets={activeWidgets}
         gridMode={gridMode}
         isEditMode={isEditMode}
+        hasOverdueObligations={hasOverdueObligations}
         onUnpin={handleLocalUnpin}
         onEditWidget={onEditWidget}
         onDeleteWidget={onDeleteWidget}

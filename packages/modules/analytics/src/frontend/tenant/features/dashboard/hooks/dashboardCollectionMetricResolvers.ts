@@ -50,22 +50,30 @@ const COLLECTION_METRIC_RESOLVERS: Record<string, CollectionMetricResolver> = {
     if (widget.filterValue === "active") {
       return { value: count(data.studentMetricsActive) };
     }
-    const showActiveBreakdown =
+    if (
       widget.id === "def-card-admin-students" &&
       typeof data.studentMetrics.active === "number" &&
-      data.studentMetrics.active !== data.studentsTotal &&
-      options?.t;
-    return {
-      value: count(data.studentsTotal),
-      ...(showActiveBreakdown
-        ? {
-            sub: options.t!("widget.subtitle.activeStudentsCount", {
-              active: count(data.studentMetricsActive),
-              total: count(data.studentsTotal),
-            }),
-          }
-        : {}),
-    };
+      options?.t
+    ) {
+      if (data.studentMetrics.active !== data.studentsTotal) {
+        return {
+          value: count(data.studentsTotal),
+          sub: options.t("widget.subtitle.activeStudentsCount", {
+            active: count(data.studentMetricsActive),
+            total: count(data.studentsTotal),
+          }),
+        };
+      }
+      if (data.studentsTotal > 0) {
+        return {
+          value: count(data.studentsTotal),
+          sub: options.t("widget.subtitle.allStudentsActive", {
+            total: count(data.studentsTotal),
+          }),
+        };
+      }
+    }
+    return { value: count(data.studentsTotal) };
   },
   faculty: (_widget, data) => (data.facultyMetrics ? { value: count(data.facultyTotal) } : null),
   sessions: (widget, data) => {

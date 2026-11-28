@@ -236,7 +236,7 @@ test.describe("accessibility smoke — populated surfaces @smoke", () => {
     await page.setViewportSize({ width: 1440, height: 900 });
 
     await gotoAndSettle(page, tenantOrigin, "/students", "#main-content");
-    await page.getByRole("button", { name: "Student", exact: true }).first().click();
+    await page.getByRole("button", { name: "Enroll Student", exact: true }).first().click();
     const dialog = page.getByRole("dialog", { name: /Register student/i });
     await expect(dialog).toBeVisible({ timeout: 20_000 });
 

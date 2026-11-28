@@ -1,9 +1,11 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { WidgetCard } from "@mms/ui";
 import { WidgetCardHeader } from "@mms/ui";
 import { ProgressBar } from "@mms/ui";
 import { LegendChip } from "@mms/ui/app/LegendChip";
 import { TrendingUp, TrendingDown } from "lucide-react";
+import { ROUTES } from "@mms/fe-core/config/routes";
 import { useFinanceInvoicesPaginated } from "@/tenant/hooks/collections/finance";
 import { useTranslation } from "@mms/fe-core/i18n";
 import {
@@ -37,6 +39,7 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
 
   const {
     totalCollected,
+    totalTarget,
     collectedPct,
     outstandingPct,
     breakdown,
@@ -45,6 +48,7 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
     comparisonMonthName,
     displayTrendPct,
     isPositiveTrend,
+    hasBaselineActivity,
   } = React.useMemo(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
@@ -121,6 +125,7 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
       comparisonMonthName: formatMonthName(prevMonthDate),
       displayTrendPct: Math.abs(chgPct),
       isPositiveTrend: chgPct >= 0,
+      hasBaselineActivity: collected > 0 || prevCol > 0,
     };
   }, [invoices, t]);
 
@@ -136,91 +141,108 @@ export default function FeeCollectionSummary({ title }: { title?: string }) {
             <p className="text-base font-bold text-foreground m-0 tabular-nums">
               {formatCurrency(totalCollected)}
             </p>
-            <div
-              className={`flex items-center gap-1 justify-end mt-0.5 ${isPositiveTrend ? "text-success" : "text-destructive"}`}
-            >
-              {isPositiveTrend ? (
-                <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
-              ) : (
-                <TrendingDown className="w-3.5 h-3.5" aria-hidden="true" />
-              )}
-              <span className="text-xs font-bold">
-                {t("dashboard.widgets.comparisonTrend", {
-                  value: displayTrendPct,
-                  month: comparisonMonthName,
-                })}
-              </span>
-            </div>
+            {hasBaselineActivity ? (
+              <div
+                className={`flex items-center gap-1 justify-end mt-0.5 ${isPositiveTrend ? "text-success" : "text-destructive"}`}
+              >
+                {isPositiveTrend ? (
+                  <TrendingUp className="w-3.5 h-3.5" aria-hidden="true" />
+                ) : (
+                  <TrendingDown className="w-3.5 h-3.5" aria-hidden="true" />
+                )}
+                <span className="text-xs font-bold">
+                  {t("dashboard.widgets.comparisonTrend", {
+                    value: displayTrendPct,
+                    month: comparisonMonthName,
+                  })}
+                </span>
+              </div>
+            ) : null}
           </div>
         }
       />
 
-      <section className="p-5 space-y-4">
-        {/* Stacked progress bar */}
-        <div
-          className="h-3 rounded-md overflow-hidden bg-muted flex mb-4.5 shadow-inner"
-          aria-hidden="true"
-        >
-          <div
-            className="bg-success h-full transition-all duration-700 ease-out"
-            style={{ width: `${collectedPct}%` }}
-          />
-          <div
-            className="bg-destructive h-full transition-all duration-700 ease-out"
-            style={{ width: `${outstandingPct}%` }}
-          />
+      {totalTarget === 0 ? (
+        <div className="px-5 py-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-sm text-muted-foreground m-0">
+            {t("dashboard.widgets.noFeeActivityThisMonth", { month: displayDate })}
+          </p>
+          <Link
+            to={ROUTES.finance}
+            className="inline-flex min-h-11 items-center text-xs font-bold text-primary hover:underline shrink-0"
+          >
+            {t("dashboard.widgets.goToFinance")}
+          </Link>
         </div>
-        <div
-          className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 select-none"
-          aria-label={t("dashboard.widgets.feeSplitAria", {
-            collected: collectedPct,
-            outstanding: outstandingPct,
-          })}
-        >
-          {breakdown.map((b) => (
-            <LegendChip
-              key={b.label}
-              dotClassName={b.color}
-              label={b.label}
-              labelClassName="text-muted-foreground font-medium"
-              value={formatPercent(b.pct)}
+      ) : (
+        <section className="p-5 space-y-4">
+          {/* Stacked progress bar */}
+          <div
+            className="h-3 rounded-md overflow-hidden bg-muted flex mb-4.5 shadow-inner"
+            aria-hidden="true"
+          >
+            <div
+              className="bg-success h-full transition-all duration-700 ease-out"
+              style={{ width: `${collectedPct}%` }}
             />
-          ))}
-        </div>
+            <div
+              className="bg-destructive h-full transition-all duration-700 ease-out"
+              style={{ width: `${outstandingPct}%` }}
+            />
+          </div>
+          <div
+            className="mb-6 flex flex-wrap items-center gap-x-4 gap-y-1 select-none"
+            aria-label={t("dashboard.widgets.feeSplitAria", {
+              collected: collectedPct,
+              outstanding: outstandingPct,
+            })}
+          >
+            {breakdown.map((b) => (
+              <LegendChip
+                key={b.label}
+                dotClassName={b.color}
+                label={b.label}
+                labelClassName="text-muted-foreground font-medium"
+                value={formatPercent(b.pct)}
+              />
+            ))}
+          </div>
 
-        {/* By-class breakdown */}
-        <div className="space-y-4">
-          {byClass.map((classSummary) => {
-            const pct =
-              classSummary.target > 0
-                ? Math.round((classSummary.collected / classSummary.target) * 100)
-                : 0;
-            return (
-              <article key={classSummary.name} className="space-y-1.5">
-                <header className="flex min-w-0 items-center justify-between gap-2">
-                  <span className="min-w-0 truncate text-sm text-foreground font-semibold">
-                    {classSummary.name}
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground font-medium tabular-nums">
-                    {formatCurrency(classSummary.collected)} / {formatCurrency(classSummary.target)}
-                  </span>
-                </header>
-                <ProgressBar
-                  value={pct}
-                  size="md"
-                  fillClassName={`${
-                    pct >= 90 ? "bg-success" : pct >= 70 ? "bg-warning" : "bg-destructive"
-                  } duration-700 ease-out`}
-                  aria-label={t("dashboard.widgets.classCollectionAria", {
-                    name: classSummary.name,
-                    pct,
-                  })}
-                />
-              </article>
-            );
-          })}
-        </div>
-      </section>
+          {/* By-class breakdown */}
+          <div className="space-y-4">
+            {byClass.map((classSummary) => {
+              const pct =
+                classSummary.target > 0
+                  ? Math.round((classSummary.collected / classSummary.target) * 100)
+                  : 0;
+              return (
+                <article key={classSummary.name} className="space-y-1.5">
+                  <header className="flex min-w-0 items-center justify-between gap-2">
+                    <span className="min-w-0 truncate text-sm text-foreground font-semibold">
+                      {classSummary.name}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground font-medium tabular-nums">
+                      {formatCurrency(classSummary.collected)} /{" "}
+                      {formatCurrency(classSummary.target)}
+                    </span>
+                  </header>
+                  <ProgressBar
+                    value={pct}
+                    size="md"
+                    fillClassName={`${
+                      pct >= 90 ? "bg-success" : pct >= 70 ? "bg-warning" : "bg-destructive"
+                    } duration-700 ease-out`}
+                    aria-label={t("dashboard.widgets.classCollectionAria", {
+                      name: classSummary.name,
+                      pct,
+                    })}
+                  />
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </WidgetCard>
   );
 }

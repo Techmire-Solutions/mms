@@ -9,7 +9,10 @@ import { ROUTES } from "@mms/fe-core/config/routes";
 import { type AttendanceStatus } from "@/lib/data/attendanceData";
 import { useAttendanceConfig } from "@/hooks/useStandardModuleConfig";
 import { useAttendanceRecordsCollection } from "@/tenant/hooks/collections/attendance";
-import { useSessionsCollection } from "@/tenant/hooks/collections/sessions";
+import {
+  useSessionsCollection,
+  useSessionsReportAggregates,
+} from "@/tenant/hooks/collections/sessions";
 import { useTranslation } from "@mms/fe-core/i18n";
 import { formatPercent } from "@mms/contracts";
 import { rateToneClass } from "@mms/fe-core/ui/semanticTone";
@@ -31,9 +34,23 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
   const { statuses } = useAttendanceConfig();
   const attendanceRecords = useAttendanceRecordsCollection();
   const sessions = useSessionsCollection();
+  const { data: sessionsReport } = useSessionsReportAggregates();
 
   const { displayRecords, displayDate, isToday, stats, rate, classBreakdown } =
     useTodayAttendanceStats(attendanceRecords, sessions);
+
+  const scheduleHint = React.useMemo(() => {
+    const todaysSessions = sessionsReport?.todaysSessions;
+    if (!Array.isArray(todaysSessions) || todaysSessions.length === 0) return undefined;
+    const uniqueTimes = Array.from(
+      new Set(todaysSessions.map((s) => (s.time ?? "").trim()).filter(Boolean)),
+    );
+    return uniqueTimes.length > 0
+      ? t("notifications.attendanceNotTakenScheduledDesc", {
+          window: uniqueTimes.slice(0, 2).join(" · "),
+        })
+      : t("notifications.attendanceNotTakenFlexibleDesc");
+  }, [sessionsReport, t]);
 
   const { text: rateColor, bar: rateBarColor } = rateToneClass(rate);
 
@@ -71,9 +88,9 @@ export default function TodayAttendanceWidget({ title }: { title?: string }) {
         {displayRecords.length === 0 ? (
           <EmptyState
             title={t("dashboard.widgets.noAttendanceRecorded")}
+            description={scheduleHint}
             icon={Users}
             compact
-            className="uppercase tracking-wider"
             action={
               <Link
                 to={ROUTES.attendance}

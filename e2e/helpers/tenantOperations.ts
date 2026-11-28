@@ -332,7 +332,7 @@ export async function registerStudentJaneDoe(page: Page): Promise<void> {
 
     // Exact name: the global search button ("Search students, sessions…") also matches
     // a substring "Student" and would open the command palette instead.
-    await page.getByRole("button", { name: "Student", exact: true }).first().click();
+    await page.getByRole("button", { name: "Enroll Student", exact: true }).first().click();
     const registerDialog = page.getByRole("dialog", { name: /(Register student|Edit student)/i });
     await expect(registerDialog).toBeVisible();
 

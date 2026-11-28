@@ -89,12 +89,7 @@ export function QuickActionsPanel({
                     <Icon className="w-4.5 h-4.5" />
                   </div>
                   {isHighlighted ? (
-                    <Badge
-                      as="span"
-                      pill
-                      tone="primary"
-                      className="uppercase tracking-wider font-bold text-xs shrink-0"
-                    >
+                    <Badge as="span" pill tone="primary" className="font-semibold text-xs shrink-0">
                       {t("action.recommendedNextStep")}
                     </Badge>
                   ) : null}

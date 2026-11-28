@@ -1379,7 +1379,7 @@ async function captureFiveModuleStates(browser, state) {
     await escapeAll();
   });
   await step("students-form", async () => {
-    await click(page.getByRole("button", { name: "Student", exact: true }));
+    await click(page.getByRole("button", { name: "Enroll Student", exact: true }));
     await waitDialog();
     await shot("students-form");
     await escapeAll();

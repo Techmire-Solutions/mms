@@ -87,17 +87,17 @@ export default function CustomWidgetChartFallback({
           >
             <BarChart
               data={chartData}
-              barSize={10}
-              margin={{ top: 2, right: 4, left: -22, bottom: 2 }}
+              barSize={12}
+              margin={{ top: 4, right: 4, left: 4, bottom: 2 }}
             >
               <XAxis
                 dataKey="name"
-                tick={chartAxisTick(9)}
+                tick={chartAxisTick(10)}
                 tickFormatter={(value) => formatCategoryLabel(String(value ?? ""))}
                 axisLine={false}
                 tickLine={false}
               />
-              <YAxis tick={chartAxisTick(8)} axisLine={false} tickLine={false} />
+              <YAxis hide />
               <Tooltip
                 formatter={(val) => formatNumber(Number(val ?? 0))}
                 labelFormatter={(label) => formatCategoryLabel(String(label ?? ""))}

@@ -48,6 +48,8 @@ export interface DashboardNotificationMetrics {
   attendanceRate: number | null;
   /** Whether any attendance record exists for today; when explicitly false, emits a calm reminder instead of an urgent 0% alarm. */
   attendanceRecordedToday?: boolean;
+  /** Today's session timetable window (e.g. "09:00 - 11:00"), "" when active sessions have no fixed slot, or undefined/null when unknown. */
+  todayScheduleWindow?: string | null;
   inactiveStudents: number;
 }
 
@@ -113,11 +115,18 @@ export function buildDashboardNotifications(
   }
 
   if (canAttendance && dashboardNotificationInput.attendanceRecordedToday === false) {
+    const scheduleWindow = dashboardNotificationInput.todayScheduleWindow;
+    const desc =
+      typeof scheduleWindow === "string"
+        ? scheduleWindow.trim().length > 0
+          ? t("notifications.attendanceNotTakenScheduledDesc", { window: scheduleWindow.trim() })
+          : t("notifications.attendanceNotTakenFlexibleDesc")
+        : t("notifications.attendanceNotTakenDesc");
     dashboardNotifications.push({
       id: "attendance-not-taken",
       type: "attendance",
       title: t("notifications.attendanceNotTakenTitle"),
-      desc: t("notifications.attendanceNotTakenDesc"),
+      desc,
       time: t("notifications.timeToday"),
       urgent: false,
       target: { kind: "attendanceDay", date: todayISO() },
