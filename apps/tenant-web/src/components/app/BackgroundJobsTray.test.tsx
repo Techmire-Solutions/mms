@@ -115,7 +115,7 @@ describe("BackgroundJobsTray", () => {
 
     // Verify exactly one Close button exists in the footer
     const footerButtons = Array.from(
-      document.body.querySelectorAll("[data-slot='modal-footer'] button"),
+      document.body.querySelectorAll<HTMLButtonElement>("[data-slot='modal-footer'] button"),
     );
     expect(footerButtons).toHaveLength(1);
     expect(footerButtons[0]?.textContent).toContain("common.close");
